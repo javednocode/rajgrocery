@@ -278,15 +278,55 @@ if (preg_match('#^/api/stock/update/?$#', $uri) && $method === 'POST') {
 
 // ── Email System ─────────────────────────────────────────────────────────────
 if (preg_match('#^/api/email/process/?$#', $uri)) {
-    // Called by Hostinger cron: GET /api/email/process (no auth for cron)
     require_once __DIR__ . '/api/email_queue.php';
     if ($method === 'GET' || $method === 'POST') processQueue($db);
 }
-if (preg_match('#^/api/email/test/?$#', $uri)) {
+
+// ── Test Email — handled INLINE to avoid output-buffer issues ─────────────────
+if (preg_match('#^/api/email/test/?$#', $uri) && $method === 'POST') {
     requireAuth();
-    require_once __DIR__ . '/api/email_queue.php';
-    if ($method === 'POST') sendTestEmail($db);
+    $data = getJsonInput();
+    $to   = trim($data['to'] ?? '');
+    if (empty($to)) { errorResponse('Recipient email required', 400); }
+
+    // Clear any stray output that would corrupt JSON
+    while (ob_get_level() > 0) { ob_get_clean(); }
+
+    try {
+        require_once __DIR__ . '/helpers/email.php';
+        $cfg = getEmailSettings($db);
+
+        $html = '<html><body style="font-family:Arial,sans-serif;padding:20px">'
+              . '<div style="max-width:500px;margin:auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.1)">'
+              . '<div style="background:#0D1827;padding:20px;text-align:center">'
+              . '<h1 style="color:#fff;margin:0">Asian Food Cork</h1>'
+              . '<p style="color:rgba(255,255,255,.6);margin:4px 0 0;font-size:12px">SMTP Test Email</p>'
+              . '</div>'
+              . '<div style="padding:24px">'
+              . '<p><strong>SMTP is working correctly!</strong></p>'
+              . '<p>Host: ' . htmlspecialchars($cfg['smtp_host']) . '</p>'
+              . '<p>Port: ' . $cfg['smtp_port'] . ' | Encryption: ' . strtoupper($cfg['smtp_encryption']) . '</p>'
+              . '<p>Sent: ' . date('d M Y H:i:s') . '</p>'
+              . '</div></div></body></html>';
+
+        sendViaSMTP($cfg, $to, 'SMTP Test - Asian Food Cork', $html, 'SMTP is working!');
+
+        // Try log — silently skip if table missing
+        try { logEmail($db, null, null, 'test', $to, 'SMTP Test', 'sent', 'OK'); } catch (Exception $le) {}
+
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => true, 'message' => 'Test email sent successfully to ' . $to, 'data' => ['to' => $to]]);
+        exit;
+
+    } catch (Exception $e) {
+        try { logEmail($db, null, null, 'test', $to, 'SMTP Test', 'failed', $e->getMessage()); } catch (Exception $le) {}
+        header('Content-Type: application/json; charset=utf-8');
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'SMTP Error: ' . $e->getMessage()]);
+        exit;
+    }
 }
+
 if (preg_match('#^/api/email/logs/?$#', $uri)) {
     requireAuth();
     require_once __DIR__ . '/api/email_queue.php';
@@ -297,7 +337,7 @@ if (preg_match('#^/api/email/queue/?$#', $uri)) {
     require_once __DIR__ . '/api/email_queue.php';
     if ($method === 'GET') getEmailQueueList($db);
 }
-if (preg_match('#^/api/email/queue/(\d+)/retry$#', $uri, $m)) {
+if (preg_match('#^/api/email/queue/(\\d+)/retry$#', $uri, $m)) {
     requireAuth();
     require_once __DIR__ . '/api/email_queue.php';
     if ($method === 'POST') retryEmailJob($db, $m[1]);
