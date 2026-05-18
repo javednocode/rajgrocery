@@ -207,29 +207,29 @@ function sendOrderEmailsNow($db, $order, $items) {
         error_log('XML generation error: ' . $e->getMessage());
     }
 
-    // Build attachment list (only files that actually exist)
-    $attachments = [];
-    if ($fullPdfPath && file_exists($fullPdfPath)) $attachments[] = $fullPdfPath;
-    if ($fullXmlPath && file_exists($fullXmlPath)) $attachments[] = $fullXmlPath;
+    // Build attachment lists
+    $pdfAttachment  = ($fullPdfPath && file_exists($fullPdfPath)) ? [$fullPdfPath] : [];
+    $adminAttachments = $pdfAttachment;
+    if ($fullXmlPath && file_exists($fullXmlPath)) $adminAttachments[] = $fullXmlPath;
 
-    // ── Send to customer ─────────────────────────────────────────────────────
+    // ── Send to customer (PDF only — no raw XML) ─────────────────────────────
     if (!empty($order['customer_email'])) {
         try {
             $subject = 'Order Confirmed - ' . $order['order_number'] . ' | Asian Food Cork';
             $html    = buildCustomerEmail($order, $items, 'order_placed');
             $text    = buildPlainText($order, $items);
-            sendViaSMTPWithFiles($cfg, $order['customer_email'], $subject, $html, $text, $attachments);
+            sendViaSMTPWithFiles($cfg, $order['customer_email'], $subject, $html, $text, $pdfAttachment);
             error_log('Customer email sent to: ' . $order['customer_email']);
         } catch (\Throwable $e) {
             error_log('Customer email error: ' . $e->getMessage());
         }
     }
 
-    // ── Send to admin ────────────────────────────────────────────────────────
+    // ── Send to admin (PDF + XML for accounting) ─────────────────────────────
     try {
         $adminSubject = 'New Order: ' . $order['order_number'] . ' from ' . $order['customer_name'];
         $adminHtml    = buildAdminEmail($order, $items);
-        sendViaSMTPWithFiles($cfg, $cfg['admin_email'], $adminSubject, $adminHtml, '', $attachments);
+        sendViaSMTPWithFiles($cfg, $cfg['admin_email'], $adminSubject, $adminHtml, '', $adminAttachments);
         error_log('Admin email sent to: ' . $cfg['admin_email']);
     } catch (\Throwable $e) {
         error_log('Admin email error: ' . $e->getMessage());
