@@ -114,9 +114,9 @@ function sendViaSMTP($cfg, $to, $subject, $htmlBody, $textBody = '', $attachment
     $mail->Body       = $htmlBody;
     $mail->AltBody    = $textBody ?: strip_tags($htmlBody);
     $mail->CharSet    = 'UTF-8';
-    $mail->XMailer    = ' '; // hide X-Mailer header (deliverability)
+    $mail->XMailer    = ' ';
 
-    // Attach files
+    // Attach files (web-relative paths)
     foreach ($attachments as $filePath) {
         $fullPath = __DIR__ . '/../' . ltrim($filePath, '/');
         if (file_exists($fullPath)) {
@@ -126,6 +126,37 @@ function sendViaSMTP($cfg, $to, $subject, $htmlBody, $textBody = '', $attachment
 
     $mail->send();
 }
+
+// ── Send via SMTP with ABSOLUTE file paths as attachments ─────────────────────
+function sendViaSMTPWithFiles($cfg, $to, $subject, $htmlBody, $textBody = '', $absFilePaths = []) {
+    $mail = new PHPMailer(true);
+    $mail->isSMTP();
+    $mail->Host       = $cfg['smtp_host'];
+    $mail->Port       = (int)$cfg['smtp_port'];
+    $mail->SMTPAuth   = true;
+    $mail->Username   = $cfg['smtp_username'];
+    $mail->Password   = $cfg['smtp_password'];
+    $mail->SMTPSecure = strtolower($cfg['smtp_encryption']) === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->setFrom($cfg['smtp_from_email'], $cfg['smtp_from_name']);
+    $mail->addReplyTo($cfg['smtp_from_email'], $cfg['smtp_from_name']);
+    $mail->addAddress($to);
+    $mail->Subject    = $subject;
+    $mail->isHTML(true);
+    $mail->Body       = $htmlBody;
+    $mail->AltBody    = $textBody ?: strip_tags($htmlBody);
+    $mail->CharSet    = 'UTF-8';
+    $mail->XMailer    = ' ';
+
+    // Attach files (absolute filesystem paths)
+    foreach ($absFilePaths as $absPath) {
+        if ($absPath && file_exists($absPath)) {
+            $mail->addAttachment($absPath, basename($absPath));
+        }
+    }
+
+    $mail->send();
+}
+
 
 // ── Log email result ─────────────────────────────────────────────────────────
 function logEmail($db, $queueId, $orderId, $type, $recipient, $subject, $status, $response, $pdfPath = null, $xmlPath = null) {
@@ -147,40 +178,69 @@ function logEmail($db, $queueId, $orderId, $type, $recipient, $subject, $status,
 
 // ── Queue order confirmation emails (both customer + admin) ─────────────────
 function queueOrderEmails($db, $order, $items) {
+    // Try direct send first (no DB table needed), fall back to queue
+    sendOrderEmailsNow($db, $order, $items);
+}
+
+// ── Send order emails IMMEDIATELY via SMTP (no queue table required) ─────────
+function sendOrderEmailsNow($db, $order, $items) {
     $cfg = getEmailSettings($db);
     if (empty($cfg['email_enabled']) || $cfg['email_enabled'] === '0') return;
 
-    // Generate invoices
-    $pdfPath = generatePDFInvoice($order, $items);
-    $xmlPath = generateXMLInvoice($order, $items);
-
-    // Save invoice record
+    // Generate PDF invoice
+    $pdfPath    = null;
+    $fullPdfPath = null;
     try {
-        $db->prepare("INSERT IGNORE INTO invoices (order_id, order_number, pdf_path, xml_path)
-            VALUES (:oid, :num, :pdf, :xml)")
-           ->execute([':oid' => $order['id'], ':num' => $order['order_number'], ':pdf' => $pdfPath, ':xml' => $xmlPath]);
-    } catch (Exception $e) {}
-
-    $attachments = [$pdfPath, $xmlPath];
-
-    // Customer email
-    if (!empty($order['customer_email'])) {
-        $subject = '✅ Order Confirmed – ' . $order['order_number'] . ' | Asian Food Cork';
-        $html    = buildCustomerEmail($order, $items, 'order_placed');
-        $text    = buildPlainText($order, $items);
-        queueEmail($db, $order['id'], 'order_placed', $order['customer_email'], $subject, $html, $text, $attachments);
+        $pdfPath     = generatePDFInvoice($order, $items);
+        $fullPdfPath = __DIR__ . '/../' . ltrim($pdfPath, '/');
+    } catch (\Throwable $e) {
+        error_log('PDF generation error: ' . $e->getMessage());
     }
 
-    // Admin email
-    $adminSubject = '🛒 New Order: ' . $order['order_number'] . ' – ' . $order['customer_name'];
-    $adminHtml    = buildAdminEmail($order, $items);
-    queueEmail($db, $order['id'], 'order_placed', $cfg['admin_email'], $adminSubject, $adminHtml, '', $attachments);
+    // Generate XML invoice
+    $xmlPath    = null;
+    $fullXmlPath = null;
+    try {
+        $xmlPath     = generateXMLInvoice($order, $items);
+        $fullXmlPath = __DIR__ . '/../' . ltrim($xmlPath, '/');
+    } catch (\Throwable $e) {
+        error_log('XML generation error: ' . $e->getMessage());
+    }
 
-    // WhatsApp
+    // Build attachment list (only files that actually exist)
+    $attachments = [];
+    if ($fullPdfPath && file_exists($fullPdfPath)) $attachments[] = $fullPdfPath;
+    if ($fullXmlPath && file_exists($fullXmlPath)) $attachments[] = $fullXmlPath;
+
+    // ── Send to customer ─────────────────────────────────────────────────────
+    if (!empty($order['customer_email'])) {
+        try {
+            $subject = 'Order Confirmed - ' . $order['order_number'] . ' | Asian Food Cork';
+            $html    = buildCustomerEmail($order, $items, 'order_placed');
+            $text    = buildPlainText($order, $items);
+            sendViaSMTPWithFiles($cfg, $order['customer_email'], $subject, $html, $text, $attachments);
+            error_log('Customer email sent to: ' . $order['customer_email']);
+        } catch (\Throwable $e) {
+            error_log('Customer email error: ' . $e->getMessage());
+        }
+    }
+
+    // ── Send to admin ────────────────────────────────────────────────────────
+    try {
+        $adminSubject = 'New Order: ' . $order['order_number'] . ' from ' . $order['customer_name'];
+        $adminHtml    = buildAdminEmail($order, $items);
+        sendViaSMTPWithFiles($cfg, $cfg['admin_email'], $adminSubject, $adminHtml, '', $attachments);
+        error_log('Admin email sent to: ' . $cfg['admin_email']);
+    } catch (\Throwable $e) {
+        error_log('Admin email error: ' . $e->getMessage());
+    }
+
+    // ── WhatsApp ─────────────────────────────────────────────────────────────
     if (!empty($cfg['whatsapp_enabled']) && $cfg['whatsapp_enabled'] === '1') {
-        sendWhatsAppNotification($cfg, $order);
+        try { sendWhatsAppNotification($cfg, $order); } catch (\Throwable $e) {}
     }
 }
+
 
 // ── Queue status update email ────────────────────────────────────────────────
 function queueStatusEmail($db, $order, $newStatus) {
