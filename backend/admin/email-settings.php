@@ -135,9 +135,19 @@
       </div>
 
       <div class="card">
-        <h3>📊 Queue Status</h3>
-        <div id="queueStats" style="font-size:13px;color:#94a3b8">Loading...</div>
-        <button class="btn-primary" style="margin-top:12px;background:#0f766e" onclick="processQueue()">▶️ Process Queue Now</button>
+        <h3>⚡ Email Delivery Mode</h3>
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:8px;margin-bottom:12px">
+          <span style="font-size:20px">✅</span>
+          <div>
+            <div style="color:#4ade80;font-weight:700;font-size:13px">Direct SMTP — Active</div>
+            <div style="color:#94a3b8;font-size:11px;margin-top:2px">Emails send instantly when orders are placed. No queue needed.</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#64748b;line-height:1.7">
+          📧 Customer receives: <strong style="color:#cbd5e1">PDF Invoice</strong><br>
+          📧 Admin receives: <strong style="color:#cbd5e1">PDF + XML Invoice</strong><br>
+          ⏱️ Delivery: <strong style="color:#cbd5e1">Immediately on order</strong>
+        </div>
       </div>
     </div>
   </div>
@@ -255,33 +265,7 @@ async function sendTest() {
     }
 }
 
-// ── Process Queue ────────────────────────────────────────────────────────────
-async function processQueue() {
-    try {
-        await emailApi('/email/process', 'POST');
-        showAlert('Queue processed!');
-        loadQueueStats();
-    } catch(e) { showAlert(e.message, 'danger'); }
-}
-
-// ── Queue Stats ──────────────────────────────────────────────────────────────
-async function loadQueueStats() {
-    try {
-        var r = await emailApi('/email/queue?per_page=100');
-        var items = r.data || [];
-        var pending = items.filter(function(i){return i.status==='pending'}).length;
-        var failed  = items.filter(function(i){return i.status==='failed'}).length;
-        var sent    = items.filter(function(i){return i.status==='sent'}).length;
-        document.getElementById('queueStats').innerHTML =
-            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px">' +
-            '<div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#93c5fd">' + pending + '</div><div>Pending</div></div>' +
-            '<div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#4ade80">' + sent + '</div><div>Sent</div></div>' +
-            '<div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#fca5a5">' + failed + '</div><div>Failed</div></div>' +
-            '</div>';
-    } catch(e) {
-        document.getElementById('queueStats').innerHTML = '<span style="color:#64748b">No queue data (run SQL migration)</span>';
-    }
-}
+// Queue system removed — emails now send directly via SMTP on order placement
 
 // ── Logs ─────────────────────────────────────────────────────────────────────
 async function loadLogs() {
@@ -315,7 +299,6 @@ document.getElementById('whatsapp_enabled').addEventListener('change', toggleWA)
 // ── Init ─────────────────────────────────────────────────────────────────────
 loadSettings();
 loadLogs();
-loadQueueStats();
 </script>
 </body>
 </html>

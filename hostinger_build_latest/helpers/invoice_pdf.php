@@ -1,300 +1,323 @@
 <?php
 /**
  * Asian Food Cork - PDF Invoice Generator
- * Pure PHP PDF generation using FPDF-style raw PDF writing
- * No external library needed
+ * Pure PHP PDF generation — no external library required
  */
 
 function generatePDFInvoice($order, $items) {
     $dir = __DIR__ . '/../uploads/invoices/';
-    if (!is_dir($dir)) mkdir($dir, 0755, true);
+    if (!is_dir($dir)) @mkdir($dir, 0755, true);
 
-    $filename  = $dir . $order['order_number'] . '.pdf';
-    $webPath   = '/uploads/invoices/' . $order['order_number'] . '.pdf';
+    $filename = $dir . $order['order_number'] . '.pdf';
+    $webPath  = '/uploads/invoices/' . $order['order_number'] . '.pdf';
 
-    // If already generated, return existing
+    // Return cached file
     if (file_exists($filename)) return $webPath;
 
-    // Build PDF as raw bytes
     $pdf = new SimplePDF();
     $pdf->addPage();
 
-    // ── Header ──────────────────────────────────────────────
-    $pdf->setFillColor(13, 24, 39);      // dark navy
+    // ── Header bar ──────────────────────────────────────────────────────────
+    $pdf->setFillColor(13, 24, 39);
     $pdf->rect(10, 10, 190, 28, 'F');
     $pdf->setTextColor(255, 255, 255);
     $pdf->setFont('Helvetica', 'B', 18);
-    $pdf->text(15, 27, 'Asian Food Cork');
+    $pdf->text(15, 26, 'Asian Food Cork');
     $pdf->setFont('Helvetica', '', 9);
     $pdf->text(15, 33, 'Authentic Asian Groceries | Cork, Ireland');
 
-    $pdf->setFont('Helvetica', 'B', 10);
-    $pdf->text(150, 24, 'INVOICE');
+    $pdf->setFont('Helvetica', 'B', 11);
+    $pdf->text(148, 22, 'INVOICE');
     $pdf->setFont('Helvetica', '', 9);
-    $pdf->text(140, 30, $order['order_number']);
-    $pdf->text(140, 36, date('d M Y', strtotime($order['created_at'])));
+    $pdf->text(143, 29, $order['order_number']);
+    $pdf->text(143, 35, date('d M Y', strtotime($order['created_at'] ?? 'now')));
 
-    // Reset color
     $pdf->setTextColor(0, 0, 0);
 
-    // ── Billing & Shipping ────────────────────────────────────
-    $y = 48;
+    // ── Customer / Billing info ──────────────────────────────────────────────
+    $y = 50;
     $pdf->setFont('Helvetica', 'B', 9);
     $pdf->text(12, $y, 'BILL TO / SHIP TO');
     $pdf->setFont('Helvetica', '', 9);
-    $pdf->text(12, $y + 6,  $order['customer_name']);
-    $pdf->text(12, $y + 12, $order['customer_phone'] ?? '');
-    $pdf->text(12, $y + 18, $order['customer_email'] ?? '');
+    $pdf->text(12, $y + 7,  $order['customer_name'] ?? '');
+    $pdf->text(12, $y + 13, $order['customer_phone'] ?? '');
+    $pdf->text(12, $y + 19, $order['customer_email'] ?? '');
 
-    $addr = $order['shipping_address'];
+    // Address
+    $addr = $order['shipping_address'] ?? '';
     if (is_string($addr)) {
         $addrData = json_decode($addr, true);
         if ($addrData) {
-            $addrLine = implode(', ', array_filter([
-                $addrData['street'] ?? $addrData['address'] ?? '',
+            $addr = implode(', ', array_filter([
+                $addrData['address_line1'] ?? $addrData['street'] ?? '',
                 $addrData['city'] ?? '',
-                $addrData['county'] ?? '',
+                $addrData['county'] ?? $addrData['state'] ?? '',
                 $addrData['eircode'] ?? $addrData['postcode'] ?? '',
+                $addrData['country'] ?? '',
             ]));
-        } else {
-            $addrLine = $addr;
         }
-    } else {
-        $addrLine = is_array($addr) ? implode(', ', array_filter($addr)) : '';
+    } elseif (is_array($addr)) {
+        $addr = implode(', ', array_filter($addr));
     }
-    $pdf->text(12, $y + 24, wordwrap($addrLine, 50, "\n", true));
+    $pdf->text(12, $y + 25, substr((string)$addr, 0, 65));
 
-    // Payment info
+    // Order info right side
     $pdf->setFont('Helvetica', 'B', 9);
-    $pdf->text(130, $y, 'ORDER INFO');
+    $pdf->text(130, $y, 'ORDER DETAILS');
     $pdf->setFont('Helvetica', '', 9);
-    $pdf->text(130, $y + 6,  'Method: ' . strtoupper($order['payment_method'] ?? 'COD'));
-    $pdf->text(130, $y + 12, 'Status: ' . strtoupper($order['status'] ?? 'pending'));
-    $pdf->text(130, $y + 18, 'Payment: ' . strtoupper($order['payment_status'] ?? 'pending'));
+    $pdf->text(130, $y + 7,  'Date:    ' . date('d M Y', strtotime($order['created_at'] ?? 'now')));
+    $pdf->text(130, $y + 13, 'Method: ' . strtoupper($order['payment_method'] ?? 'COD'));
+    $pdf->text(130, $y + 19, 'Status:  ' . strtoupper($order['status'] ?? 'pending'));
 
-    // ── Items Table ───────────────────────────────────────────
-    $y = 88;
-    $pdf->setFillColor(34, 197, 94);   // green
-    $pdf->rect(10, $y, 190, 8, 'F');
+    // ── Items Table Header ───────────────────────────────────────────────────
+    $y = 90;
+    $pdf->setFillColor(34, 197, 94);
+    $pdf->rect(10, $y, 190, 9, 'F');
     $pdf->setTextColor(255, 255, 255);
     $pdf->setFont('Helvetica', 'B', 9);
-    $pdf->text(12, $y + 5.5, 'ITEM');
-    $pdf->text(110, $y + 5.5, 'QTY');
-    $pdf->text(135, $y + 5.5, 'UNIT PRICE');
-    $pdf->text(170, $y + 5.5, 'TOTAL');
+    $pdf->text(12, $y + 6, 'ITEM');
+    $pdf->text(110, $y + 6, 'QTY');
+    $pdf->text(135, $y + 6, 'UNIT PRICE');
+    $pdf->text(170, $y + 6, 'TOTAL');
     $pdf->setTextColor(0, 0, 0);
 
-    $y += 10;
+    // ── Items Rows ───────────────────────────────────────────────────────────
+    $y += 11;
     $pdf->setFont('Helvetica', '', 9);
-    $rowAlt = false;
+    $alt = false;
     foreach ($items as $item) {
-        if ($rowAlt) {
-            $pdf->setFillColor(248, 250, 252);
-            $pdf->rect(10, $y - 2, 190, 8, 'F');
+        if ($alt) {
+            $pdf->setFillColor(245, 247, 250);
+            $pdf->rect(10, $y - 1, 190, 9, 'F');
         }
-        $rowAlt = !$rowAlt;
-        $pdf->text(12, $y + 4, substr($item['product_name'], 0, 55));
-        $pdf->text(112, $y + 4, $item['quantity']);
-        $pdf->text(135, $y + 4, '€' . number_format($item['price'], 2));
-        $pdf->text(170, $y + 4, '€' . number_format($item['total'], 2));
-        $y += 8;
-        if ($y > 240) { $pdf->addPage(); $y = 20; }
+        $alt = !$alt;
+        $pdf->text(12,  $y + 5, substr((string)($item['product_name'] ?? ''), 0, 55));
+        $pdf->text(112, $y + 5, (string)($item['quantity'] ?? 1));
+        $pdf->text(135, $y + 5, '€' . number_format((float)($item['price'] ?? 0), 2));
+        $pdf->text(170, $y + 5, '€' . number_format((float)($item['total'] ?? 0), 2));
+        $y += 9;
+        if ($y > 245) { $pdf->addPage(); $y = 20; }
     }
 
-    // ── Totals ─────────────────────────────────────────────────
-    $y += 6;
+    // ── Totals ───────────────────────────────────────────────────────────────
+    $y += 5;
     $pdf->setDrawColor(200, 200, 200);
     $pdf->line(10, $y, 200, $y);
-    $y += 5;
+    $y += 6;
     $pdf->setFont('Helvetica', '', 9);
 
-    $rows = [
-        ['Subtotal',  '€' . number_format($order['subtotal'] ?? 0, 2)],
-    ];
-    if (!empty($order['discount']) && $order['discount'] > 0)
-        $rows[] = ['Discount (' . ($order['coupon_code'] ?? '') . ')', '-€' . number_format($order['discount'], 2)];
+    $totals = [['Subtotal', '€' . number_format((float)($order['subtotal'] ?? 0), 2)]];
+    if (!empty($order['discount']) && (float)$order['discount'] > 0)
+        $totals[] = ['Discount', '-€' . number_format((float)$order['discount'], 2)];
     if (!empty($order['shipping_charge']))
-        $rows[] = ['Shipping', '€' . number_format($order['shipping_charge'], 2)];
+        $totals[] = ['Shipping', '€' . number_format((float)$order['shipping_charge'], 2)];
     if (!empty($order['tax']))
-        $rows[] = ['Tax (VAT)', '€' . number_format($order['tax'], 2)];
+        $totals[] = ['Tax (VAT)', '€' . number_format((float)$order['tax'], 2)];
 
-    foreach ($rows as [$label, $value]) {
+    foreach ($totals as [$label, $value]) {
         $pdf->text(140, $y, $label . ':');
-        $pdf->text(175, $y, $value);
-        $y += 6;
+        $pdf->text(172, $y, $value);
+        $y += 7;
     }
 
-    // Grand total
+    // Grand total box
     $pdf->setFillColor(13, 24, 39);
-    $pdf->rect(130, $y, 70, 10, 'F');
+    $pdf->rect(130, $y - 1, 70, 11, 'F');
     $pdf->setTextColor(255, 255, 255);
     $pdf->setFont('Helvetica', 'B', 10);
     $pdf->text(134, $y + 7, 'TOTAL:');
-    $pdf->text(172, $y + 7, '€' . number_format($order['total'] ?? 0, 2));
+    $pdf->text(168, $y + 7, '€' . number_format((float)($order['total'] ?? 0), 2));
     $pdf->setTextColor(0, 0, 0);
 
-    // ── Footer ────────────────────────────────────────────────
-    $y += 20;
+    // ── Footer ───────────────────────────────────────────────────────────────
+    $y += 22;
     $pdf->setFont('Helvetica', 'I', 8);
-    $pdf->setTextColor(120, 120, 120);
-    $pdf->text(12, $y, 'Thank you for shopping with Asian Food Cork!');
-    $pdf->text(12, $y + 5, 'Questions? Contact us at orders@asianfoodcork.com | +353 21 000 0000');
-    $pdf->text(12, $y + 10, 'www.asianfoodcork.com');
+    $pdf->setTextColor(130, 130, 130);
+    $pdf->text(12, $y,      'Thank you for shopping with Asian Food Cork!');
+    $pdf->text(12, $y + 6,  'Questions? orders@asianfoodcork.com | +353 21 000 0000');
+    $pdf->text(12, $y + 12, 'www.asianfoodcork.com');
 
     $pdf->save($filename);
     return $webPath;
 }
 
 
-// ─── Minimal Pure-PHP PDF Writer ────────────────────────────────────────────
+// ─── Correct Pure-PHP PDF Writer ─────────────────────────────────────────────
 class SimplePDF {
-    private $pages = [];
-    private $currentPage = -1;
-    private $objects = [];
-    private $objCount = 0;
-    private $fonts = ['Helvetica' => true];
-    private $fontMap = ['Helvetica' => 'Helvetica'];
-    private $fillColor = [255, 255, 255];
-    private $textColor = [0, 0, 0];
-    private $drawColor = [0, 0, 0];
-    private $currentFont = 'Helvetica';
-    private $currentStyle = '';
-    private $currentSize = 12;
-    private $W = 210; // A4 width mm
-    private $H = 297; // A4 height mm
-    private $k = 2.8346; // mm to points
+    // Page content streams
+    private array $pageStreams = [];
+    private int   $currentPage = -1;
 
-    public function addPage() {
-        $this->pages[] = '';
-        $this->currentPage = count($this->pages) - 1;
+    // Colors (0–255)
+    private array $fillColor = [255, 255, 255];
+    private array $textColor = [0,   0,   0  ];
+    private array $drawColor = [0,   0,   0  ];
+
+    // Font state
+    private string $fontStyle = '';
+    private float  $fontSize  = 12;
+
+    // A4 in mm
+    private float $W = 210;
+    private float $H = 297;
+    // 1 mm = 2.8346… points
+    private float $k = 2.8346456692913;
+
+    // ── Page ─────────────────────────────────────────────────────────────────
+    public function addPage(): void {
+        $this->pageStreams[] = '';
+        $this->currentPage  = count($this->pageStreams) - 1;
     }
 
-    public function setFillColor($r, $g, $b) { $this->fillColor = [$r, $g, $b]; }
-    public function setTextColor($r, $g, $b) { $this->textColor = [$r, $g, $b]; }
-    public function setDrawColor($r, $g, $b) { $this->drawColor = [$r, $g, $b]; }
+    // ── Color setters ─────────────────────────────────────────────────────────
+    public function setFillColor(int $r, int $g, int $b): void { $this->fillColor = [$r, $g, $b]; }
+    public function setTextColor(int $r, int $g, int $b): void { $this->textColor = [$r, $g, $b]; }
+    public function setDrawColor(int $r, int $g, int $b): void { $this->drawColor = [$r, $g, $b]; }
 
-    public function setFont($family, $style = '', $size = 12) {
-        $this->currentFont  = $family;
-        $this->currentStyle = $style;
-        $this->currentSize  = $size;
+    // ── Font ──────────────────────────────────────────────────────────────────
+    public function setFont(string $family, string $style = '', float $size = 12): void {
+        $this->fontStyle = strtoupper($style);
+        $this->fontSize  = $size;
     }
 
-    private function put($s) {
-        $this->pages[$this->currentPage] .= $s . "\n";
+    // ── Primitives ────────────────────────────────────────────────────────────
+    private function put(string $s): void {
+        $this->pageStreams[$this->currentPage] .= $s . "\n";
     }
 
-    public function rect($x, $y, $w, $h, $style = '') {
+    private function fontRef(): string {
+        if ($this->fontStyle === 'B')  return '/F2'; // Helvetica-Bold
+        if ($this->fontStyle === 'I')  return '/F3'; // Helvetica-Oblique
+        return '/F1';                                 // Helvetica
+    }
+
+    public function text(float $xMM, float $yMM, string $txt): void {
+        $k   = $this->k;
+        [$r, $g, $b] = $this->textColor;
+        $enc = $this->escapeStr($txt);
+        // Convert mm coords: x stays, y is flipped (PDF origin = bottom-left)
+        $xPt = $xMM * $k;
+        $yPt = ($this->H - $yMM) * $k;
+        $this->put(sprintf(
+            'BT %s %.2f Tf %.4f %.4f %.4f rg %.4f %.4f Td (%s) Tj ET',
+            $this->fontRef(), $this->fontSize,
+            $r/255, $g/255, $b/255,
+            $xPt, $yPt,
+            $enc
+        ));
+    }
+
+    public function rect(float $xMM, float $yMM, float $wMM, float $hMM, string $style = 'S'): void {
         $k = $this->k;
-        $op = ($style === 'F') ? 'f' : (($style === 'FD' || $style === 'DF') ? 'B' : 'S');
         [$fr, $fg, $fb] = $this->fillColor;
         [$dr, $dg, $db] = $this->drawColor;
-        if ($style === 'F' || $style === 'FD') {
-            $this->put(sprintf('%.3f %.3f %.3f rg', $fr/255, $fg/255, $fb/255));
+
+        $xPt = $xMM * $k;
+        $yPt = ($this->H - $yMM - $hMM) * $k;
+        $wPt = $wMM * $k;
+        $hPt = $hMM * $k;
+
+        if ($style === 'F') {
+            $this->put(sprintf('%.4f %.4f %.4f rg', $fr/255, $fg/255, $fb/255));
+            $this->put(sprintf('%.4f %.4f %.4f %.4f re f', $xPt, $yPt, $wPt, $hPt));
+        } elseif ($style === 'FD' || $style === 'DF') {
+            $this->put(sprintf('%.4f %.4f %.4f rg', $fr/255, $fg/255, $fb/255));
+            $this->put(sprintf('%.4f %.4f %.4f RG', $dr/255, $dg/255, $db/255));
+            $this->put(sprintf('%.4f %.4f %.4f %.4f re B', $xPt, $yPt, $wPt, $hPt));
+        } else {
+            $this->put(sprintf('%.4f %.4f %.4f RG', $dr/255, $dg/255, $db/255));
+            $this->put(sprintf('%.4f %.4f %.4f %.4f re S', $xPt, $yPt, $wPt, $hPt));
         }
-        $this->put(sprintf('%.2f %.2f %.2f %.2f re %s',
-            $x * $k,
-            ($this->H - $y - $h) * $k,
-            $w * $k,
-            $h * $k,
-            $op
-        ));
     }
 
-    public function line($x1, $y1, $x2, $y2) {
+    public function line(float $x1MM, float $y1MM, float $x2MM, float $y2MM): void {
         $k = $this->k;
         [$dr, $dg, $db] = $this->drawColor;
-        $this->put(sprintf('%.3f %.3f %.3f RG', $dr/255, $dg/255, $db/255));
-        $this->put(sprintf('%.2f %.2f m %.2f %.2f l S',
-            $x1 * $k, ($this->H - $y1) * $k,
-            $x2 * $k, ($this->H - $y2) * $k
+        $this->put(sprintf('%.4f %.4f %.4f RG', $dr/255, $dg/255, $db/255));
+        $this->put(sprintf('%.4f %.4f m %.4f %.4f l S',
+            $x1MM * $k, ($this->H - $y1MM) * $k,
+            $x2MM * $k, ($this->H - $y2MM) * $k
         ));
     }
 
-    public function text($x, $y, $txt) {
-        $k     = $this->k;
-        $font  = $this->getFontName();
-        $size  = $this->currentSize;
-        [$r, $g, $b] = $this->textColor;
-        $txt   = $this->escapeStr((string)$txt);
-        $this->put(sprintf('BT /F1 %.2f Tf %.3f %.3f %.3f rg %.2f %.2f Td (%s) Tj ET',
-            $size, $r/255, $g/255, $b/255, $x * $k, ($this->H - $y) * $k, $txt));
+    private function escapeStr(string $s): string {
+        // Encode latin-1 characters, escape PDF special chars
+        $s = iconv('UTF-8', 'windows-1252//TRANSLIT//IGNORE', $s);
+        return str_replace(['\\', '(', ')', "\r"], ['\\\\', '\\(', '\\)', ''], $s);
     }
 
-    private function getFontName() {
-        $s = $this->currentStyle;
-        if ($s === 'B')  return 'Helvetica-Bold';
-        if ($s === 'I')  return 'Helvetica-Oblique';
-        if ($s === 'BI') return 'Helvetica-BoldOblique';
-        return 'Helvetica';
-    }
+    // ── Save PDF ──────────────────────────────────────────────────────────────
+    // Object layout (fixed IDs so parent refs are always correct):
+    //   1 = Catalog
+    //   2 = Pages dictionary
+    //   3 = Font /Helvetica
+    //   4 = Font /Helvetica-Bold
+    //   5 = Font /Helvetica-Oblique
+    //   6, 7 = (content stream, page object) for page 1
+    //   8, 9 = for page 2, etc.
+    public function save(string $path): void {
+        $CATALOG_ID  = 1;
+        $PAGES_ID    = 2;
+        $FONT1_ID    = 3;  // Helvetica
+        $FONT2_ID    = 4;  // Helvetica-Bold
+        $FONT3_ID    = 5;  // Helvetica-Oblique
 
-    private function escapeStr($s) {
-        return str_replace(['\\','(',')',"\r"], ['\\\\','\\(','\\)','\r'], $s);
-    }
+        $Wpt = (int)round($this->W * $this->k);
+        $Hpt = (int)round($this->H * $this->k);
 
-    public function save($path) {
-        $out  = "%PDF-1.4\n";
-        $offsets = [];
-        $objNum = 0;
-
-        // Pages content
-        $pageContentIds = [];
-        foreach ($this->pages as $i => $content) {
-            $objNum++;
-            $offsets[$objNum] = strlen($out);
-            $pageContentIds[] = $objNum;
-            $stream = $content;
-            $out .= "$objNum 0 obj\n<< /Length " . strlen($stream) . " >>\nstream\n$stream\nendstream\nendobj\n";
-        }
-
-        // Font object (simplified — uses PDF standard font)
-        $fontObjId = ++$objNum;
-        $offsets[$fontObjId] = strlen($out);
-        $out .= "$fontObjId 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>\nendobj\n";
-
-        $fontBObjId = ++$objNum;
-        $offsets[$fontBObjId] = strlen($out);
-        $out .= "$fontBObjId 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>\nendobj\n";
-
-        $fontIObjId = ++$objNum;
-        $offsets[$fontIObjId] = strlen($out);
-        $out .= "$fontIObjId 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding >>\nendobj\n";
-
-        $k = $this->k;
-        $W = round($this->W * $k);
-        $H = round($this->H * $k);
-
-        // Individual page objects
+        // Build per-page objects
         $pageObjIds = [];
-        foreach ($pageContentIds as $i => $contentId) {
-            $objNum++;
-            $offsets[$objNum] = strlen($out);
-            $pageObjIds[] = $objNum;
-            $out .= "$objNum 0 obj\n<< /Type /Page /MediaBox [0 0 $W $H] /Contents $contentId 0 R "
-                  . "/Resources << /Font << /F1 $fontObjId 0 R /F2 $fontBObjId 0 R /F3 $fontIObjId 0 R >> >> "
-                  . "/Parent " . ($objNum + count($pageObjIds) - count($pageContentIds) + count($pageContentIds) + 3 + 1) . " 0 R >>\nendobj\n";
+        $allObjects  = [];   // [id => body_string] (without "n 0 obj ... endobj")
+        $nextId      = 6;
+
+        foreach ($this->pageStreams as $stream) {
+            $contentId  = $nextId++;
+            $pageId     = $nextId++;
+            $streamLen  = strlen($stream);
+
+            $allObjects[$contentId] = "<<\n/Length $streamLen\n>>\nstream\n$stream\nendstream";
+            $allObjects[$pageId]    =
+                "<</Type /Page\n" .
+                "/Parent $PAGES_ID 0 R\n" .
+                "/MediaBox [0 0 $Wpt $Hpt]\n" .
+                "/Contents $contentId 0 R\n" .
+                "/Resources <</Font <</F1 $FONT1_ID 0 R /F2 $FONT2_ID 0 R /F3 $FONT3_ID 0 R>>>>\n" .
+                ">>";
+            $pageObjIds[] = $pageId;
         }
 
-        // Pages dictionary
-        $pagesId = ++$objNum;
-        $offsets[$pagesId] = strlen($out);
-        $kids = implode(' 0 R ', $pageObjIds) . ' 0 R';
-        $out .= "$pagesId 0 obj\n<< /Type /Pages /Count " . count($pageObjIds) . " /Kids [$kids] >>\nendobj\n";
+        $kidsStr = implode(' 0 R ', $pageObjIds) . ' 0 R';
+        $nPages  = count($pageObjIds);
 
-        // Fix parent refs (simplified — rebuild with correct pagesId)
-        // Catalog
-        $catalogId = ++$objNum;
-        $offsets[$catalogId] = strlen($out);
-        $out .= "$catalogId 0 obj\n<< /Type /Catalog /Pages $pagesId 0 R >>\nendobj\n";
+        $allObjects[$CATALOG_ID] = "<</Type /Catalog /Pages $PAGES_ID 0 R>>";
+        $allObjects[$PAGES_ID]   = "<</Type /Pages /Kids [$kidsStr] /Count $nPages>>";
+        $allObjects[$FONT1_ID]   = "<</Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding>>";
+        $allObjects[$FONT2_ID]   = "<</Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding>>";
+        $allObjects[$FONT3_ID]   = "<</Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding>>";
+
+        // Write PDF in object order 1..N
+        $out      = "%PDF-1.4\n%\xe2\xe3\xcf\xd3\n";
+        $offsets  = [];
+        $maxId    = max(array_keys($allObjects));
+
+        for ($id = 1; $id <= $maxId; $id++) {
+            if (!isset($allObjects[$id])) continue;
+            $offsets[$id] = strlen($out);
+            $out .= "$id 0 obj\n" . $allObjects[$id] . "\nendobj\n";
+        }
 
         // Cross-reference table
         $xrefOffset = strlen($out);
-        $out .= "xref\n0 " . ($objNum + 1) . "\n";
+        $out .= "xref\n0 " . ($maxId + 1) . "\n";
         $out .= "0000000000 65535 f \n";
-        for ($i = 1; $i <= $objNum; $i++) {
-            $out .= str_pad($offsets[$i] ?? 0, 10, '0', STR_PAD_LEFT) . " 00000 n \n";
+        for ($id = 1; $id <= $maxId; $id++) {
+            if (isset($offsets[$id])) {
+                $out .= str_pad((string)$offsets[$id], 10, '0', STR_PAD_LEFT) . " 00000 n \n";
+            } else {
+                $out .= "0000000000 65535 f \n";
+            }
         }
-        $out .= "trailer\n<< /Size " . ($objNum + 1) . " /Root $catalogId 0 R >>\n";
+        $out .= "trailer\n<</Size " . ($maxId + 1) . " /Root $CATALOG_ID 0 R>>\n";
         $out .= "startxref\n$xrefOffset\n%%EOF";
 
         file_put_contents($path, $out);
