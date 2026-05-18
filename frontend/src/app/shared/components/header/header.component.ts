@@ -38,7 +38,7 @@ import { environment } from '../../../../environments/environment';
             {{ settings.get('site_phone', '+353 899 584 325') }}
           </span>
           <span class="offer-text">{{ settings.get('header_offer_text', 'Free delivery on orders above €50') }}</span>
-          <a routerLink="/categories" class="pay-online-btn">Pay Online</a>
+          <a href="https://checkout.revolut.com/pay/05f16f5b-9d65-4e3d-b818-5305aec92b8e" target="_blank" rel="noopener" class="pay-online-btn">Pay Online</a>
         </div>
       </div>
     </div>

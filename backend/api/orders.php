@@ -119,15 +119,15 @@ function createOrder($db) {
             $fullOrder = $db->prepare("SELECT * FROM orders WHERE id = :id");
             $fullOrder->execute([':id' => $orderId]);
             $orderData = $fullOrder->fetch();
-            $orderData['id'] = $orderId; // ensure ID is set
+            $orderData['id'] = $orderId;
             queueOrderEmails($db, $orderData, $orderItems);
-        } catch (Exception $emailEx) {
-            // Email failure must NOT block the order response
+        } catch (\Throwable $emailEx) {
+            // Email failure must NEVER block the order response
             error_log('Email queue error: ' . $emailEx->getMessage());
         }
 
         successResponse(['order_id'=>$orderId,'order_number'=>$orderNumber,'total'=>$total], 'Order placed successfully', 201);
-    } catch (Exception $e) {
+    } catch (\Throwable $e) {
         $db->rollBack();
         errorResponse($e->getMessage(), 400);
     }
@@ -153,7 +153,7 @@ function updateOrder($db, $id) {
             $ord->execute([':id' => $id]);
             $orderRow = $ord->fetch();
             if ($orderRow) queueStatusEmail($db, $orderRow, $data['status']);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             error_log('Status email queue error: ' . $e->getMessage());
         }
     }
