@@ -34,7 +34,6 @@
 .badge-sent { background: #14532d; color: #4ade80; }
 .badge-failed { background: #7f1d1d; color: #fca5a5; }
 .badge-pending { background: #1e3a5f; color: #93c5fd; }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
 .alert-info { background: #1e3a5f; border: 1px solid #2563eb; border-radius: 8px; padding: 12px 16px; color: #93c5fd; font-size: 13px; margin-bottom: 16px; }
 @media(max-width:768px) { .email-grid { grid-template-columns: 1fr; } }
 </style>
@@ -50,7 +49,6 @@
   <div id="alertBox"></div>
 
   <div class="email-grid">
-
     <!-- SMTP Configuration -->
     <div class="card">
       <h3>⚙️ SMTP Configuration</h3>
@@ -96,7 +94,6 @@
 
     <!-- Test + Toggles -->
     <div>
-      <!-- Test Email -->
       <div class="card" style="margin-bottom:20px">
         <h3>🧪 Test SMTP Connection</h3>
         <div class="alert-info">Send a test email to verify your SMTP settings are working correctly.</div>
@@ -108,13 +105,12 @@
         <div id="testResult" style="margin-top:12px;font-size:13px"></div>
       </div>
 
-      <!-- Toggle Settings -->
       <div class="card" style="margin-bottom:20px">
         <h3>🔔 Notification Settings</h3>
         <div class="toggle-row">
           <div class="toggle-label">
             Email Notifications
-            <small>Send emails on new orders & status changes</small>
+            <small>Send emails on new orders &amp; status changes</small>
           </div>
           <label class="toggle"><input type="checkbox" id="email_enabled" checked><span class="slider"></span></label>
         </div>
@@ -127,25 +123,23 @@
         </div>
         <div id="waFields" style="display:none;margin-top:16px">
           <div class="form-group">
-            <label>WhatsApp Number (with country code, e.g. +353851234567)</label>
+            <label>WhatsApp Number (with country code)</label>
             <input type="text" id="whatsapp_number" placeholder="+353851234567">
           </div>
           <div class="form-group">
-            <label>CallMeBot API Key <a href="https://www.callmebot.com/blog/free-api-whatsapp-messages/" target="_blank" style="color:#93c5fd;font-size:11px">Get free key →</a></label>
+            <label>CallMeBot API Key</label>
             <input type="text" id="whatsapp_api_key" placeholder="Your CallMeBot API key">
           </div>
         </div>
         <button class="btn-primary" style="margin-top:12px" onclick="saveToggles()">💾 Save</button>
       </div>
 
-      <!-- Queue Stats -->
       <div class="card">
         <h3>📊 Queue Status</h3>
         <div id="queueStats" style="font-size:13px;color:#94a3b8">Loading...</div>
         <button class="btn-primary" style="margin-top:12px;background:#0f766e" onclick="processQueue()">▶️ Process Queue Now</button>
       </div>
     </div>
-
   </div>
 
   <!-- Email Logs -->
@@ -173,13 +167,40 @@
 
 </div>
 
-<script src="assets/admin.js"></script>
+<script src="assets/admin.js?v=<?= time() ?>"></script>
 <script>
-// Load settings on page load
+// ── Self-contained fetch helper (bypasses cached api() entirely) ─────────────
+async function emailApi(endpoint, method, data) {
+    method = method || 'GET';
+    var token = localStorage.getItem('admin_token') || '';
+    var opts = {
+        method: method,
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+    };
+    if (data) opts.body = JSON.stringify(data);
+
+    var res = await fetch('../api' + endpoint, opts);
+    var raw = await res.text();
+
+    // Strip any PHP warnings/notices before the JSON object
+    var i = raw.indexOf('{');
+    var clean = (i >= 0) ? raw.substring(i) : raw;
+
+    var json;
+    try {
+        json = JSON.parse(clean);
+    } catch(e) {
+        throw new Error('Server returned invalid response: ' + raw.substring(0, 200));
+    }
+    if (!res.ok || json.success === false) throw new Error(json.message || 'Request failed');
+    return json;
+}
+
+// ── Load Settings ────────────────────────────────────────────────────────────
 async function loadSettings() {
     try {
-        const r = await api('/email/settings', 'GET');
-        const s = r.data || {};
+        var r = await emailApi('/email/settings');
+        var s = r.data || {};
         document.getElementById('smtp_host').value = s.smtp_host || 'asianfoodcork.com';
         document.getElementById('smtp_port').value = s.smtp_port || 465;
         document.getElementById('smtp_encryption').value = s.smtp_encryption || 'ssl';
@@ -192,99 +213,106 @@ async function loadSettings() {
         document.getElementById('whatsapp_number').value = s.whatsapp_number || '';
         document.getElementById('whatsapp_api_key').value = s.whatsapp_api_key || '';
         toggleWA();
-    } catch(e) {}
+    } catch(e) { console.warn('loadSettings:', e); }
 }
 
-// SMTP form submit
+// ── Save SMTP ────────────────────────────────────────────────────────────────
 document.getElementById('smtpForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const payload = {};
-    new FormData(this).forEach((v, k) => { if (v) payload[k] = v; });
+    var payload = {};
+    new FormData(this).forEach(function(v, k) { if (v) payload[k] = v; });
     try {
-        await api('/email/settings', 'PUT', payload);
+        await emailApi('/email/settings', 'PUT', payload);
         showAlert('SMTP settings saved!');
-    } catch(e) {}
+    } catch(e) { showAlert(e.message, 'danger'); }
 });
 
+// ── Save Toggles ─────────────────────────────────────────────────────────────
 async function saveToggles() {
-    const payload = {
+    var payload = {
         email_enabled:    document.getElementById('email_enabled').checked ? '1' : '0',
         whatsapp_enabled: document.getElementById('whatsapp_enabled').checked ? '1' : '0',
         whatsapp_number:  document.getElementById('whatsapp_number').value,
-        whatsapp_api_key: document.getElementById('whatsapp_api_key').value,
+        whatsapp_api_key: document.getElementById('whatsapp_api_key').value
     };
     try {
-        await api('/email/settings', 'PUT', payload);
+        await emailApi('/email/settings', 'PUT', payload);
         showAlert('Notification settings saved!');
-    } catch(e) {}
+    } catch(e) { showAlert(e.message, 'danger'); }
 }
 
+// ── Send Test ────────────────────────────────────────────────────────────────
 async function sendTest() {
-    const to = document.getElementById('testEmailTo').value;
-    const el = document.getElementById('testResult');
-    if (!to) { el.innerHTML = '<span style="color:#fca5a5">Please enter a recipient email.</span>'; return; }
+    var to = document.getElementById('testEmailTo').value;
+    var el = document.getElementById('testResult');
+    if (!to) { el.innerHTML = '<span style="color:#fca5a5">Please enter email.</span>'; return; }
     el.innerHTML = '<span style="color:#93c5fd">⏳ Sending...</span>';
     try {
-        const r = await api('/email/test', 'POST', { to });
-        el.innerHTML = '<span style="color:#4ade80">✅ ' + (r.message || 'Test email sent!') + '</span>';
+        var r = await emailApi('/email/test', 'POST', { to: to });
+        el.innerHTML = '<span style="color:#4ade80">✅ ' + (r.message || 'Sent!') + '</span>';
     } catch(e) {
-        el.innerHTML = '<span style="color:#fca5a5">❌ ' + (e.message || 'Send failed') + '</span>';
+        el.innerHTML = '<span style="color:#fca5a5">❌ ' + (e.message || 'Failed') + '</span>';
     }
 }
 
+// ── Process Queue ────────────────────────────────────────────────────────────
 async function processQueue() {
     try {
-        await api('/email/process', 'POST');
+        await emailApi('/email/process', 'POST');
         showAlert('Queue processed!');
         loadQueueStats();
-    } catch(e) {}
+    } catch(e) { showAlert(e.message, 'danger'); }
 }
 
+// ── Queue Stats ──────────────────────────────────────────────────────────────
 async function loadQueueStats() {
     try {
-        const r = await api('/email/queue?per_page=100', 'GET');
-        const items = r.data || [];
-        const pending = items.filter(i => i.status === 'pending').length;
-        const failed  = items.filter(i => i.status === 'failed').length;
-        const sent    = items.filter(i => i.status === 'sent').length;
+        var r = await emailApi('/email/queue?per_page=100');
+        var items = r.data || [];
+        var pending = items.filter(function(i){return i.status==='pending'}).length;
+        var failed  = items.filter(function(i){return i.status==='failed'}).length;
+        var sent    = items.filter(function(i){return i.status==='sent'}).length;
         document.getElementById('queueStats').innerHTML =
-            `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px">
-                <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#93c5fd">${pending}</div><div>Pending</div></div>
-                <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#4ade80">${sent}</div><div>Sent</div></div>
-                <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#fca5a5">${failed}</div><div>Failed</div></div>
-            </div>`;
-    } catch(e) {}
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px">' +
+            '<div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#93c5fd">' + pending + '</div><div>Pending</div></div>' +
+            '<div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#4ade80">' + sent + '</div><div>Sent</div></div>' +
+            '<div style="text-align:center"><div style="font-size:22px;font-weight:700;color:#fca5a5">' + failed + '</div><div>Failed</div></div>' +
+            '</div>';
+    } catch(e) {
+        document.getElementById('queueStats').innerHTML = '<span style="color:#64748b">No queue data (run SQL migration)</span>';
+    }
 }
 
+// ── Logs ─────────────────────────────────────────────────────────────────────
 async function loadLogs() {
-    const status = document.getElementById('logFilter').value;
-    const url = '/email/logs?per_page=50' + (status ? '&status=' + status : '');
+    var status = document.getElementById('logFilter').value;
+    var url = '/email/logs?per_page=50' + (status ? '&status=' + status : '');
     try {
-        const r = await api(url, 'GET');
-        const logs = r.data || [];
+        var r = await emailApi(url);
+        var logs = r.data || [];
         if (!logs.length) {
-            document.getElementById('logTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:20px">No logs found</td></tr>';
+            document.getElementById('logTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:20px">No logs yet</td></tr>';
             return;
         }
-        document.getElementById('logTableBody').innerHTML = logs.map(l => `
-            <tr>
-                <td>${new Date(l.sent_at).toLocaleString()}</td>
-                <td>${l.email_type || '-'}</td>
-                <td>${l.recipient || '-'}</td>
-                <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.subject}">${l.subject || '-'}</td>
-                <td>${l.order_id ? '<a href="orders.php" style="color:#93c5fd">#' + l.order_id + '</a>' : '-'}</td>
-                <td><span class="badge badge-${l.status}">${l.status.toUpperCase()}</span></td>
-                <td style="color:#fca5a5;font-size:11px;max-width:150px;overflow:hidden;text-overflow:ellipsis" title="${l.error_message||''}">${l.error_message || '-'}</td>
-            </tr>`).join('');
-    } catch(e) {}
+        var html = '';
+        for (var x = 0; x < logs.length; x++) {
+            var l = logs[x];
+            html += '<tr><td>' + (l.sent_at || '-') + '</td><td>' + (l.email_type || '-') + '</td><td>' + (l.recipient || '-') + '</td><td>' + (l.subject || '-') + '</td><td>' + (l.order_id ? '#'+l.order_id : '-') + '</td><td><span class="badge badge-' + l.status + '">' + l.status.toUpperCase() + '</span></td><td style="color:#fca5a5;font-size:11px">' + (l.error_message || '-') + '</td></tr>';
+        }
+        document.getElementById('logTableBody').innerHTML = html;
+    } catch(e) {
+        document.getElementById('logTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:20px">No logs (run SQL migration)</td></tr>';
+    }
 }
 
+// ── WhatsApp toggle ──────────────────────────────────────────────────────────
 function toggleWA() {
     document.getElementById('waFields').style.display =
         document.getElementById('whatsapp_enabled').checked ? 'block' : 'none';
 }
 document.getElementById('whatsapp_enabled').addEventListener('change', toggleWA);
 
+// ── Init ─────────────────────────────────────────────────────────────────────
 loadSettings();
 loadLogs();
 loadQueueStats();
