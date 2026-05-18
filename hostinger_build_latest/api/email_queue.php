@@ -4,11 +4,15 @@
  * Handles queue processing, logs, settings, test sends
  */
 
-// Capture any PHP warnings/notices so they don't break JSON output
-ob_start();
-
 require_once __DIR__ . '/../helpers/email.php';
 require_once __DIR__ . '/../helpers/whatsapp.php';
+
+// Clear ALL nested output buffers (PHP warnings etc.) before JSON output
+function clearOutputBuffers() {
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+}
 
 // ── Process Queue (called by cron) ───────────────────────────────────────────
 function processQueue($db) {
@@ -17,13 +21,13 @@ function processQueue($db) {
     } catch (Exception $e) {
         error_log('Queue process error: ' . $e->getMessage());
     }
-    ob_end_clean();
+    clearOutputBuffers();
     successResponse(null, 'Queue processed');
 }
 
 // ── Get Email Logs ────────────────────────────────────────────────────────────
 function getEmailLogs($db) {
-    ob_end_clean();
+    clearOutputBuffers();
     try {
         [$page, $perPage, $offset] = getPaginationParams();
         $where  = ['1=1'];
@@ -50,7 +54,7 @@ function getEmailLogs($db) {
 
 // ── Get Email Queue ───────────────────────────────────────────────────────────
 function getEmailQueueList($db) {
-    ob_end_clean();
+    clearOutputBuffers();
     try {
         [$page, $perPage, $offset] = getPaginationParams();
         $where  = ['1=1'];
@@ -75,7 +79,7 @@ function getEmailQueueList($db) {
 
 // ── Manual retry ─────────────────────────────────────────────────────────────
 function retryEmailJob($db, $id) {
-    ob_end_clean();
+    clearOutputBuffers();
     try {
         $stmt = $db->prepare("UPDATE email_queue SET status='pending', attempts=0, scheduled_at=NOW(), error_message=NULL WHERE id=:id");
         $stmt->execute([':id' => $id]);
@@ -89,7 +93,7 @@ function retryEmailJob($db, $id) {
 
 // ── Get Email Settings ────────────────────────────────────────────────────────
 function getEmailSettingsApi($db) {
-    ob_end_clean();
+    clearOutputBuffers();
     $cfg = getEmailSettings($db);
     unset($cfg['smtp_password']); // don't expose password in GET
     successResponse($cfg);
@@ -97,7 +101,7 @@ function getEmailSettingsApi($db) {
 
 // ── Update Email Settings ─────────────────────────────────────────────────────
 function updateEmailSettings($db) {
-    ob_end_clean();
+    clearOutputBuffers();
     $data = getJsonInput();
     $allowed = ['smtp_host','smtp_port','smtp_encryption','smtp_username','smtp_password',
                 'smtp_from_email','smtp_from_name','admin_email','email_enabled',
@@ -116,7 +120,7 @@ function updateEmailSettings($db) {
 
 // ── Send Test Email ───────────────────────────────────────────────────────────
 function sendTestEmail($db) {
-    ob_end_clean(); // clear any PHP warnings before outputting JSON
+    clearOutputBuffers();
 
     $data = getJsonInput();
     $to   = $data['to'] ?? null;

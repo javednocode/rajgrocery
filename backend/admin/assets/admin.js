@@ -15,8 +15,21 @@ async function api(endpoint, method = 'GET', data = null, isFormData = false) {
     
     try {
         const res = await fetch(`${API_BASE}${endpoint}`, config);
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message || 'Request failed');
+        const text = await res.text();
+
+        // Strip any PHP warnings/notices prepended before the JSON
+        const jsonStart = text.indexOf('{');
+        const jsonText = jsonStart >= 0 ? text.slice(jsonStart) : text;
+
+        let json;
+        try {
+            json = JSON.parse(jsonText);
+        } catch (parseErr) {
+            // Response wasn't JSON at all — show raw text for debugging
+            throw new Error('Server error: ' + (text.slice(0, 200) || 'Empty response'));
+        }
+
+        if (!res.ok || json.success === false) throw new Error(json.message || 'Request failed');
         return json;
     } catch (err) {
         showAlert(err.message, 'danger');
