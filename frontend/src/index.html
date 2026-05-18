@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en-IE">
+<head>
+  <meta charset="utf-8">
+  <title>Asian Food Cork — Authentic Asian Groceries in Cork, Ireland</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Shop authentic Asian groceries online in Cork, Ireland. Japanese, Korean, Chinese & Thai ingredients delivered fast. Rice, noodles, sauces, snacks and more.">
+  <meta name="keywords" content="Asian grocery Cork, Asian food Ireland, Korean grocery, Japanese food, bubble tea Cork, kimchi Cork, Asian supermarket Cork, Asian Food Cork">
+  <meta name="author" content="Asian Food Cork">
+  <meta name="robots" content="index, follow">
+
+  <!-- PWA -->
+  <meta name="theme-color" content="#4B2E83">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Asian Food Cork">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/logo.png">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Asian Food Cork — Authentic Asian Groceries">
+  <meta property="og:description" content="Your trusted Asian grocery store in Cork. Japanese, Korean, Chinese & Thai ingredients delivered to your door.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://asianfoodcork.com">
+  <meta property="og:locale" content="en_IE">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Asian Food Cork — Authentic Asian Groceries">
+  <meta name="twitter:description" content="Shop authentic Asian groceries online in Cork. Fast delivery across Ireland.">
+
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="canonical" href="https://asianfoodcork.com">
+</head>
+<body>
+  <app-root></app-root>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>

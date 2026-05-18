@@ -1,0 +1,29 @@
+DirectoryIndex index.html index.php
+
+RewriteEngine On
+RewriteBase /
+
+# Root and Angular SPA → index.html FIRST
+RewriteRule ^$ index.html [L]
+
+# Skip real static files (js, css, images)
+RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|ico|svg|webp|woff|woff2|ttf|eot|map)$
+RewriteRule ^ - [L]
+
+# Uploads → serve directly
+RewriteRule ^uploads/(.*)$ uploads/$1 [L]
+
+# Admin PHP pages → serve directly
+RewriteRule ^admin/assets/(.*)$ admin/assets/$1 [L]
+RewriteRule ^admin/(.+\.php)$ admin/$1 [L]
+RewriteRule ^admin/?$ admin/index.php [L]
+
+# API → route through index.php
+RewriteRule ^api/(.*)$ index.php [QSA,L]
+
+# Angular SPA catch-all
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [L]
+
+Options -Indexes
