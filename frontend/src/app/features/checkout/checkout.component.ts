@@ -389,12 +389,14 @@ export class CheckoutComponent implements OnInit {
       customer_name: `${f.first_name} ${f.last_name}`,
       customer_phone: f.phone,
       customer_email: f.email,
-      address_line1: f.address_line1,
-      address_line2: f.address_line2,
-      city: f.city,
-      state: f.county,
-      pincode: f.eircode,
-      country: f.country,
+      shipping_address: {
+        address_line1: f.address_line1,
+        address_line2: f.address_line2,
+        city: f.city,
+        county: f.county,
+        eircode: f.eircode,
+        country: f.country
+      },
       notes: f.notes,
       payment_method: 'cod',
       items: this.cart.items().map(i => ({
@@ -415,8 +417,10 @@ export class CheckoutComponent implements OnInit {
         }
         this.submitting.set(false);
       },
-      error: () => {
-        this.errorMsg.set('Network error. Please check your connection and try again.');
+      error: (err: any) => {
+        // Try to show the actual server error message
+        const msg = err?.error?.message || err?.message || 'Failed to place order. Please try again.';
+        this.errorMsg.set(msg);
         this.submitting.set(false);
       }
     });
