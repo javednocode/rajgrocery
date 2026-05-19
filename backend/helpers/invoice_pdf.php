@@ -20,12 +20,16 @@ function generatePDFInvoice($order, $items) {
     // ── Header bar ──────────────────────────────────────────────────────────
     $pdf->setFillColor(13, 24, 39);
     $pdf->rect(10, 10, 190, 28, 'F');
-    $pdf->setTextColor(255, 255, 255);
-    $pdf->setFont('Helvetica', 'B', 18);
-    $pdf->text(15, 26, 'Asian Food Cork');
-    $pdf->setFont('Helvetica', '', 9);
-    $pdf->text(15, 33, 'Authentic Asian Groceries | Cork, Ireland');
 
+    // Logo image (instead of text name)
+    $logoPath = __DIR__ . '/../uploads/branding/logo_invoice.jpg';
+    if (file_exists($logoPath)) {
+        // Logo on dark background — 50mm wide, centred vertically in 28mm bar
+        $pdf->addJpeg($logoPath, 14, 13, 50, 22);
+    }
+
+    // INVOICE label top-right
+    $pdf->setTextColor(255, 255, 255);
     $pdf->setFont('Helvetica', 'B', 11);
     $pdf->text(148, 22, 'INVOICE');
     $pdf->setFont('Helvetica', '', 9);
@@ -163,6 +167,9 @@ class SimplePDF {
     // 1 mm = 2.8346… points
     private float $k = 2.8346456692913;
 
+    // Images queued for embedding
+    private array $images = []; // [['path'=>, 'x'=>, 'y'=>, 'w'=>, 'h'=>, 'page'=>], …]
+
     // ── Page ─────────────────────────────────────────────────────────────────
     public function addPage(): void {
         $this->pageStreams[] = '';
@@ -246,42 +253,104 @@ class SimplePDF {
         return str_replace(['\\', '(', ')', "\r"], ['\\\\', '\\(', '\\)', ''], $s);
     }
 
+    // ── Embed JPEG image ─────────────────────────────────────────────────────
+    // $xMM, $yMM = top-left corner; $wMM, $hMM = displayed size in mm
+    public function addJpeg(string $path, float $xMM, float $yMM, float $wMM, float $hMM): void {
+        $this->images[] = [
+            'path' => $path,
+            'x'    => $xMM,
+            'y'    => $yMM,
+            'w'    => $wMM,
+            'h'    => $hMM,
+            'page' => $this->currentPage,
+            'name' => 'Im' . (count($this->images) + 1),
+        ];
+    }
+
     // ── Save PDF ──────────────────────────────────────────────────────────────
-    // Object layout (fixed IDs so parent refs are always correct):
-    //   1 = Catalog
-    //   2 = Pages dictionary
-    //   3 = Font /Helvetica
-    //   4 = Font /Helvetica-Bold
-    //   5 = Font /Helvetica-Oblique
-    //   6, 7 = (content stream, page object) for page 1
-    //   8, 9 = for page 2, etc.
     public function save(string $path): void {
+        // Object layout:
+        //   1 = Catalog
+        //   2 = Pages dictionary
+        //   3 = Font /Helvetica
+        //   4 = Font /Helvetica-Bold
+        //   5 = Font /Helvetica-Oblique
+        //   6… = JPEG image XObjects (one per image)
+        //   then page content streams + page objects
         $CATALOG_ID  = 1;
         $PAGES_ID    = 2;
-        $FONT1_ID    = 3;  // Helvetica
-        $FONT2_ID    = 4;  // Helvetica-Bold
-        $FONT3_ID    = 5;  // Helvetica-Oblique
+        $FONT1_ID    = 3;
+        $FONT2_ID    = 4;
+        $FONT3_ID    = 5;
 
         $Wpt = (int)round($this->W * $this->k);
         $Hpt = (int)round($this->H * $this->k);
 
-        // Build per-page objects
+        $allObjects = [];
+        $nextId     = 6;
+
+        // ── Build image XObjects ──────────────────────────────────────────────────────
+        $imageXObjIds = []; // name => object id
+        foreach ($this->images as &$img) {
+            if (!file_exists($img['path'])) continue;
+            $jpegData  = file_get_contents($img['path']);
+            $jpegSize  = filesize($img['path']);
+            $imgInfo   = getimagesize($img['path']);
+            $imgW      = $imgInfo[0];
+            $imgH      = $imgInfo[1];
+            $colorSpace = (isset($imgInfo['channels']) && $imgInfo['channels'] === 1) ? '/DeviceGray' : '/DeviceRGB';
+
+            $imgObjId  = $nextId++;
+            $allObjects[$imgObjId] =
+                "<<\n/Type /XObject\n/Subtype /Image\n" .
+                "/Width $imgW\n/Height $imgH\n" .
+                "/ColorSpace $colorSpace\n/BitsPerComponent 8\n" .
+                "/Filter /DCTDecode\n/Length $jpegSize\n" .
+                ">>\nstream\n" . $jpegData . "\nendstream";
+
+            $img['objId'] = $imgObjId;
+            $imageXObjIds[$img['name']] = $imgObjId;
+        }
+        unset($img);
+
+        // Build XObject resource string
+        $xobjStr = '';
+        if ($imageXObjIds) {
+            $xobjStr = '/XObject <<';
+            foreach ($imageXObjIds as $name => $id) {
+                $xobjStr .= "/$name $id 0 R ";
+            }
+            $xobjStr .= '>>';
+        }
+
+        // ── Build page content streams with image Do commands ───────────────────
         $pageObjIds = [];
-        $allObjects  = [];   // [id => body_string] (without "n 0 obj ... endobj")
-        $nextId      = 6;
+        foreach ($this->pageStreams as $pageIdx => $stream) {
+            // Inject image drawing at START of this page's stream
+            $imgCmds = '';
+            foreach ($this->images as $img) {
+                if ($img['page'] !== $pageIdx) continue;
+                if (!isset($img['objId'])) continue;
+                $xPt = $img['x'] * $this->k;
+                $yPt = ($this->H - $img['y'] - $img['h']) * $this->k;
+                $wPt = $img['w'] * $this->k;
+                $hPt = $img['h'] * $this->k;
+                $imgCmds .= sprintf("q %.4f 0 0 %.4f %.4f %.4f cm /%s Do Q\n",
+                    $wPt, $hPt, $xPt, $yPt, $img['name']);
+            }
+            $fullStream = $imgCmds . $stream;
+            $streamLen  = strlen($fullStream);
 
-        foreach ($this->pageStreams as $stream) {
-            $contentId  = $nextId++;
-            $pageId     = $nextId++;
-            $streamLen  = strlen($stream);
+            $contentId = $nextId++;
+            $pageId    = $nextId++;
 
-            $allObjects[$contentId] = "<<\n/Length $streamLen\n>>\nstream\n$stream\nendstream";
+            $allObjects[$contentId] = "<<\n/Length $streamLen\n>>\nstream\n$fullStream\nendstream";
             $allObjects[$pageId]    =
                 "<</Type /Page\n" .
                 "/Parent $PAGES_ID 0 R\n" .
                 "/MediaBox [0 0 $Wpt $Hpt]\n" .
                 "/Contents $contentId 0 R\n" .
-                "/Resources <</Font <</F1 $FONT1_ID 0 R /F2 $FONT2_ID 0 R /F3 $FONT3_ID 0 R>>>>\n" .
+                "/Resources <</Font <</F1 $FONT1_ID 0 R /F2 $FONT2_ID 0 R /F3 $FONT3_ID 0 R>> $xobjStr>>\n" .
                 ">>";
             $pageObjIds[] = $pageId;
         }
@@ -294,6 +363,7 @@ class SimplePDF {
         $allObjects[$FONT1_ID]   = "<</Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding>>";
         $allObjects[$FONT2_ID]   = "<</Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding>>";
         $allObjects[$FONT3_ID]   = "<</Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding>>";
+
 
         // Write PDF in object order 1..N
         $out      = "%PDF-1.4\n%\xe2\xe3\xcf\xd3\n";

@@ -15,7 +15,8 @@ import { environment } from '../../../environments/environment';
   template: `
     <!-- ── HERO MEDIA SLIDER ── -->
     <section class="hero-slider-section">
-      @if (banners().length > 0) {
+      @if (bannersLoaded()) {
+        @if (banners().length > 0) {
         <div class="slider-wrap"
              (mouseenter)="pauseSlider()"
              (mouseleave)="resumeSlider()"
@@ -103,6 +104,9 @@ import { environment } from '../../../environments/environment';
             </div>
           }
         </div>
+      } @else if (!bannersLoaded()) {
+        <!-- Skeleton/placeholder while loading -->
+        <div class="slider-loading"></div>
       } @else {
         <!-- Fallback when no banners set -->
         <div class="slider-fallback">
@@ -118,6 +122,7 @@ import { environment } from '../../../environments/environment';
             </div>
           </div>
         </div>
+        }
       }
       <!-- Wave separator -->
       <div class="hero-wave">
@@ -440,6 +445,14 @@ import { environment } from '../../../environments/environment';
     /* Wave */
     .hero-wave { position: relative; z-index: 3; margin-top: -2px; }
     .hero-wave svg { display: block; width: 100%; }
+    /* Hero slider loading skeleton */
+    .slider-loading {
+      height: clamp(320px, 56vw, 600px);
+      background: #0a0a14;
+    }
+    @media (max-width: 640px) {
+      .slider-loading { height: clamp(220px, 72vw, 420px); }
+    }
     /* ── HERO (old styles kept for keyframes) ── */
     .hero {
       position: relative; overflow: hidden;
@@ -901,6 +914,7 @@ import { environment } from '../../../environments/environment';
 })
 export class HomeComponent implements OnInit, OnDestroy {
   mediaUrl = environment.mediaUrl;
+  bannersLoaded   = signal(false);
   banners         = signal<any[]>([]);
   activeSlide     = signal(0);
   categories      = signal<any[]>([]);
@@ -1014,7 +1028,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() { this.pauseSlider(); }
+  ngOnDestroy() {
+    this.pauseSlider();
+    // Reset so stale banners don't flash on re-entry
+    this.bannersLoaded.set(false);
+    this.banners.set([]);
+  }
 
 
 
@@ -1025,7 +1044,8 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.banners.set(r.data);
         this.startAutoSlide();
       }
-    }});
+      this.bannersLoaded.set(true);
+    }, error: () => this.bannersLoaded.set(true) });
     this.api.getFeaturedCategories().subscribe({ next: (r: any) => {
       if (r.success) {
         this.categories.set(r.data);
