@@ -21,18 +21,34 @@ function generatePDFInvoice($order, $items) {
     $pdf->setFillColor(13, 24, 39);
     $pdf->rect(10, 10, 190, 28, 'F');
 
-    // Logo image — try multiple paths (local dev vs Hostinger)
+    // Logo image — resolve to absolute path reliably
+    // On Hostinger: invoice_pdf.php is at public_html/helpers/, uploads is at public_html/uploads/
+    // So __DIR__/../uploads/branding/ is always correct on both local and Hostinger
+    $logoRelative = '/uploads/branding/logo_invoice.jpg';
     $logoPaths = [
-        __DIR__ . '/../uploads/branding/logo_invoice.jpg',           // local: backend/helpers/../uploads/
-        dirname(__DIR__, 2) . '/public_html/uploads/branding/logo_invoice.jpg', // Hostinger
-        $_SERVER['DOCUMENT_ROOT'] . '/uploads/branding/logo_invoice.jpg',       // Hostinger via docroot
+        // Most reliable: PHP real file resolution from this file's location
+        realpath(__DIR__ . '/..')  . $logoRelative,
+        // DOCUMENT_ROOT (works when PHP is called via web)
+        rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/') . $logoRelative,
+        // Absolute from __DIR__ (symlink-safe)
+        __DIR__ . '/..' . $logoRelative,
     ];
     $logoPath = null;
     foreach ($logoPaths as $lp) {
-        if (file_exists($lp)) { $logoPath = $lp; break; }
+        error_log('[PDF Logo] Trying: ' . $lp . ' exists=' . (file_exists($lp) ? 'YES' : 'NO'));
+        if ($lp && file_exists($lp)) { $logoPath = $lp; break; }
     }
+
     if ($logoPath) {
         $pdf->addJpeg($logoPath, 14, 13, 50, 22);
+    } else {
+        // Fallback: white text name if logo file not found
+        error_log('[PDF Logo] No logo file found, using text fallback');
+        $pdf->setTextColor(255, 255, 255);
+        $pdf->setFont('Helvetica', 'B', 16);
+        $pdf->text(15, 25, 'Asian Food Cork');
+        $pdf->setFont('Helvetica', '', 9);
+        $pdf->text(15, 33, 'Authentic Asian Groceries | Cork, Ireland');
     }
 
     // INVOICE label top-right
