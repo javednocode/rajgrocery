@@ -124,7 +124,7 @@ function removePreviewImage(btn, inputId, idx) {
 
 // ========== FORMAT HELPERS ==========
 function formatCurrency(amount) {
-    return '₹' + parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+    return '€' + parseFloat(amount).toLocaleString('en-IE', { minimumFractionDigits: 2 });
 }
 
 function formatDate(dateStr) {
