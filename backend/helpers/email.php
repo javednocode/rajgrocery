@@ -361,11 +361,7 @@ function buildCustomerEmail($order, $items, $type) {
     $html .= buildItemsTable($items);
     $html .= buildTotals($order);
 
-    $html .= '<div style="text-align:center;margin-top:24px">';
-    $html .= '<a href="https://asianfoodcork.com/track?order=' . urlencode($order['order_number']) . '" class="btn">Track Your Order →</a>';
-    $html .= '</div>';
-
-    $html .= '<p style="font-size:12px;color:#94a3b8;margin-top:24px">📎 Your invoice (PDF + XML) is attached to this email.</p>';
+    $html .= '<p style="font-size:12px;color:#94a3b8;margin-top:24px">📎 Your PDF invoice is attached to this email.</p>';
     $html .= '</div>';
     $html .= emailFooter($order['order_number']);
     return $html;

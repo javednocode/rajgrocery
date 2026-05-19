@@ -21,10 +21,17 @@ function generatePDFInvoice($order, $items) {
     $pdf->setFillColor(13, 24, 39);
     $pdf->rect(10, 10, 190, 28, 'F');
 
-    // Logo image (instead of text name)
-    $logoPath = __DIR__ . '/../uploads/branding/logo_invoice.jpg';
-    if (file_exists($logoPath)) {
-        // Logo on dark background — 50mm wide, centred vertically in 28mm bar
+    // Logo image — try multiple paths (local dev vs Hostinger)
+    $logoPaths = [
+        __DIR__ . '/../uploads/branding/logo_invoice.jpg',           // local: backend/helpers/../uploads/
+        dirname(__DIR__, 2) . '/public_html/uploads/branding/logo_invoice.jpg', // Hostinger
+        $_SERVER['DOCUMENT_ROOT'] . '/uploads/branding/logo_invoice.jpg',       // Hostinger via docroot
+    ];
+    $logoPath = null;
+    foreach ($logoPaths as $lp) {
+        if (file_exists($lp)) { $logoPath = $lp; break; }
+    }
+    if ($logoPath) {
         $pdf->addJpeg($logoPath, 14, 13, 50, 22);
     }
 
