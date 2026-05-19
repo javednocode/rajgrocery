@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $pageTitle ?? 'Admin' ?> - Asian Food Cork Admin</title>
-    <link rel="stylesheet" href="assets/admin.css">
-    <script src="assets/admin.js"></script>
+    <link rel="stylesheet" href="assets/admin.css?v=2">
+    <script src="assets/admin.js?v=2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css">
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
