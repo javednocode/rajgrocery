@@ -194,6 +194,12 @@ if (preg_match('#^/api/settings/([a-z_]+)$#', $uri, $m)) {
     getSetting($db, $m[1]);
 }
 
+// Delivery
+if (preg_match('#^/api/delivery/calculate/?$#', $uri)) {
+    require_once __DIR__ . '/api/delivery.php';
+    if ($method === 'POST' || $method === 'GET') calculateDeliveryFee($db);
+}
+
 // Blogs
 if (preg_match('#^/api/blogs/?$#', $uri)) {
     require_once __DIR__ . '/api/blogs.php';

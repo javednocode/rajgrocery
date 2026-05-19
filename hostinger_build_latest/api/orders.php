@@ -71,14 +71,67 @@ function createOrder($db) {
             $orderItems[] = ['product_id'=>$product['id'],'product_name'=>$product['name'],'product_image'=>$product['primary_image'],'price'=>$price,'quantity'=>$item['quantity'],'total'=>$lineTotal];
         }
 
-        // Get shipping/tax settings
-        $settStmt = $db->prepare("SELECT setting_key, setting_value FROM site_settings WHERE setting_key IN ('shipping_free_above','shipping_charge','tax_percentage')");
+        // ── Load all delivery settings from DB ─────────────────────────────
+        $settStmt = $db->prepare("SELECT setting_key, setting_value FROM site_settings WHERE setting_group = 'delivery' OR setting_key IN ('tax_percentage')");
         $settStmt->execute();
-        $settings = [];
-        while ($r = $settStmt->fetch()) $settings[$r['setting_key']] = (float)$r['setting_value'];
-        $freeAbove = $settings['shipping_free_above'] ?? 500;
-        $shippingCharge = $subtotal >= $freeAbove ? 0 : ($settings['shipping_charge'] ?? 40);
-        $taxPercent = $settings['tax_percentage'] ?? 5;
+        $dSettings = [];
+        while ($r = $settStmt->fetch()) $dSettings[$r['setting_key']] = $r['setting_value'];
+
+        $freeAbove          = (float)($dSettings['delivery_free_above']          ?? 50);
+        $freeEnabled        = ($dSettings['delivery_free_enabled']               ?? '1') === '1';
+        $corkCityFee        = (float)($dSettings['delivery_cork_city_fee']       ?? 2.95);
+        $outsideCorkFee     = (float)($dSettings['delivery_outside_cork_fee']    ?? 4.95);
+        $smallOrderMin      = (float)($dSettings['delivery_small_order_min']     ?? 25);
+        $smallOrderFee      = (float)($dSettings['delivery_small_order_fee']     ?? 1.50);
+        $smallOrderEnabled  = ($dSettings['delivery_small_order_enabled']        ?? '1') === '1';
+        $taxPercent         = (float)($dSettings['tax_percentage']               ?? 0);
+
+        // ── Detect delivery zone ──────────────────────────────────────────────
+        $addr = $data['shipping_address'];
+        if (is_string($addr)) $addr = json_decode($addr, true) ?? [];
+        $eircode = strtoupper(trim($addr['eircode'] ?? ''));
+        $city    = strtolower(trim($addr['city']    ?? ''));
+        $county  = strtolower(trim($addr['county']  ?? ''));
+
+        // Cork City = Eircode starts with T (T12/T23/T34/T45/T56/T67/T8/T9...)
+        // OR city/county explicitly says Cork
+        $isCorkCity = false;
+        if ($eircode !== '') {
+            // Eircode routing key starts with T → County Cork
+            $isCorkCity = (substr($eircode, 0, 1) === 'T');
+            // Narrow to Cork CITY: T12, T23, T34, T45, T56, T67, T8, T9 prefixes
+            // Any T-prefixed eircode within Cork county → treat as Cork City zone
+        }
+        if (!$isCorkCity) {
+            $isCorkCity = (strpos($city, 'cork') !== false) || ($county === 'cork');
+        }
+        // Also respect frontend-sent delivery_zone override
+        if (!empty($data['delivery_zone'])) {
+            $isCorkCity = ($data['delivery_zone'] === 'cork_city');
+        }
+
+        // ── Calculate shipping charge ─────────────────────────────────────────
+        if ($isCorkCity) {
+            // Cork City
+            if ($freeEnabled && $subtotal >= $freeAbove) {
+                $shippingCharge = 0;
+            } else {
+                $shippingCharge = $corkCityFee;
+            }
+        } else {
+            // Outside Cork — always charged
+            $shippingCharge = $outsideCorkFee;
+            // Small order surcharge
+            if ($smallOrderEnabled && $subtotal < $smallOrderMin) {
+                $shippingCharge += $smallOrderFee;
+            }
+        }
+
+        // Use frontend-provided shipping charge if it was explicitly set (avoids race conditions)
+        if (isset($data['shipping_charge']) && is_numeric($data['shipping_charge'])) {
+            $shippingCharge = (float)$data['shipping_charge'];
+        }
+
         $tax = round($subtotal * $taxPercent / 100, 2);
 
         // Apply coupon

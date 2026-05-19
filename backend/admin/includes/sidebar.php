@@ -48,6 +48,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         </a>
         
         <div class="nav-section">Settings</div>
+        <a href="delivery.php" class="<?= $currentPage === 'delivery.php' ? 'active' : '' ?>">
+            <span class="icon">🚚</span> Delivery Settings
+        </a>
         <a href="import.php" class="<?= $currentPage === 'import.php' ? 'active' : '' ?>">
             <span class="icon">📥</span> Bulk Import
         </a>

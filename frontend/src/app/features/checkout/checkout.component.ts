@@ -1,9 +1,11 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { ApiService } from '../../core/services/api.service';
 import { CartService } from '../../core/services/cart.service';
-import { SettingsService } from '../../core/services/settings.service';
+import { environment } from '../../../environments/environment';
+import { Subject, debounceTime, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-checkout',
@@ -67,36 +69,47 @@ import { SettingsService } from '../../core/services/settings.service';
                 <input [(ngModel)]="form.address_line2" class="fc" placeholder="Apartment, suite, unit, etc. (optional)" style="margin-top:8px;">
               </div>
 
-              <div class="fg">
-                <label>Town / City <span class="req">*</span></label>
-                <input [(ngModel)]="form.city" class="fc" placeholder="" required>
-              </div>
-
-              <div class="fg">
-                <label>County <span class="req">*</span></label>
-                <select [(ngModel)]="form.county" class="fc">
-                  <option>Cork</option>
-                  <option>Dublin</option>
-                  <option>Galway</option>
-                  <option>Limerick</option>
-                  <option>Waterford</option>
-                  <option>Kerry</option>
-                  <option>Clare</option>
-                  <option>Tipperary</option>
-                  <option>Kilkenny</option>
-                  <option>Wexford</option>
-                  <option>Wicklow</option>
-                  <option>Kildare</option>
-                  <option>Meath</option>
-                  <option>Louth</option>
-                  <option>Westmeath</option>
-                  <option>Other</option>
-                </select>
+              <div class="form-row-2">
+                <div class="fg">
+                  <label>Town / City <span class="req">*</span></label>
+                  <input [(ngModel)]="form.city" class="fc" placeholder="" required
+                    (ngModelChange)="onLocationChange()">
+                </div>
+                <div class="fg">
+                  <label>County <span class="req">*</span></label>
+                  <select [(ngModel)]="form.county" class="fc" (ngModelChange)="onLocationChange()">
+                    <option>Cork</option>
+                    <option>Dublin</option>
+                    <option>Galway</option>
+                    <option>Limerick</option>
+                    <option>Waterford</option>
+                    <option>Kerry</option>
+                    <option>Clare</option>
+                    <option>Tipperary</option>
+                    <option>Kilkenny</option>
+                    <option>Wexford</option>
+                    <option>Wicklow</option>
+                    <option>Kildare</option>
+                    <option>Meath</option>
+                    <option>Louth</option>
+                    <option>Westmeath</option>
+                    <option>Other</option>
+                  </select>
+                </div>
               </div>
 
               <div class="fg">
                 <label>Eircode <span class="req">*</span></label>
-                <input [(ngModel)]="form.eircode" class="fc" placeholder="e.g. T12 XY34" required>
+                <div class="eircode-wrap">
+                  <input [(ngModel)]="form.eircode" class="fc" placeholder="e.g. T12 XY34" required
+                    (ngModelChange)="onLocationChange()" style="text-transform:uppercase">
+                  @if (deliveryZone()) {
+                    <span class="zone-badge" [class.zone-cork]="deliveryZone() === 'cork_city'"
+                          [class.zone-outside]="deliveryZone() === 'outside_cork'">
+                      {{ deliveryZone() === 'cork_city' ? '🏙️ Cork City' : '🚐 Outside Cork' }}
+                    </span>
+                  }
+                </div>
               </div>
 
               <div class="fg">
@@ -121,13 +134,11 @@ import { SettingsService } from '../../core/services/settings.service';
               <div class="order-box">
                 <h2 class="col-title">Your order</h2>
 
-                <!-- Items header -->
+                <!-- Items -->
                 <div class="order-header-row">
                   <span>PRODUCT</span>
                   <span>SUBTOTAL</span>
                 </div>
-
-                <!-- Cart items -->
                 @for (item of cart.items(); track item.id) {
                   <div class="order-item">
                     <div class="order-item-info">
@@ -142,16 +153,63 @@ import { SettingsService } from '../../core/services/settings.service';
 
                 <div class="order-divider"></div>
 
+                <!-- Free delivery progress bar -->
+                @if (showProgress()) {
+                  <div class="delivery-progress-wrap">
+                    @if (deliveryInfo()?.is_free) {
+                      <div class="delivery-msg delivery-free">
+                        <span class="msg-icon">🎉</span>
+                        <span>Free delivery unlocked!</span>
+                      </div>
+                    } @else if (deliveryInfo()?.amount_to_free > 0) {
+                      <div class="delivery-msg delivery-hint">
+                        <span class="msg-icon">🚚</span>
+                        <span>Add <strong>€{{ deliveryInfo()?.amount_to_free?.toFixed(2) }}</strong> more for free delivery</span>
+                      </div>
+                    }
+                    <div class="progress-track">
+                      <div class="progress-fill" [style.width.%]="deliveryInfo()?.progress || 0"
+                           [class.fill-complete]="deliveryInfo()?.is_free"></div>
+                    </div>
+                    <div class="progress-labels">
+                      <span>€0</span>
+                      <span>Free above €{{ deliveryInfo()?.settings?.free_above || 50 }}</span>
+                    </div>
+                  </div>
+                }
+
                 <!-- Totals -->
                 <div class="order-totals">
                   <div class="total-row">
                     <span>Subtotal</span>
                     <span>€{{ cart.subtotal().toFixed(2) }}</span>
                   </div>
-                  <div class="total-row">
-                    <span>Shipment</span>
-                    <span class="ship-note">{{ shippingLabel() }}</span>
+                  <div class="total-row delivery-row">
+                    <span>
+                      Delivery
+                      @if (deliveryZone()) {
+                        <span class="zone-tag" [class.zone-tag-cork]="deliveryZone() === 'cork_city'"
+                              [class.zone-tag-out]="deliveryZone() === 'outside_cork'">
+                          {{ deliveryZone() === 'cork_city' ? 'Cork City' : 'Outside Cork' }}
+                        </span>
+                      }
+                    </span>
+                    <span class="ship-value">
+                      @if (deliveryLoading()) {
+                        <span class="ship-loading">...</span>
+                      } @else if (shippingCost() === 0) {
+                        <span class="ship-free">FREE</span>
+                      } @else {
+                        €{{ shippingCost().toFixed(2) }}
+                      }
+                    </span>
                   </div>
+                  @if (deliveryInfo()?.has_small_fee) {
+                    <div class="total-row small-fee-note">
+                      <span>↳ Includes small order fee</span>
+                      <span>+€{{ deliveryInfo()?.settings?.small_order_fee?.toFixed(2) }}</span>
+                    </div>
+                  }
                   <div class="total-row grand-total">
                     <span>TOTAL</span>
                     <span>€{{ grandTotal().toFixed(2) }}</span>
@@ -160,23 +218,28 @@ import { SettingsService } from '../../core/services/settings.service';
 
                 <div class="order-divider"></div>
 
-                <!-- Payment note -->
+                <!-- Payment section -->
                 <div class="enquiry-section">
                   <div class="enquiry-label">Send Enquiry</div>
                   <p class="cod-note">Pay with cash or credit/debit card upon delivery.</p>
                 </div>
 
-                <!-- Privacy note -->
+                <!-- Pay Online -->
+                <div class="pay-online-section">
+                  <a href="https://checkout.revolut.com/pay/05f16f5b-9d65-4e3d-b818-5305aec92b8e"
+                     target="_blank" class="btn-pay-online" rel="noopener">
+                    💳 Pay Online
+                  </a>
+                </div>
+
                 <p class="privacy-note">
                   Your personal data will be used to process your order and support your experience.
                 </p>
 
-                <!-- Error -->
                 @if (errorMsg()) {
                   <div class="error-alert">{{ errorMsg() }}</div>
                 }
 
-                <!-- Submit -->
                 <button class="btn-send-enquiry" [disabled]="submitting()" (click)="sendEnquiry()">
                   @if (submitting()) { Sending... } @else { Send Enquiry }
                 </button>
@@ -213,9 +276,8 @@ import { SettingsService } from '../../core/services/settings.service';
       align-items: start;
     }
 
-    /* Left column */
     .billing-col { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 28px; }
-    .order-col {}
+    .order-col { position: sticky; top: 90px; }
 
     .col-title { font-size: 20px; font-weight: 700; color: #111; margin-bottom: 22px; padding-bottom: 12px; border-bottom: 2px solid #f0f0f0; }
 
@@ -232,11 +294,19 @@ import { SettingsService } from '../../core/services/settings.service';
     .fc:focus { border-color: #CC2936; box-shadow: 0 0 0 2px rgba(204,41,54,0.08); }
     select.fc { cursor: pointer; }
     textarea.fc { resize: vertical; }
-
     .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-    /* Right: Order box */
-    .order-col { position: sticky; top: 90px; }
+    /* Eircode zone badge */
+    .eircode-wrap { position: relative; }
+    .zone-badge {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px;
+      white-space: nowrap;
+    }
+    .zone-cork    { background: #dcfce7; color: #166534; }
+    .zone-outside { background: #fff7ed; color: #9a3412; }
+
+    /* Order box */
     .order-box {
       background: white;
       border: 2px solid #e5e7eb;
@@ -267,12 +337,49 @@ import { SettingsService } from '../../core/services/settings.service';
 
     .order-divider { border: none; border-top: 1px solid #eee; margin: 0; }
 
+    /* Free delivery progress */
+    .delivery-progress-wrap {
+      padding: 14px 24px 4px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .delivery-msg {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 13px; font-weight: 600; margin-bottom: 10px;
+    }
+    .delivery-free { color: #16a34a; }
+    .delivery-hint { color: #6b7280; }
+    .delivery-hint strong { color: #CC2936; }
+    .msg-icon { font-size: 15px; }
+    .progress-track {
+      background: #f3f4f6; border-radius: 99px; height: 6px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 99px;
+      background: linear-gradient(90deg, #f59e0b, #CC2936);
+      transition: width 0.4s ease;
+    }
+    .progress-fill.fill-complete { background: #16a34a; }
+    .progress-labels {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: #9ca3af; margin-top: 5px;
+    }
+
+    /* Totals */
     .order-totals { padding: 16px 24px; }
     .total-row {
-      display: flex; justify-content: space-between;
+      display: flex; justify-content: space-between; align-items: center;
       font-size: 14px; color: #444; padding: 5px 0;
     }
-    .ship-note { font-size: 13px; color: #555; text-align: right; }
+    .delivery-row { font-weight: 600; }
+    .zone-tag {
+      font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
+      margin-left: 6px; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .zone-tag-cork { background: #dcfce7; color: #166534; }
+    .zone-tag-out  { background: #fff7ed; color: #9a3412; }
+    .ship-free   { color: #16a34a; font-weight: 700; }
+    .ship-loading { color: #9ca3af; font-style: italic; }
+    .small-fee-note { font-size: 12px; color: #9ca3af; padding: 1px 0; }
     .grand-total {
       font-size: 18px; font-weight: 800; color: #111;
       padding-top: 12px; margin-top: 8px;
@@ -283,7 +390,16 @@ import { SettingsService } from '../../core/services/settings.service';
     .enquiry-label { font-size: 16px; font-weight: 700; color: #111; margin-bottom: 6px; }
     .cod-note { font-size: 13px; color: #555; margin-bottom: 0; }
 
-    .privacy-note { font-size: 12px; color: #888; line-height: 1.6; padding: 12px 24px; border-top: 1px solid #f0f0f0; margin: 0; }
+    .pay-online-section { padding: 4px 24px 12px; }
+    .btn-pay-online {
+      display: block; text-align: center; padding: 11px 16px;
+      background: #0d1827; color: white; border-radius: 4px;
+      font-size: 14px; font-weight: 700; text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-pay-online:hover { background: #1e3050; }
+
+    .privacy-note { font-size: 12px; color: #888; line-height: 1.6; padding: 4px 24px 8px; margin: 0; }
 
     .error-alert {
       margin: 0 24px 12px;
@@ -327,53 +443,102 @@ import { SettingsService } from '../../core/services/settings.service';
     @media (max-width: 768px) {
       .checkout-grid { grid-template-columns: 1fr; }
       .form-row-2 { grid-template-columns: 1fr; }
+      .order-col { position: static; }
     }
   `]
 })
-export class CheckoutComponent implements OnInit {
+export class CheckoutComponent implements OnInit, OnDestroy {
   enquirySent = signal(false);
-  enquiryRef = signal('');
-  submitting = signal(false);
-  errorMsg = signal('');
+  enquiryRef  = signal('');
+  submitting  = signal(false);
+  errorMsg    = signal('');
+
+  // Delivery
+  deliveryInfo    = signal<any>(null);
+  deliveryLoading = signal(false);
+  deliveryZone    = signal<string>('');
+
+  private locationChange$ = new Subject<void>();
+  private destroy$        = new Subject<void>();
 
   form = {
-    first_name: '',
-    last_name: '',
-    country: 'Ireland',
-    address_line1: '',
-    address_line2: '',
-    city: '',
-    county: 'Cork',
-    eircode: '',
-    phone: '',
-    email: '',
-    notes: ''
+    first_name: '', last_name: '', country: 'Ireland',
+    address_line1: '', address_line2: '',
+    city: '', county: 'Cork', eircode: '',
+    phone: '', email: '', notes: ''
   };
 
   constructor(
     public cart: CartService,
     private api: ApiService,
+    private http: HttpClient,
     private router: Router
   ) {}
 
   ngOnInit() {
     if (this.cart.items().length === 0) {
       this.router.navigate(['/']);
+      return;
     }
+
+    // Debounce location changes to avoid spamming the API
+    this.locationChange$.pipe(
+      debounceTime(400),
+      takeUntil(this.destroy$)
+    ).subscribe(() => this.fetchDelivery());
+
+    // Initial calculation (Cork City defaults)
+    this.fetchDelivery();
   }
 
-  shippingLabel(): string {
-    const sub = this.cart.subtotal();
-    if (sub >= 50) return 'FREE';
-    return 'Outside Cork City: €4.95';
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onLocationChange() {
+    this.locationChange$.next();
+  }
+
+  fetchDelivery() {
+    this.deliveryLoading.set(true);
+    const body = {
+      subtotal: this.cart.subtotal(),
+      eircode:  this.form.eircode.toUpperCase(),
+      city:     this.form.city,
+      county:   this.form.county
+    };
+    this.http.post<any>(`${environment.apiUrl}/delivery/calculate`, body)
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.deliveryInfo.set(res.data);
+            this.deliveryZone.set(res.data.zone || '');
+          }
+          this.deliveryLoading.set(false);
+        },
+        error: () => {
+          // Fallback calculation if API fails
+          this.deliveryInfo.set(null);
+          this.deliveryLoading.set(false);
+        }
+      });
   }
 
   shippingCost(): number {
+    const info = this.deliveryInfo();
+    if (info !== null) return info.shipping_charge ?? 0;
+    // Fallback while loading
     return this.cart.subtotal() >= 50 ? 0 : 4.95;
   }
 
   grandTotal(): number {
     return this.cart.subtotal() + this.shippingCost();
+  }
+
+  showProgress(): boolean {
+    const info = this.deliveryInfo();
+    return !!(info && info.zone === 'cork_city' && info.settings?.free_enabled !== false);
   }
 
   sendEnquiry() {
@@ -386,23 +551,25 @@ export class CheckoutComponent implements OnInit {
     this.submitting.set(true);
 
     const payload = {
-      customer_name: `${f.first_name} ${f.last_name}`,
-      customer_phone: f.phone,
-      customer_email: f.email,
+      customer_name:   `${f.first_name} ${f.last_name}`,
+      customer_phone:  f.phone,
+      customer_email:  f.email,
       shipping_address: {
         address_line1: f.address_line1,
         address_line2: f.address_line2,
-        city: f.city,
-        county: f.county,
+        city:    f.city,
+        county:  f.county,
         eircode: f.eircode,
         country: f.country
       },
-      notes: f.notes,
-      payment_method: 'cod',
+      notes:           f.notes,
+      payment_method:  'cod',
+      delivery_zone:   this.deliveryZone(),
+      shipping_charge: this.shippingCost(),
       items: this.cart.items().map(i => ({
         product_id: i.id,
-        quantity: i.quantity,
-        price: i.salePrice ?? i.price
+        quantity:   i.quantity,
+        price:      i.salePrice ?? i.price
       }))
     };
 
@@ -418,7 +585,6 @@ export class CheckoutComponent implements OnInit {
         this.submitting.set(false);
       },
       error: (err: any) => {
-        // Try to show the actual server error message
         const msg = err?.error?.message || err?.message || 'Failed to place order. Please try again.';
         this.errorMsg.set(msg);
         this.submitting.set(false);
