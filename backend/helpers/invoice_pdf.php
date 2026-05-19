@@ -190,8 +190,8 @@ class SimplePDF {
     // 1 mm = 2.8346… points
     private float $k = 2.8346456692913;
 
-    // Images queued for embedding
-    private array $images = []; // [['path'=>, 'x'=>, 'y'=>, 'w'=>, 'h'=>, 'page'=>], …]
+    // Images: metadata for XObject creation (drawing cmds go inline via addJpeg)
+    private array $images = []; // ['path' => ..., 'name' => ...] — unique per path
 
     // ── Page ─────────────────────────────────────────────────────────────────
     public function addPage(): void {
@@ -277,17 +277,26 @@ class SimplePDF {
     }
 
     // ── Embed JPEG image ─────────────────────────────────────────────────────
-    // $xMM, $yMM = top-left corner; $wMM, $hMM = displayed size in mm
+    // Emits drawing commands INTO the current stream at call-time (correct order!).
+    // $xMM, $yMM = top-left corner; $wMM, $hMM = displayed size in mm.
     public function addJpeg(string $path, float $xMM, float $yMM, float $wMM, float $hMM): void {
-        $this->images[] = [
-            'path' => $path,
-            'x'    => $xMM,
-            'y'    => $yMM,
-            'w'    => $wMM,
-            'h'    => $hMM,
-            'page' => $this->currentPage,
-            'name' => 'Im' . (count($this->images) + 1),
-        ];
+        // Register unique image (keyed by path so the same file isn't duplicated)
+        $name = null;
+        foreach ($this->images as $img) {
+            if ($img['path'] === $path) { $name = $img['name']; break; }
+        }
+        if (!$name) {
+            $name = 'Im' . (count($this->images) + 1);
+            $this->images[] = ['path' => $path, 'name' => $name];
+        }
+
+        // Emit the draw command inline — this runs AFTER whatever was drawn before
+        $xPt = $xMM  * $this->k;
+        $yPt = ($this->H - $yMM - $hMM) * $this->k;
+        $wPt = $wMM  * $this->k;
+        $hPt = $hMM  * $this->k;
+        $this->put(sprintf('q %.4f 0 0 %.4f %.4f %.4f cm /%s Do Q',
+            $wPt, $hPt, $xPt, $yPt, $name));
     }
 
     // ── Save PDF ──────────────────────────────────────────────────────────────
@@ -346,28 +355,17 @@ class SimplePDF {
             $xobjStr .= '>>';
         }
 
-        // ── Build page content streams with image Do commands ───────────────────
+        // ── Build page content streams ────────────────────────────────────────
+        // Image draw commands are already embedded inline at the right position
+        // by addJpeg() — no need to prepend/append here.
         $pageObjIds = [];
-        foreach ($this->pageStreams as $pageIdx => $stream) {
-            // Inject image drawing at START of this page's stream
-            $imgCmds = '';
-            foreach ($this->images as $img) {
-                if ($img['page'] !== $pageIdx) continue;
-                if (!isset($img['objId'])) continue;
-                $xPt = $img['x'] * $this->k;
-                $yPt = ($this->H - $img['y'] - $img['h']) * $this->k;
-                $wPt = $img['w'] * $this->k;
-                $hPt = $img['h'] * $this->k;
-                $imgCmds .= sprintf("q %.4f 0 0 %.4f %.4f %.4f cm /%s Do Q\n",
-                    $wPt, $hPt, $xPt, $yPt, $img['name']);
-            }
-            $fullStream = $imgCmds . $stream;
-            $streamLen  = strlen($fullStream);
+        foreach ($this->pageStreams as $stream) {
+            $streamLen = strlen($stream);
 
             $contentId = $nextId++;
             $pageId    = $nextId++;
 
-            $allObjects[$contentId] = "<<\n/Length $streamLen\n>>\nstream\n$fullStream\nendstream";
+            $allObjects[$contentId] = "<<\n/Length $streamLen\n>>\nstream\n$stream\nendstream";
             $allObjects[$pageId]    =
                 "<</Type /Page\n" .
                 "/Parent $PAGES_ID 0 R\n" .
