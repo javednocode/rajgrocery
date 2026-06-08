@@ -3,6 +3,8 @@ import { environment } from '../../../environments/environment';
 
 export interface CartItem {
   id: number | string;
+  baseProductId?: number;
+  variationId?: number;
   name: string;
   slug: string;
   price: number;
@@ -14,6 +16,7 @@ export interface CartItem {
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
+  private readonly storageKey = 'ecommerce_cart';
   private _items = signal<CartItem[]>(this.loadFromStorage());
   private _isOpen = signal(false);
 
@@ -28,13 +31,16 @@ export class CartService {
 
   constructor() {
     effect(() => {
-      localStorage.setItem('asianfoodcork_cart', JSON.stringify(this._items()));
+      localStorage.setItem(this.storageKey, JSON.stringify(this._items()));
     });
   }
 
   private loadFromStorage(): CartItem[] {
     try {
-      return JSON.parse(localStorage.getItem('asianfoodcork_cart') || '[]');
+      const current = localStorage.getItem(this.storageKey);
+      if (current) return JSON.parse(current);
+
+      return [];
     } catch { return []; }
   }
 
@@ -49,6 +55,8 @@ export class CartService {
     } else {
       const newItem: CartItem = {
         id: product.id,
+        baseProductId: this.resolveBaseProductId(product),
+        variationId: this.resolveVariationId(product),
         name: product.name,
         slug: product.slug,
         price: parseFloat(product.price),
@@ -90,5 +98,21 @@ export class CartService {
   private resolveImage(path: string): string {
     if (!path || path.startsWith('http')) return path;
     return environment.mediaUrl + path;
+  }
+
+  private resolveBaseProductId(product: any): number | undefined {
+    if (product.base_product_id) return Number(product.base_product_id);
+    if (product.baseProductId) return Number(product.baseProductId);
+    const match = String(product.id ?? '').match(/^(\d+)_v\d+$/);
+    if (match) return Number(match[1]);
+    const id = Number(product.id);
+    return Number.isFinite(id) ? id : undefined;
+  }
+
+  private resolveVariationId(product: any): number | undefined {
+    if (product.variation_id) return Number(product.variation_id);
+    if (product.variationId) return Number(product.variationId);
+    const match = String(product.id ?? '').match(/^\d+_v(\d+)$/);
+    return match ? Number(match[1]) : undefined;
   }
 }

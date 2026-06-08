@@ -1,13 +1,19 @@
 import { Injectable } from '@angular/core';
 import { Title, Meta } from '@angular/platform-browser';
+import { SettingsService } from './settings.service';
 
 @Injectable({ providedIn: 'root' })
 export class SeoService {
-  constructor(private title: Title, private meta: Meta) {}
+  constructor(
+    private title: Title,
+    private meta: Meta,
+    private settings: SettingsService
+  ) {}
 
   setMeta(config: { title?: string; description?: string; keywords?: string; image?: string; url?: string }) {
+    const siteName = this.settings.get('site_name', 'Your Store');
     if (config.title) {
-      this.title.setTitle(`${config.title} | Asian Food Cork`);
+      this.title.setTitle(`${config.title} | ${siteName}`);
       this.meta.updateTag({ property: 'og:title', content: config.title });
     }
     if (config.description) {
@@ -35,15 +41,19 @@ export class SeoService {
   }
 
   setCategoryMeta(category: any) {
+    const siteName = this.settings.get('site_name', 'Your Store');
     this.setMeta({
       title: category.meta_title || category.name,
-      description: category.meta_description || `Shop ${category.name} at Asian Food Cork — Delivered in Cork, Ireland`,
+      description: category.meta_description || `Shop ${category.name} at ${siteName}.`,
       keywords: category.focus_keyword || category.name,
     });
   }
 
   resetMeta() {
-    this.title.setTitle('Asian Food Cork — Authentic Asian Groceries in Cork, Ireland');
-    this.meta.updateTag({ name: 'description', content: 'Shop authentic Asian groceries online. Japanese, Korean, Chinese & Thai ingredients delivered in Cork, Ireland.' });
+    this.title.setTitle(this.settings.get('meta_title', 'Your Store - Online Store'));
+    this.meta.updateTag({
+      name: 'description',
+      content: this.settings.get('meta_description', 'Shop products online.')
+    });
   }
 }

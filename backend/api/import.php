@@ -393,7 +393,7 @@ function importProduct($db, $p, $duplicate, $downloadImages) {
 }
 
 /**
- * Parse WooCommerce category string like "Asian Foods > Japanese, Drinks"
+ * Parse WooCommerce category string like "Parent Category > Child Category, Another Category"
  * Returns array of category IDs, creating missing ones.
  */
 function resolveCategories($db, $catString) {

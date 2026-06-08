@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
@@ -9,6 +9,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
   selector: 'app-category-detail',
   standalone: true,
   imports: [RouterLink, FormsModule, ProductCardComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Hero Banner -->
     <section class="cat-hero">
@@ -51,7 +52,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
         </div>
 
         <!-- Grid -->
-        @if (loading()) {
+        @if (loading() && products().length === 0) {
           <div class="pgrid">
             @for (i of [1,2,3,4,5,6,7,8]; track i) {
               <div class="skel-card">
@@ -64,7 +65,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
             }
           </div>
         } @else {
-          <div class="pgrid" [class.lview]="viewMode==='list'">
+          <div class="pgrid" [class.lview]="viewMode==='list'" [class.loading-more]="loading()">
             @for (product of products(); track product.id) {
               <app-product-card [product]="product" />
             } @empty {
@@ -206,6 +207,10 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
       grid-template-columns: 1fr;
       gap: 10px;
     }
+    .pgrid.loading-more {
+      opacity: 0.62;
+      pointer-events: none;
+    }
 
     /* ─── SKELETON CARDS ─────────────────────────────────── */
     .skel-card {
@@ -317,23 +322,28 @@ export class CategoryDetailComponent implements OnInit {
   sortBy   = 'newest';
   viewMode = 'grid';
 
+  private currentSlug = '';
+
   constructor(
     private route: ActivatedRoute,
     private api: ApiService,
-    private seo: SeoService
+    private seo: SeoService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.currentPage = 1;
       this.loading.set(true);
-      const slug = params['slug'];
+      this.currentSlug = params['slug'];
 
-      this.api.getCategoryBySlug(slug).subscribe({
+      // Load category metadata (parallel with products)
+      this.api.getCategoryBySlug(this.currentSlug).subscribe({
         next: (res: any) => {
           if (res.success) {
             this.category.set(res.data);
             this.seo.setCategoryMeta(res.data);
+            this.cdr.markForCheck();
           }
         }
       });
@@ -344,9 +354,10 @@ export class CategoryDetailComponent implements OnInit {
 
   loadProducts() {
     this.loading.set(true);
-    const slug = this.route.snapshot.params['slug'];
+    this.cdr.markForCheck();
+
     const params: any = {
-      category: slug,
+      category: this.currentSlug,
       page: this.currentPage,
       per_page: 16,
       sort: this.sortBy
@@ -360,8 +371,12 @@ export class CategoryDetailComponent implements OnInit {
           this.totalPages.set(res.pagination.total_pages);
         }
         this.loading.set(false);
+        this.cdr.markForCheck();
       },
-      error: () => this.loading.set(false)
+      error: () => {
+        this.loading.set(false);
+        this.cdr.markForCheck();
+      }
     });
   }
 

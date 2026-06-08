@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login — Asian Foods Cork</title>
+    <title>Admin Login - Ecommerce Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/admin.css">
+    <link rel="stylesheet" href="/admin/assets/admin.css">
     <style>
       body { background: #0F1929; margin: 0; font-family: 'Inter', sans-serif; }
       .login-page {
@@ -16,7 +16,7 @@
         align-items: center;
         justify-content: center;
         padding: 24px;
-        background: linear-gradient(135deg, #0F1929 0%, #1B3270 60%, #1D5929 100%);
+        background: linear-gradient(135deg, #0F1929 0%, #1E3A8A 60%, #1D5929 100%);
         position: relative;
         overflow: hidden;
       }
@@ -26,9 +26,9 @@
         background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='15'/%3E%3C/g%3E%3C/svg%3E");
       }
       .brand-bar-top { position: fixed; top: 0; left: 0; right: 0; height: 3px; display: flex; z-index: 999; }
-      .brand-bar-top span:nth-child(1) { flex: 1; background: #2A7A3B; }
-      .brand-bar-top span:nth-child(2) { flex: 1; background: #1B3270; }
-      .brand-bar-top span:nth-child(3) { flex: 1; background: #CC2936; }
+      .brand-bar-top span:nth-child(1) { flex: 1; background: #0F766E; }
+      .brand-bar-top span:nth-child(2) { flex: 1; background: #1E3A8A; }
+      .brand-bar-top span:nth-child(3) { flex: 1; background: #E11D48; }
       .login-box {
         background: #FFFFFF;
         border-radius: 20px;
@@ -65,21 +65,21 @@
         overflow: hidden;
         margin-bottom: 28px;
       }
-      .login-divider span:nth-child(1) { flex: 1; background: #2A7A3B; }
-      .login-divider span:nth-child(2) { flex: 1; background: #1B3270; }
-      .login-divider span:nth-child(3) { flex: 1; background: #CC2936; }
+      .login-divider span:nth-child(1) { flex: 1; background: #0F766E; }
+      .login-divider span:nth-child(2) { flex: 1; background: #1E3A8A; }
+      .login-divider span:nth-child(3) { flex: 1; background: #E11D48; }
       .form-group { margin-bottom: 18px; }
-      .form-group label { display: block; font-size: 12.5px; font-weight: 700; color: #1B3270; margin-bottom: 7px; letter-spacing: 0.3px; text-transform: uppercase; }
+      .form-group label { display: block; font-size: 12.5px; font-weight: 700; color: #1E3A8A; margin-bottom: 7px; letter-spacing: 0.3px; text-transform: uppercase; }
       .form-control {
         width: 100%; padding: 12px 14px;
         border: 1.5px solid #D1D5DB; border-radius: 10px;
         font-size: 14px; color: #1A1A2A; background: #F9FAFB;
         outline: none; transition: all 0.2s; box-sizing: border-box;
       }
-      .form-control:focus { border-color: #2A7A3B; background: white; box-shadow: 0 0 0 3px rgba(42,122,59,0.12); }
+      .form-control:focus { border-color: #0F766E; background: white; box-shadow: 0 0 0 3px rgba(42,122,59,0.12); }
       .btn-login {
         width: 100%; padding: 13px;
-        background: linear-gradient(135deg, #1B3270, #2A7A3B);
+        background: linear-gradient(135deg, #1E3A8A, #0F766E);
         color: white; border: none; border-radius: 10px;
         font-size: 15px; font-weight: 700; cursor: pointer;
         margin-top: 8px; transition: all 0.25s;
@@ -94,8 +94,8 @@
         border-radius: 8px; font-size: 13px; font-weight: 500;
         display: none;
       }
-      #loginAlert.error { background: #FDF0F1; color: #CC2936; border: 1px solid rgba(204,41,54,0.2); display: block; }
-      #loginAlert.success { background: #EAF4EC; color: #2A7A3B; border: 1px solid rgba(42,122,59,0.2); display: block; }
+      #loginAlert.error { background: #FDF0F1; color: #E11D48; border: 1px solid rgba(225,29,72,0.2); display: block; }
+      #loginAlert.success { background: #EAF4EC; color: #0F766E; border: 1px solid rgba(42,122,59,0.2); display: block; }
       .ie-flag { text-align: center; margin-top: 24px; font-size: 12px; color: rgba(255,255,255,0.4); }
     </style>
 </head>
@@ -104,7 +104,7 @@
 <div class="login-page">
     <div class="login-box">
         <div class="login-logo">
-            <img src="/logo.png" alt="Asian Foods Cork" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+            <img src="/logo.svg" alt="Store logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
             <div style="display:none;font-size:32px;text-align:center;">🛒</div>
         </div>
         <div class="login-title">Admin Panel</div>
@@ -115,7 +115,7 @@
         <form onsubmit="handleLogin(event)">
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email" class="form-control" placeholder="admin@asianfoodcork.com" required>
+                <input type="email" id="email" class="form-control" placeholder="admin@example.com" required>
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
@@ -124,14 +124,11 @@
             <button type="submit" class="btn-login">Sign In to Dashboard</button>
         </form>
 
-        <div class="login-hint">
-            Default: <code>admin@asianfoodcork.com</code> / <code>password123</code>
-        </div>
     </div>
 </div>
-<script src="assets/admin.js"></script>
+<script src="/admin/assets/admin.js"></script>
 <script>
-    if (localStorage.getItem('admin_token')) window.location.href = 'dashboard.php';
+    validateExistingSession();
 </script>
 </body>
 </html>

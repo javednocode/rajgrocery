@@ -1,5 +1,5 @@
 -- ============================================================
--- Asian Food Cork - Email System Migration
+-- White-label ecommerce email system migration
 -- Run this SQL on Hostinger MySQL database
 -- ============================================================
 
@@ -57,14 +57,14 @@ CREATE TABLE IF NOT EXISTS invoices (
 
 -- Email settings (stored in site_settings, just add these keys)
 INSERT IGNORE INTO site_settings (setting_key, setting_value, setting_group) VALUES
-('smtp_host',       'asianfoodcork.com',         'email'),
-('smtp_port',       '465',                        'email'),
-('smtp_encryption', 'ssl',                        'email'),
-('smtp_username',   'orders@asianfoodcork.com',   'email'),
-('smtp_password',   'Asianfoodcork@14',           'email'),
-('smtp_from_email', 'orders@asianfoodcork.com',   'email'),
-('smtp_from_name',  'Asian Food Cork',            'email'),
-('admin_email',     'orders@asianfoodcork.com',   'email'),
+('smtp_host',       '',                           'email'),
+('smtp_port',       '587',                        'email'),
+('smtp_encryption', 'tls',                        'email'),
+('smtp_username',   '',                           'email'),
+('smtp_password',   '',                           'email'),
+('smtp_from_email', 'hello@example.com',           'email'),
+('smtp_from_name',  'Your Store',                 'email'),
+('admin_email',     'hello@example.com',           'email'),
 ('email_enabled',   '1',                          'email'),
 ('whatsapp_enabled','0',                          'email'),
 ('whatsapp_number', '',                           'email'),

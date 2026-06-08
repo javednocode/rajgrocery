@@ -38,13 +38,13 @@ import { SeoService } from '../../core/services/seo.service';
             </div>
             <div class="ct-card-body">
               <span class="ct-card-label">Call Us Anytime</span>
-              <span class="ct-card-value">{{ s.get('site_phone', '+353 899 584 325') }}</span>
+              <span class="ct-card-value">{{ s.get('site_phone', '') }}</span>
               <span class="ct-card-hint">Tap to call</span>
             </div>
           </a>
 
           <!-- Email -->
-          <a [href]="'mailto:' + s.get('contact_email','info@asianfoodcork.ie')" class="ct-card">
+          <a [href]="'mailto:' + s.get('contact_email', s.get('site_email','hello@example.com'))" class="ct-card">
             <div class="ct-card-icon ct-icon-email">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -53,7 +53,7 @@ import { SeoService } from '../../core/services/seo.service';
             </div>
             <div class="ct-card-body">
               <span class="ct-card-label">Email Us</span>
-              <span class="ct-card-value">{{ s.get('contact_email', 'info@asianfoodcork.ie') }}</span>
+              <span class="ct-card-value">{{ s.get('contact_email', s.get('site_email', 'hello@example.com')) }}</span>
               <span class="ct-card-hint">We reply within 24h</span>
             </div>
           </a>
@@ -68,7 +68,7 @@ import { SeoService } from '../../core/services/seo.service';
             </div>
             <div class="ct-card-body">
               <span class="ct-card-label">Our Address</span>
-              <span class="ct-card-value">{{ s.get('contact_address', 'Cork, Ireland') }}</span>
+              <span class="ct-card-value">{{ s.get('contact_address', s.get('site_address', 'Add your store address')) }}</span>
               <span class="ct-card-hint">Come visit us</span>
             </div>
           </div>
@@ -108,7 +108,7 @@ import { SeoService } from '../../core/services/seo.service';
                   style="border:0" allowfullscreen
                   loading="lazy"
                   referrerpolicy="no-referrer-when-downgrade"
-                  title="Asian Food Cork Location — Google Maps"
+                  [title]="s.get('site_name', 'Your Store') + ' location map'"
                 ></iframe>
               </ng-container>
               <ng-template #mapFallback>
@@ -186,7 +186,7 @@ import { SeoService } from '../../core/services/seo.service';
 
     /* ── Hero ── */
     .ct-hero {
-      background: linear-gradient(135deg, #351F60 0%, #4B2E83 45%, #1a6e3c 100%);
+      background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 45%, #1a6e3c 100%);
       padding: 56px 0 44px;
       text-align: center;
       color: white;
@@ -238,18 +238,18 @@ import { SeoService } from '../../core/services/seo.service';
     }
     .ct-card {
       background: white; border-radius: 18px;
-      box-shadow: 0 2px 20px rgba(75,46,131,0.08);
+      box-shadow: 0 2px 20px rgba(37,99,235,0.08);
       padding: 22px 18px; display: flex; align-items: flex-start; gap: 14px;
       text-decoration: none; color: inherit;
       border: 1.5px solid #F0EEFF;
       transition: transform 0.22s ease, box-shadow 0.22s ease;
     }
-    a.ct-card:hover { transform: translateY(-4px); box-shadow: 0 10px 36px rgba(75,46,131,0.14); }
+    a.ct-card:hover { transform: translateY(-4px); box-shadow: 0 10px 36px rgba(37,99,235,0.14); }
     .ct-card-icon {
       width: 50px; height: 50px; border-radius: 14px;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .ct-icon-phone { background: #EDE9FF; color: #4B2E83; }
+    .ct-icon-phone { background: #EDE9FF; color: #2563EB; }
     .ct-icon-email { background: #D1FAE5; color: #065F46; }
     .ct-icon-pin   { background: #FEE2E2; color: #991B1B; }
     .ct-icon-clock { background: #FEF3C7; color: #92400E; }
@@ -267,14 +267,14 @@ import { SeoService } from '../../core/services/seo.service';
     }
     .ct-title-dot {
       width: 8px; height: 8px; border-radius: 50%;
-      background: linear-gradient(135deg, #4B2E83, #2E9F5C);
+      background: linear-gradient(135deg, #2563EB, #0F766E);
       flex-shrink: 0;
     }
 
     /* ── Map ── */
     .ct-map-frame {
       height: 420px; border-radius: 20px; overflow: hidden;
-      box-shadow: 0 8px 40px rgba(75,46,131,0.13);
+      box-shadow: 0 8px 40px rgba(37,99,235,0.13);
       border: 2px solid #F0EEFF;
     }
     .ct-map-placeholder {
@@ -306,10 +306,10 @@ import { SeoService } from '../../core/services/seo.service';
       transition: border-color 0.2s, box-shadow 0.2s; background: white; resize: vertical;
     }
     .ct-field input:focus, .ct-field textarea:focus {
-      border-color: #4B2E83; box-shadow: 0 0 0 3px rgba(75,46,131,0.1);
+      border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
     }
     .ct-submit-btn {
-      background: linear-gradient(135deg, #4B2E83 0%, #2E9F5C 100%);
+      background: linear-gradient(135deg, #2563EB 0%, #0F766E 100%);
       color: white; border: none; border-radius: 12px;
       padding: 14px 28px; font-size: 15px; font-weight: 700;
       cursor: pointer; transition: opacity 0.2s, transform 0.15s;
@@ -353,7 +353,7 @@ export class ContactComponent implements OnInit {
   ngOnInit() {
     this.seo.setMeta({
       title: 'Contact Us',
-      description: 'Contact Asian Food Cork — visit our store, call us, or send a message. Find us on Google Maps.'
+      description: `Contact ${this.s.get('site_name', 'Your Store')} — visit our store, call us, or send a message.`
     });
   }
 
@@ -369,17 +369,18 @@ export class ContactComponent implements OnInit {
     return JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'LocalBusiness',
-      'name': this.s.get('site_name', 'Asian Food Cork'),
+      'name': this.s.get('site_name', 'Your Store'),
       'telephone': this.s.get('site_phone', ''),
-      'email': this.s.get('contact_email', ''),
+      'email': this.s.get('contact_email', this.s.get('site_email', '')),
       'address': {
         '@type': 'PostalAddress',
-        'streetAddress': this.s.get('contact_address', ''),
-        'addressLocality': 'Cork',
-        'addressCountry': 'IE'
+        'streetAddress': this.s.get('contact_address', this.s.get('site_address', '')),
+        'addressLocality': this.s.get('business_city', ''),
+        'addressRegion': this.s.get('business_region', ''),
+        'addressCountry': this.s.get('business_country', '')
       },
       'openingHours': this.s.get('contact_hours', ''),
-      'url': 'https://asianfoodcork.ie',
+      'url': this.s.get('site_url', ''),
       'image': this.s.get('site_logo', '')
     });
   }
@@ -393,7 +394,7 @@ export class ContactComponent implements OnInit {
     this.sending.set(true);
 
     // Compose mailto link as fallback
-    const to = this.s.get('contact_email', 'info@asianfoodcork.ie');
+    const to = this.s.get('contact_email', this.s.get('site_email', 'hello@example.com'));
     const subject = encodeURIComponent(this.form.subject || 'Website Enquiry');
     const body = encodeURIComponent(
       `Name: ${this.form.name}\nEmail: ${this.form.email}\n\n${this.form.message}`

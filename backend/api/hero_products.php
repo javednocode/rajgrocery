@@ -5,6 +5,10 @@
  */
 
 function initHeroProductsTable($db) {
+    static $inited = false;
+    if ($inited) return;
+    $inited = true;
+
     $db->exec("CREATE TABLE IF NOT EXISTS hero_products (
         id INT AUTO_INCREMENT PRIMARY KEY,
         product_id INT NULL,

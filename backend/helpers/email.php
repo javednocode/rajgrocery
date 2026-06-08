@@ -1,6 +1,6 @@
 <?php
 /**
- * Asian Food Cork - Core Email Helper
+ * White-label ecommerce core email helper
  * Uses PHPMailer with SMTP + PDF/XML invoice generation
  */
 
@@ -9,6 +9,7 @@ require_once __DIR__ . '/vendor/PHPMailer/PHPMailer.php';
 require_once __DIR__ . '/vendor/PHPMailer/SMTP.php';
 require_once __DIR__ . '/invoice_pdf.php';
 require_once __DIR__ . '/invoice_xml.php';
+require_once __DIR__ . '/branding.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -16,28 +17,68 @@ use PHPMailer\PHPMailer\Exception as MailException;
 
 // ── Get SMTP settings from DB ────────────────────────────────────────────────
 function getEmailSettings($db) {
-    $stmt = $db->prepare("SELECT setting_key, setting_value FROM site_settings WHERE setting_group = 'email'");
-    $stmt->execute();
-    $rows = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    $settings = loadSiteSettings($db);
+    $defaults = [];
+    foreach (brandingDefaults() as $key => [$value]) {
+        $defaults[$key] = (string)$value;
+    }
+    return array_merge($defaults, $settings);
+}
 
-    return array_merge([
-        'smtp_host'       => 'asianfoodcork.com',
-        'smtp_port'       => 465,
-        'smtp_encryption' => 'ssl',
-        'smtp_username'   => 'orders@asianfoodcork.com',
-        'smtp_password'   => 'Asianfoodcork@14',
-        'smtp_from_email' => 'orders@asianfoodcork.com',
-        'smtp_from_name'  => 'Asian Food Cork',
-        'admin_email'     => 'orders@asianfoodcork.com',
-        'email_enabled'   => '1',
-        'whatsapp_enabled'=> '0',
-        'whatsapp_number' => '',
-        'whatsapp_api_key'=> '',
-    ], $rows);
+function ensureEmailTables($db) {
+    $db->exec("CREATE TABLE IF NOT EXISTS email_queue (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        order_id INT NULL,
+        email_type VARCHAR(50) NOT NULL DEFAULT 'order_placed',
+        recipient VARCHAR(255) NOT NULL,
+        subject VARCHAR(500) NOT NULL,
+        body_html LONGTEXT,
+        body_text TEXT,
+        attachments JSON NULL,
+        status ENUM('pending','processing','sent','failed','cancelled') NOT NULL DEFAULT 'pending',
+        attempts TINYINT UNSIGNED NOT NULL DEFAULT 0,
+        max_attempts TINYINT UNSIGNED NOT NULL DEFAULT 3,
+        error_message TEXT,
+        scheduled_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        processed_at DATETIME NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_status (status),
+        INDEX idx_order (order_id),
+        INDEX idx_scheduled (status, scheduled_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $db->exec("CREATE TABLE IF NOT EXISTS email_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        queue_id INT NULL,
+        order_id INT NULL,
+        email_type VARCHAR(50),
+        recipient VARCHAR(255),
+        subject VARCHAR(500),
+        status ENUM('sent','failed') NOT NULL,
+        smtp_response TEXT,
+        error_message TEXT,
+        pdf_path VARCHAR(500),
+        xml_path VARCHAR(500),
+        sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_order (order_id),
+        INDEX idx_status (status),
+        INDEX idx_sent (sent_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $db->exec("CREATE TABLE IF NOT EXISTS invoices (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        order_id INT NOT NULL UNIQUE,
+        order_number VARCHAR(50),
+        pdf_path VARCHAR(500),
+        xml_path VARCHAR(500),
+        generated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_order (order_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 }
 
 // ── Queue email for background sending ──────────────────────────────────────
 function queueEmail($db, $orderId, $type, $recipient, $subject, $htmlBody, $textBody, $attachments = []) {
+    ensureEmailTables($db);
     $stmt = $db->prepare("INSERT INTO email_queue 
         (order_id, email_type, recipient, subject, body_html, body_text, attachments, status, scheduled_at)
         VALUES (:oid, :type, :recip, :subj, :html, :text, :attach, 'pending', NOW())");
@@ -54,26 +95,62 @@ function queueEmail($db, $orderId, $type, $recipient, $subject, $htmlBody, $text
 }
 
 // ── Process queue (called by cron or API) ────────────────────────────────────
-function processEmailQueue($db) {
+function processEmailQueue($db, $orderId = null, $limit = 10) {
+    ensureEmailTables($db);
     $cfg = getEmailSettings($db);
-    if (empty($cfg['email_enabled']) || $cfg['email_enabled'] === '0') return;
+    if (empty($cfg['email_enabled']) || $cfg['email_enabled'] === '0') {
+        return ['processed' => 0, 'sent' => 0, 'failed' => 0, 'skipped' => 'Email notifications disabled'];
+    }
 
-    // Grab up to 10 pending/failed jobs
-    $stmt = $db->prepare("SELECT * FROM email_queue 
-        WHERE status IN ('pending','failed') 
-          AND attempts < max_attempts
-          AND scheduled_at <= NOW()
-        ORDER BY created_at ASC LIMIT 10");
+    $limit = max(1, min(25, (int)$limit));
+
+    try {
+        $db->exec("UPDATE email_queue
+            SET status='pending', scheduled_at=NOW(), error_message='Recovered from stale processing state'
+            WHERE status='processing'
+              AND created_at < DATE_SUB(NOW(), INTERVAL 30 SECOND)");
+    } catch (\Throwable $e) {
+        error_log('Email queue stale reset skipped: ' . $e->getMessage());
+    }
+
+    $summary = ['processed' => 0, 'sent' => 0, 'failed' => 0];
+
+    $where = [
+        "status IN ('pending','failed')",
+        "attempts < max_attempts",
+        "scheduled_at <= NOW()"
+    ];
+    $params = [];
+
+    if (!empty($orderId)) {
+        $where[] = "order_id = :order_id";
+        $params[':order_id'] = (int)$orderId;
+    }
+
+    // Grab pending/failed jobs. For a new order, process that order first so
+    // old failed jobs cannot block the customer/admin confirmation emails.
+    $stmt = $db->prepare("SELECT * FROM email_queue
+        WHERE " . implode(' AND ', $where) . "
+        ORDER BY created_at ASC LIMIT :limit");
+    foreach ($params as $key => $value) {
+        $stmt->bindValue($key, $value, PDO::PARAM_INT);
+    }
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
     $stmt->execute();
     $jobs = $stmt->fetchAll();
 
     foreach ($jobs as $job) {
+        $summary['processed']++;
+
         // Mark as processing
         $db->prepare("UPDATE email_queue SET status='processing', attempts=attempts+1 WHERE id=:id")
            ->execute([':id' => $job['id']]);
 
         try {
             $attachments = json_decode($job['attachments'] ?? '[]', true) ?: [];
+            if (empty($attachments)) {
+                $attachments = buildQueuedEmailAttachments($db, $job, $cfg);
+            }
             sendViaSMTP($cfg, $job['recipient'], $job['subject'], $job['body_html'], $job['body_text'], $attachments);
 
             // Mark sent
@@ -81,9 +158,10 @@ function processEmailQueue($db) {
                ->execute([':id' => $job['id']]);
 
             // Log success
-            logEmail($db, $job['id'], $job['order_id'], $job['email_type'], $job['recipient'], $job['subject'], 'sent', 'OK');
+            safeLogEmail($db, $job['id'], $job['order_id'], $job['email_type'], $job['recipient'], $job['subject'], 'sent', 'OK');
+            $summary['sent']++;
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $err = $e->getMessage();
             $newStatus = ($job['attempts'] + 1 >= $job['max_attempts']) ? 'failed' : 'pending';
             $nextRetry = date('Y-m-d H:i:s', strtotime('+5 minutes'));
@@ -91,15 +169,90 @@ function processEmailQueue($db) {
             $db->prepare("UPDATE email_queue SET status=:s, error_message=:err, scheduled_at=:next WHERE id=:id")
                ->execute([':s' => $newStatus, ':err' => $err, ':next' => $nextRetry, ':id' => $job['id']]);
 
-            logEmail($db, $job['id'], $job['order_id'], $job['email_type'], $job['recipient'], $job['subject'], 'failed', $err);
+            safeLogEmail($db, $job['id'], $job['order_id'], $job['email_type'], $job['recipient'], $job['subject'], 'failed', $err);
+            $summary['failed']++;
         }
     }
+
+    return $summary;
+}
+
+function triggerEmailQueueWorker($orderId = null) {
+    $hostHeader = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $hostOnly = preg_replace('/:\d+$/', '', $hostHeader);
+    $serverPort = (int)($_SERVER['SERVER_PORT'] ?? 80);
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
+        || $serverPort === 443;
+
+    $port = $isHttps ? 443 : $serverPort;
+    if (preg_match('/:(\d+)$/', $hostHeader, $matches)) {
+        $port = (int)$matches[1];
+    }
+
+    $path = '/api/email/process';
+    if (!empty($orderId)) {
+        $path .= '?order_id=' . rawurlencode((string)$orderId);
+    }
+
+    $remote = ($isHttps ? 'ssl://' : '') . $hostOnly;
+    $fp = @fsockopen($remote, $port, $errno, $errstr, 0.2);
+    if (!$fp) {
+        error_log('Email worker trigger failed: ' . $errstr . ' (' . $errno . ')');
+        return false;
+    }
+
+    stream_set_timeout($fp, 0, 200000);
+    fwrite($fp, "POST {$path} HTTP/1.1\r\n");
+    fwrite($fp, "Host: {$hostHeader}\r\n");
+    fwrite($fp, "Connection: Close\r\n");
+    fwrite($fp, "Content-Length: 0\r\n\r\n");
+    fclose($fp);
+
+    return true;
+}
+
+function buildQueuedEmailAttachments($db, $job, $cfg) {
+    if (empty($job['order_id'])) return [];
+
+    $orderStmt = $db->prepare("SELECT * FROM orders WHERE id = :id");
+    $orderStmt->execute([':id' => $job['order_id']]);
+    $order = $orderStmt->fetch();
+    if (!$order) return [];
+
+    $itemStmt = $db->prepare("SELECT * FROM order_items WHERE order_id = :oid");
+    $itemStmt->execute([':oid' => $job['order_id']]);
+    $items = $itemStmt->fetchAll();
+    if (empty($items)) return [];
+
+    $attachments = [];
+    try {
+        $pdfPath = generatePDFInvoice($order, $items, $cfg);
+        if ($pdfPath) $attachments[] = $pdfPath;
+    } catch (\Throwable $e) {
+        error_log('Queued PDF generation error: ' . $e->getMessage());
+    }
+
+    $isAdminRecipient = strcasecmp((string)$job['recipient'], (string)($cfg['admin_email'] ?? '')) === 0
+        || stripos((string)$job['subject'], 'New Order:') === 0;
+
+    if ($isAdminRecipient) {
+        try {
+            $xmlPath = generateXMLInvoice($order, $items, $cfg);
+            if ($xmlPath) $attachments[] = $xmlPath;
+        } catch (\Throwable $e) {
+            error_log('Queued XML generation error: ' . $e->getMessage());
+        }
+    }
+
+    return $attachments;
 }
 
 // ── Send directly via SMTP ────────────────────────────────────────────────────
 function sendViaSMTP($cfg, $to, $subject, $htmlBody, $textBody = '', $attachments = []) {
     $mail = new PHPMailer(true);
     $mail->isSMTP();
+    $mail->Timeout    = 15;
     $mail->Host       = $cfg['smtp_host'];
     $mail->Port       = (int)$cfg['smtp_port'];
     $mail->SMTPAuth   = true;
@@ -123,7 +276,6 @@ function sendViaSMTP($cfg, $to, $subject, $htmlBody, $textBody = '', $attachment
             $mail->addAttachment($fullPath, basename($fullPath));
         }
     }
-
     $mail->send();
 }
 
@@ -131,6 +283,7 @@ function sendViaSMTP($cfg, $to, $subject, $htmlBody, $textBody = '', $attachment
 function sendViaSMTPWithFiles($cfg, $to, $subject, $htmlBody, $textBody = '', $absFilePaths = []) {
     $mail = new PHPMailer(true);
     $mail->isSMTP();
+    $mail->Timeout    = 15;
     $mail->Host       = $cfg['smtp_host'];
     $mail->Port       = (int)$cfg['smtp_port'];
     $mail->SMTPAuth   = true;
@@ -160,6 +313,7 @@ function sendViaSMTPWithFiles($cfg, $to, $subject, $htmlBody, $textBody = '', $a
 
 // ── Log email result ─────────────────────────────────────────────────────────
 function logEmail($db, $queueId, $orderId, $type, $recipient, $subject, $status, $response, $pdfPath = null, $xmlPath = null) {
+    ensureEmailTables($db);
     $db->prepare("INSERT INTO email_logs 
         (queue_id, order_id, email_type, recipient, subject, status, smtp_response, pdf_path, xml_path)
         VALUES (:qid, :oid, :type, :recip, :subj, :status, :resp, :pdf, :xml)")
@@ -176,22 +330,52 @@ function logEmail($db, $queueId, $orderId, $type, $recipient, $subject, $status,
        ]);
 }
 
+function safeLogEmail($db, $queueId, $orderId, $type, $recipient, $subject, $status, $response, $pdfPath = null, $xmlPath = null) {
+    try {
+        logEmail($db, $queueId, $orderId, $type, $recipient, $subject, $status, $response, $pdfPath, $xmlPath);
+    } catch (\Throwable $e) {
+        error_log('Email log skipped: ' . $e->getMessage());
+    }
+}
+
 // ── Queue order confirmation emails (both customer + admin) ─────────────────
 function queueOrderEmails($db, $order, $items) {
-    // Try direct send first (no DB table needed), fall back to queue
-    sendOrderEmailsNow($db, $order, $items);
+    $cfg = getEmailSettings($db);
+    if (empty($cfg['email_enabled']) || $cfg['email_enabled'] === '0') return;
+
+    if (!empty($order['customer_email'])) {
+        $subject = 'Order Confirmed - ' . $order['order_number'] . ' | ' . settingOrDefault($cfg, 'site_name', 'Your Store');
+        $html    = buildCustomerEmail($order, $items, 'order_placed', $cfg);
+        $text    = buildPlainText($order, $items, $cfg);
+        queueEmail($db, $order['id'], 'order_placed', $order['customer_email'], $subject, $html, $text, []);
+    }
+
+    if (!empty($cfg['admin_email'])) {
+        $adminSubject = 'New Order: ' . $order['order_number'] . ' from ' . $order['customer_name'];
+        $adminHtml    = buildAdminEmail($order, $items, $cfg);
+        queueEmail($db, $order['id'], 'order_placed', $cfg['admin_email'], $adminSubject, $adminHtml, '', []);
+    }
 }
 
 // ── Send order emails IMMEDIATELY via SMTP (no queue table required) ─────────
 function sendOrderEmailsNow($db, $order, $items) {
     $cfg = getEmailSettings($db);
-    if (empty($cfg['email_enabled']) || $cfg['email_enabled'] === '0') return;
+    $results = [
+        'customer' => ['skipped' => true, 'reason' => 'No customer email'],
+        'admin' => ['skipped' => true, 'reason' => 'No admin email'],
+    ];
+
+    if (empty($cfg['email_enabled']) || $cfg['email_enabled'] === '0') {
+        $results['customer'] = ['skipped' => true, 'reason' => 'Email notifications disabled'];
+        $results['admin'] = ['skipped' => true, 'reason' => 'Email notifications disabled'];
+        return $results;
+    }
 
     // Generate PDF invoice
     $pdfPath    = null;
     $fullPdfPath = null;
     try {
-        $pdfPath     = generatePDFInvoice($order, $items);
+        $pdfPath     = generatePDFInvoice($order, $items, $cfg);
         $fullPdfPath = __DIR__ . '/../' . ltrim($pdfPath, '/');
     } catch (\Throwable $e) {
         error_log('PDF generation error: ' . $e->getMessage());
@@ -201,7 +385,7 @@ function sendOrderEmailsNow($db, $order, $items) {
     $xmlPath    = null;
     $fullXmlPath = null;
     try {
-        $xmlPath     = generateXMLInvoice($order, $items);
+        $xmlPath     = generateXMLInvoice($order, $items, $cfg);
         $fullXmlPath = __DIR__ . '/../' . ltrim($xmlPath, '/');
     } catch (\Throwable $e) {
         error_log('XML generation error: ' . $e->getMessage());
@@ -215,30 +399,42 @@ function sendOrderEmailsNow($db, $order, $items) {
     // ── Send to customer (PDF only — no raw XML) ─────────────────────────────
     if (!empty($order['customer_email'])) {
         try {
-            $subject = 'Order Confirmed - ' . $order['order_number'] . ' | Asian Food Cork';
-            $html    = buildCustomerEmail($order, $items, 'order_placed');
-            $text    = buildPlainText($order, $items);
+            $subject = 'Order Confirmed - ' . $order['order_number'] . ' | ' . settingOrDefault($cfg, 'site_name', 'Your Store');
+            $html    = buildCustomerEmail($order, $items, 'order_placed', $cfg);
+            $text    = buildPlainText($order, $items, $cfg);
             sendViaSMTPWithFiles($cfg, $order['customer_email'], $subject, $html, $text, $pdfAttachment);
+            safeLogEmail($db, null, $order['id'] ?? null, 'order_placed', $order['customer_email'], $subject, 'sent', 'OK', $pdfPath, null);
+            $results['customer'] = ['sent' => true, 'recipient' => $order['customer_email']];
             error_log('Customer email sent to: ' . $order['customer_email']);
         } catch (\Throwable $e) {
+            safeLogEmail($db, null, $order['id'] ?? null, 'order_placed', $order['customer_email'], $subject ?? 'Order confirmation', 'failed', $e->getMessage(), $pdfPath, null);
+            $results['customer'] = ['sent' => false, 'recipient' => $order['customer_email'], 'error' => $e->getMessage()];
             error_log('Customer email error: ' . $e->getMessage());
         }
     }
 
     // ── Send to admin (PDF + XML for accounting) ─────────────────────────────
-    try {
-        $adminSubject = 'New Order: ' . $order['order_number'] . ' from ' . $order['customer_name'];
-        $adminHtml    = buildAdminEmail($order, $items);
-        sendViaSMTPWithFiles($cfg, $cfg['admin_email'], $adminSubject, $adminHtml, '', $adminAttachments);
-        error_log('Admin email sent to: ' . $cfg['admin_email']);
-    } catch (\Throwable $e) {
-        error_log('Admin email error: ' . $e->getMessage());
+    if (!empty($cfg['admin_email'])) {
+        try {
+            $adminSubject = 'New Order: ' . $order['order_number'] . ' from ' . $order['customer_name'];
+            $adminHtml    = buildAdminEmail($order, $items, $cfg);
+            sendViaSMTPWithFiles($cfg, $cfg['admin_email'], $adminSubject, $adminHtml, '', $adminAttachments);
+            safeLogEmail($db, null, $order['id'] ?? null, 'order_placed', $cfg['admin_email'], $adminSubject, 'sent', 'OK', $pdfPath, $xmlPath);
+            $results['admin'] = ['sent' => true, 'recipient' => $cfg['admin_email']];
+            error_log('Admin email sent to: ' . $cfg['admin_email']);
+        } catch (\Throwable $e) {
+            safeLogEmail($db, null, $order['id'] ?? null, 'order_placed', $cfg['admin_email'], $adminSubject ?? 'New order', 'failed', $e->getMessage(), $pdfPath, $xmlPath);
+            $results['admin'] = ['sent' => false, 'recipient' => $cfg['admin_email'], 'error' => $e->getMessage()];
+            error_log('Admin email error: ' . $e->getMessage());
+        }
     }
 
     // ── WhatsApp ─────────────────────────────────────────────────────────────
     if (!empty($cfg['whatsapp_enabled']) && $cfg['whatsapp_enabled'] === '1') {
         try { sendWhatsAppNotification($cfg, $order); } catch (\Throwable $e) {}
     }
+
+    return $results;
 }
 
 
@@ -259,13 +455,15 @@ function queueStatusEmail($db, $order, $newStatus) {
     if (!isset($labels[$newStatus])) return;
 
     [$prefix, $type] = $labels[$newStatus];
-    $subject = "$prefix – {$order['order_number']} | Asian Food Cork";
-    $html    = buildStatusEmail($order, $newStatus);
+    $subject = "$prefix - {$order['order_number']} | " . settingOrDefault($cfg, 'site_name', 'Your Store');
+    $html    = buildStatusEmail($order, $newStatus, $cfg);
     queueEmail($db, $order['id'], $type, $order['customer_email'], $subject, $html, '');
 }
 
 // ── HTML Email Templates ──────────────────────────────────────────────────────
-function emailHeader() {
+function emailHeader($cfg = []) {
+    $siteName = htmlspecialchars(settingOrDefault($cfg, 'site_name', 'Your Store'));
+    $tagline = htmlspecialchars(settingOrDefault($cfg, 'site_tagline', 'White-label ecommerce storefront'));
     return '<!DOCTYPE html><html><head><meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <style>
@@ -274,7 +472,7 @@ function emailHeader() {
     .header{background:linear-gradient(135deg,#0D1827 0%,#1a2f50 100%);padding:28px 32px;text-align:center}
     .header h1{color:#fff;margin:0;font-size:22px;letter-spacing:.5px}
     .header p{color:rgba(255,255,255,.65);margin:4px 0 0;font-size:13px}
-    .accent{height:4px;background:linear-gradient(90deg,#22C55E,#4B2E83,#FB923C)}
+    .accent{height:4px;background:linear-gradient(90deg,#0F766E,#2563EB,#E11D48)}
     .body{padding:32px}
     .order-badge{display:inline-block;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;
         border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;margin-bottom:20px}
@@ -293,21 +491,30 @@ function emailHeader() {
     .btn{display:inline-block;background:#22C55E;color:#fff;padding:12px 28px;border-radius:8px;
         text-decoration:none;font-weight:700;font-size:14px;margin:20px 0}
     .footer-note{background:#f8fafc;padding:20px 32px;text-align:center;font-size:12px;color:#94a3b8;border-top:1px solid #e2e8f0}
-    .footer-note a{color:#4B2E83;text-decoration:none}
+    .footer-note a{color:#0F766E;text-decoration:none}
     </style></head><body><div class="wrap">
     <div class="header">
-        <h1>Asian Food Cork</h1>
-        <p>Authentic Asian Groceries | Cork, Ireland</p>
+        <h1>' . $siteName . '</h1>
+        <p>' . $tagline . '</p>
     </div>
     <div class="accent"></div>';
 }
 
-function emailFooter($orderNumber) {
+function emailFooter($orderNumber, $cfg = []) {
+    $siteName = htmlspecialchars(settingOrDefault($cfg, 'site_name', 'Your Store'));
+    $email = htmlspecialchars(settingOrDefault($cfg, 'site_email', settingOrDefault($cfg, 'contact_email', 'hello@example.com')));
+    $phone = htmlspecialchars(settingOrDefault($cfg, 'site_phone', ''));
+    $address = htmlspecialchars(settingOrDefault($cfg, 'site_address', ''));
+    $siteUrl = appBaseUrl($cfg);
+    $siteLink = $siteUrl ? '<p><a href="' . htmlspecialchars($siteUrl) . '">' . htmlspecialchars($siteUrl) . '</a></p>' : '';
+    $contactLine = $email;
+    if ($phone !== '') $contactLine .= ' | ' . $phone;
+
     return '<div class="footer-note">
         <p>Order Reference: <strong>' . htmlspecialchars($orderNumber) . '</strong></p>
-        <p>Questions? <a href="mailto:orders@asianfoodcork.com">orders@asianfoodcork.com</a> | +353 21 000 0000</p>
-        <p><a href="https://asianfoodcork.com">www.asianfoodcork.com</a></p>
-        <p style="color:#cbd5e1;margin-top:12px;font-size:11px">Asian Food Cork, Cork, Ireland &nbsp;|&nbsp; VAT Reg: IE-XXXXXXX</p>
+        <p>Questions? <a href="mailto:' . $email . '">' . $contactLine . '</a></p>
+        ' . $siteLink . '
+        <p style="color:#cbd5e1;margin-top:12px;font-size:11px">' . $siteName . ($address !== '' ? ' | ' . $address : '') . '</p>
     </div></div></body></html>';
 }
 
@@ -344,8 +551,8 @@ function buildTotals($order) {
     return $html;
 }
 
-function buildCustomerEmail($order, $items, $type) {
-    $html = emailHeader();
+function buildCustomerEmail($order, $items, $type, $cfg = []) {
+    $html = emailHeader($cfg);
     $html .= '<div class="body">';
     $html .= '<span class="order-badge">✅ Order Confirmed</span>';
     $html .= '<h2>Thank you, ' . htmlspecialchars($order['customer_name']) . '!</h2>';
@@ -363,12 +570,12 @@ function buildCustomerEmail($order, $items, $type) {
 
     $html .= '<p style="font-size:12px;color:#94a3b8;margin-top:24px">📎 Your PDF invoice is attached to this email.</p>';
     $html .= '</div>';
-    $html .= emailFooter($order['order_number']);
+    $html .= emailFooter($order['order_number'], $cfg);
     return $html;
 }
 
-function buildAdminEmail($order, $items) {
-    $html = emailHeader();
+function buildAdminEmail($order, $items, $cfg = []) {
+    $html = emailHeader($cfg);
     $html .= '<div class="body">';
     $html .= '<span class="order-badge" style="background:#fef3c7;color:#92400e;border-color:#fde68a">🛒 New Order Received</span>';
     $html .= '<h2>New Order: ' . htmlspecialchars($order['order_number']) . '</h2>';
@@ -392,25 +599,26 @@ function buildAdminEmail($order, $items) {
     $html .= buildTotals($order);
 
     $html .= '<div style="text-align:center;margin-top:24px">';
-    $html .= '<a href="https://mediumturquoise-rat-568948.hostingersite.com/admin/orders.php" class="btn" style="background:#4B2E83">View in Admin Panel →</a>';
+    $adminUrl = settingOrDefault($cfg, 'admin_url', appBaseUrl($cfg) ? appBaseUrl($cfg) . '/admin/orders.php' : '/admin/orders.php');
+    $html .= '<a href="' . htmlspecialchars($adminUrl) . '" class="btn" style="background:#0F766E">View in Admin Panel →</a>';
     $html .= '</div>';
 
     $html .= '</div>';
-    $html .= emailFooter($order['order_number']);
+    $html .= emailFooter($order['order_number'], $cfg);
     return $html;
 }
 
-function buildStatusEmail($order, $status) {
+function buildStatusEmail($order, $status, $cfg = []) {
     $configs = [
         'confirmed'  => ['✅', 'Order Confirmed', '#16a34a', 'Your order has been confirmed and we\'re getting it ready for you.'],
         'processing' => ['🔧', 'Order Processing', '#2563eb', 'Your order is currently being processed and packed.'],
         'shipped'    => ['🚚', 'Order Shipped', '#7c3aed', 'Great news! Your order is on its way to you.'],
-        'delivered'  => ['📦', 'Order Delivered', '#15803d', 'Your order has been delivered. Enjoy your Asian groceries!'],
+        'delivered'  => ['📦', 'Order Delivered', '#15803d', 'Your order has been delivered. Thank you for shopping with us!'],
         'cancelled'  => ['❌', 'Order Cancelled', '#dc2626', 'Your order has been cancelled. Contact us if you have questions.'],
     ];
     [$icon, $label, $color, $message] = $configs[$status] ?? ['ℹ️', 'Order Update', '#0D1827', 'Your order status has been updated.'];
 
-    $html = emailHeader();
+    $html = emailHeader($cfg);
     $html .= '<div class="body">';
     $html .= '<div style="text-align:center;margin-bottom:24px">';
     $html .= '<div style="font-size:48px;margin-bottom:12px">' . $icon . '</div>';
@@ -425,16 +633,23 @@ function buildStatusEmail($order, $status) {
     $html .= '</div>';
 
     $html .= '<div style="text-align:center">';
-    $html .= '<a href="https://asianfoodcork.com/track?order=' . urlencode($order['order_number']) . '" class="btn" style="background:' . $color . '">Track Order →</a>';
+    $trackBase = appBaseUrl($cfg);
+    $trackUrl = $trackBase ? $trackBase . '/track?order=' . urlencode($order['order_number']) : '';
+    if ($trackUrl) {
+        $html .= '<a href="' . htmlspecialchars($trackUrl) . '" class="btn" style="background:' . $color . '">Track Order →</a>';
+    }
     $html .= '</div>';
     $html .= '</div>';
-    $html .= emailFooter($order['order_number']);
+    $html .= emailFooter($order['order_number'], $cfg);
     return $html;
 }
 
-function buildPlainText($order, $items) {
+function buildPlainText($order, $items, $cfg = []) {
+    $siteName = settingOrDefault($cfg, 'site_name', 'Your Store');
+    $email = settingOrDefault($cfg, 'site_email', settingOrDefault($cfg, 'contact_email', 'hello@example.com'));
+    $phone = settingOrDefault($cfg, 'site_phone', '');
     $lines = [
-        'Asian Food Cork - Order Confirmation',
+        $siteName . ' - Order Confirmation',
         '=====================================',
         'Order Number: ' . $order['order_number'],
         'Date: ' . date('d M Y', strtotime($order['created_at'])),
@@ -450,6 +665,6 @@ function buildPlainText($order, $items) {
     if (!empty($order['shipping_charge'])) $lines[] = 'Shipping: €' . number_format($order['shipping_charge'], 2);
     $lines[] = 'TOTAL: €' . number_format($order['total'] ?? 0, 2);
     $lines[] = '';
-    $lines[] = 'Questions? orders@asianfoodcork.com | +353 21 000 0000';
+    $lines[] = 'Questions? ' . $email . ($phone !== '' ? ' | ' . $phone : '');
     return implode("\n", $lines);
 }

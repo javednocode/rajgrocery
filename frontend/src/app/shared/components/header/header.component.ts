@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
@@ -13,32 +13,33 @@ import { environment } from '../../../../environments/environment';
   selector: 'app-header',
   standalone: true,
   imports: [RouterLink, RouterLinkActive, FormsModule, NgFor, NgIf],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Contact Top Bar -->
     <div class="contact-bar">
       <div class="container contact-inner">
 
-        <!-- Mobile-only logo inside red bar -->
+        <!-- Mobile-only logo inside top bar -->
         <a routerLink="/" class="mob-bar-logo">
-          <img [src]="logoUrl()" alt="Asian Food Cork" class="mob-bar-logo-img">
+          <img [src]="logoUrl()" [alt]="settings.get('site_name', 'Your Store')" class="mob-bar-logo-img">
         </a>
 
         <!-- Desktop left: phone -->
         <div class="contact-left">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3-8.57A2 2 0 012 1.5h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.37a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          <span>{{ settings.get('site_phone', '+353 21 000 0000') }}</span>
-          <span class="contact-sep">|</span>
-          <span class="contact-tagline">Call Anytime</span>
+          <span>{{ settings.get('site_phone', '') }}</span>
         </div>
 
         <!-- Right: phone number (mobile) + offer text + pay online -->
         <div class="contact-right">
           <span class="mob-phone">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3-8.57A2 2 0 012 1.5h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.37a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-            {{ settings.get('site_phone', '+353 899 584 325') }}
+            {{ settings.get('site_phone', '') }}
           </span>
-          <span class="offer-text">{{ settings.get('header_offer_text', 'Free delivery on orders above €50') }}</span>
-          <a href="https://checkout.revolut.com/pay/05f16f5b-9d65-4e3d-b818-5305aec92b8e" target="_blank" rel="noopener" class="pay-online-btn">Pay Online</a>
+          <span class="offer-text">{{ settings.get('header_offer_text', 'Free delivery on qualifying orders') }}</span>
+          @if (settings.get('payment_online_url')) {
+            <a [href]="settings.get('payment_online_url')" target="_blank" rel="noopener" class="pay-online-btn">Pay Online</a>
+          }
         </div>
       </div>
     </div>
@@ -49,7 +50,7 @@ import { environment } from '../../../../environments/environment';
 
         <!-- Logo -->
         <a routerLink="/" class="logo">
-          <img [src]="logoUrl()" alt="Asian Foods Cork" class="logo-img">
+          <img [src]="logoUrl()" [alt]="settings.get('site_name', 'Your Store')" class="logo-img">
         </a>
 
         <!-- Search Bar (desktop) -->
@@ -59,7 +60,7 @@ import { environment } from '../../../../environments/environment';
             <input
               type="text"
               [(ngModel)]="searchQuery"
-              placeholder="Search kimchi, rice, matcha, soy sauce..."
+              placeholder="Search products, brands, categories..."
               (keyup.enter)="doSearch()"
               (focus)="searchOpen.set(true)"
               (blur)="onSearchBlur()"
@@ -115,7 +116,7 @@ import { environment } from '../../../../environments/environment';
 
       <!-- Drawer header -->
       <div class="mnav-header">
-        <img [src]="logoUrl()" alt="Asian Food Cork" class="mnav-logo">
+        <img [src]="logoUrl()" [alt]="settings.get('site_name', 'Your Store')" class="mnav-logo">
         <button class="mnav-close" (click)="mobileMenu.set(false)" aria-label="Close menu">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
@@ -165,11 +166,11 @@ import { environment } from '../../../../environments/environment';
 
       <!-- Drawer footer -->
       <div class="mnav-footer">
-        <a href="tel:{{ settings.get('site_phone', '+353899584325') }}" class="mnav-contact">
+        <a href="tel:{{ settings.get('site_phone', '') }}" class="mnav-contact">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3-8.57A2 2 0 012 1.5h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.37a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-          {{ settings.get('site_phone', '+353 899 584 325') }}
+          {{ settings.get('site_phone', '') }}
         </a>
-        <span class="mnav-tagline">Asian Food Cork — Fresh &amp; Authentic</span>
+        <span class="mnav-tagline">{{ settings.get('site_tagline', 'Reusable ecommerce storefront') }}</span>
       </div>
     </nav>
 
@@ -182,7 +183,7 @@ import { environment } from '../../../../environments/environment';
             #mobileSearchInput
             type="text"
             [(ngModel)]="searchQuery"
-            placeholder="Search kimchi, rice, matcha..."
+            placeholder="Search products..."
             (keyup.enter)="doSearchMobile()"
             (ngModelChange)="onMobileSearchInput($event)"
             class="mob-search-input"
@@ -214,7 +215,7 @@ import { environment } from '../../../../environments/environment';
                     <span class="mob-result-cat">{{ p.category_name }}</span>
                   }
                 </div>
-                <span class="mob-result-price">€{{ (+p.price).toFixed(2) }}</span>
+                <span class="mob-result-price">{{ settings.get('currency_symbol', '$') }}{{ (+p.price).toFixed(2) }}</span>
               </a>
             }
           </div>
@@ -272,7 +273,7 @@ import { environment } from '../../../../environments/environment';
   styles: [`
     /* ── Contact Bar ── */
     .contact-bar {
-      background: #c8102e; color: white;
+      background: #0F766E; color: white;
       height: 36px; display: flex; align-items: center;
       font-size: 12.5px; font-weight: 500;
       position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
@@ -325,8 +326,8 @@ import { environment } from '../../../../environments/environment';
       background: rgba(255,255,255,0.92);
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
-      box-shadow: 0 4px 32px rgba(75,46,131,0.12);
-      border-bottom-color: rgba(75,46,131,0.1);
+      box-shadow: 0 4px 32px rgba(37,99,235,0.12);
+      border-bottom-color: rgba(37,99,235,0.1);
     }
     .header-inner { display: flex; align-items: center; height: 82px; gap: 20px; }
 
@@ -338,7 +339,7 @@ import { environment } from '../../../../environments/environment';
       z-index: 998;
       background: #fff;
       border-bottom: 2px solid #F0EEFF;
-      box-shadow: 0 2px 12px rgba(75,46,131,0.06);
+      box-shadow: 0 2px 12px rgba(37,99,235,0.06);
     }
     .desk-nav-inner {
       display: flex;
@@ -356,9 +357,9 @@ import { environment } from '../../../../environments/environment';
       transition: all 0.2s cubic-bezier(0.22,1,0.36,1);
       text-decoration: none;
     }
-    .desk-nav-link:hover { background: #E8F5E9; color: #2E9F5C; }
+    .desk-nav-link:hover { background: #E8F5E9; color: #0F766E; }
     .desk-nav-link.desk-nav-active,
-    .desk-nav-link.active { background: #2E9F5C; color: white; }
+    .desk-nav-link.active { background: #0F766E; color: white; }
     .desk-nav-link.desk-nav-active svg,
     .desk-nav-link.active svg { stroke: white; }
 
@@ -397,12 +398,12 @@ import { environment } from '../../../../environments/environment';
       overflow: hidden; background: white; transition: all 0.25s ease;
     }
     .search-bar.active, .search-bar:focus-within {
-      border-color: #2E9F5C; box-shadow: 0 0 0 4px rgba(46,159,92,0.14);
+      border-color: #0F766E; box-shadow: 0 0 0 4px rgba(15,118,110,0.14);
     }
     .search-cat {
       padding: 0 12px; height: 44px; border: none;
       background: #F6F7FB; border-right: 1.5px solid #E5E7EB;
-      font-size: 13px; font-weight: 600; color: #4B2E83;
+      font-size: 13px; font-weight: 600; color: #2563EB;
       outline: none; min-width: 90px; cursor: pointer;
     }
     .search-divider { width: 1px; height: 24px; background: #E5E7EB; }
@@ -413,29 +414,29 @@ import { environment } from '../../../../environments/environment';
     }
     .search-bar input::placeholder { color: #B0B3BE; }
     .search-btn {
-      background: #2E9F5C; color: white; padding: 0 20px; height: 44px;
+      background: #0F766E; color: white; padding: 0 20px; height: 44px;
       font-size: 13px; font-weight: 700; border: none; cursor: pointer;
       transition: background 0.2s; white-space: nowrap; flex-shrink: 0;
       font-family: 'Inter', sans-serif;
     }
-    .search-btn:hover { background: #217A45; }
+    .search-btn:hover { background: #115E59; }
 
     /* ── Actions ── */
     .header-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; }
     .action-btn {
       width: 44px; height: 44px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      color: #4B2E83; background: #F0ECF9;
+      color: #2563EB; background: #F0ECF9;
       transition: all 0.25s cubic-bezier(0.22,1,0.36,1); position: relative;
     }
-    .action-btn:hover { background: #4B2E83; color: white; transform: scale(1.05); }
+    .action-btn:hover { background: #2563EB; color: white; transform: scale(1.05); }
     .cart-badge {
       position: absolute; top: -4px; right: -4px;
-      background: #FF6A2C; color: white;
+      background: #E11D48; color: white;
       font-size: 10px; font-weight: 800;
       width: 19px; height: 19px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      border: 2px solid white; box-shadow: 0 2px 8px rgba(255,106,44,0.4);
+      border: 2px solid white; box-shadow: 0 2px 8px rgba(225,29,72,0.4);
     }
     .search-toggle { display: none; }
 
@@ -446,11 +447,11 @@ import { environment } from '../../../../environments/environment';
       gap: 5px; width: 44px; height: 44px;
       border-radius: 12px; background: #F0ECF9; transition: all 0.25s;
     }
-    .mobile-menu-btn:hover { background: #4B2E83; }
+    .mobile-menu-btn:hover { background: #2563EB; }
     .mobile-menu-btn:hover span { background: white; }
     .mobile-menu-btn span {
       display: block; width: 20px; height: 2px;
-      background: #4B2E83; border-radius: 2px; transition: all 0.3s;
+      background: #2563EB; border-radius: 2px; transition: all 0.3s;
     }
     .mobile-menu-btn.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
     .mobile-menu-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
@@ -478,7 +479,7 @@ import { environment } from '../../../../environments/environment';
     .mnav-header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 14px 18px;
-      background: linear-gradient(135deg, #4B2E83 0%, #2E9F5C 100%);
+      background: linear-gradient(135deg, #2563EB 0%, #0F766E 100%);
       flex-shrink: 0;
     }
     .mnav-logo { height: 38px; object-fit: contain; }
@@ -514,25 +515,25 @@ import { environment } from '../../../../environments/environment';
       -webkit-tap-highlight-color: transparent;
     }
     .mnav-item:active { background: #F5F0FF; }
-    .mnav-item.mnav-active { color: #4B2E83; font-weight: 700; background: #F5F0FF; }
+    .mnav-item.mnav-active { color: #2563EB; font-weight: 700; background: #F5F0FF; }
     .mnav-icon {
       width: 36px; height: 36px; border-radius: 10px;
       background: #F3F0FA;
       display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; color: #4B2E83;
+      flex-shrink: 0; color: #2563EB;
     }
-    .mnav-item.mnav-active .mnav-icon { background: #4B2E83; color: white; }
+    .mnav-item.mnav-active .mnav-icon { background: #2563EB; color: white; }
     .mnav-arrow { margin-left: auto; color: #C4C4D4; flex-shrink: 0; }
 
     /* Category sub-items */
     .mnav-cat { padding-left: 28px; font-size: 14px; font-weight: 400; color: #4B5563; }
-    .mnav-cat.mnav-active { color: #4B2E83; font-weight: 600; }
+    .mnav-cat.mnav-active { color: #2563EB; font-weight: 600; }
     .mnav-dot {
       width: 7px; height: 7px; border-radius: 50%;
       background: #D1D5DB; flex-shrink: 0;
       transition: background 0.15s;
     }
-    .mnav-cat.mnav-active .mnav-dot { background: #4B2E83; }
+    .mnav-cat.mnav-active .mnav-dot { background: #2563EB; }
 
     /* Drawer footer */
     .mnav-footer {
@@ -544,7 +545,7 @@ import { environment } from '../../../../environments/environment';
     }
     .mnav-contact {
       display: flex; align-items: center; gap: 8px;
-      font-size: 13.5px; font-weight: 700; color: #4B2E83;
+      font-size: 13.5px; font-weight: 700; color: #2563EB;
       text-decoration: none;
     }
     .mnav-tagline { font-size: 11px; color: #9CA3AF; }
@@ -558,8 +559,8 @@ import { environment } from '../../../../environments/environment';
       transition: all 0.22s cubic-bezier(0.22,1,0.36,1);
       white-space: nowrap; flex-shrink: 0;
     }
-    .nav-inner a:hover { background: #F0ECF9; color: #4B2E83; }
-    .nav-inner a.active { background: #4B2E83; color: white; font-weight: 600; }
+    .nav-inner a:hover { background: #F0ECF9; color: #2563EB; }
+    .nav-inner a.active { background: #2563EB; color: white; font-weight: 600; }
 
     /* ── Mobile Search Overlay (live) ── */
     .mob-search-overlay {
@@ -631,7 +632,7 @@ import { environment } from '../../../../environments/environment';
       text-transform: uppercase; letter-spacing: 0.04em;
     }
     .mob-result-price {
-      font-size: 14px; font-weight: 800; color: #4B2E83;
+      font-size: 14px; font-weight: 800; color: #2563EB;
       flex-shrink: 0;
     }
     /* Loading dots */
@@ -641,7 +642,7 @@ import { environment } from '../../../../environments/environment';
     }
     .mob-search-loading span {
       width: 7px; height: 7px; border-radius: 50%;
-      background: #4B2E83; display: block;
+      background: #2563EB; display: block;
     }
     .mob-search-loading span:nth-child(1) { animation: dotPop 1s ease 0s infinite; }
     .mob-search-loading span:nth-child(2) { animation: dotPop 1s ease 0.18s infinite; }
@@ -759,7 +760,7 @@ import { environment } from '../../../../environments/environment';
         background: white;
         border-top: 1px solid #E5E7EB;
         border-radius: 18px 18px 0 0;
-        box-shadow: 0 -4px 24px rgba(75,46,131,0.10);
+        box-shadow: 0 -4px 24px rgba(37,99,235,0.10);
         padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
         gap: 0;
       }
@@ -785,15 +786,15 @@ import { environment } from '../../../../environments/environment';
       }
       .bnav-item:active { transform: scale(0.9); }
       .bnav-item svg { transition: stroke 0.2s; }
-      .bnav-item.bnav-active { color: #4B2E83; }
-      .bnav-item.bnav-active svg { stroke: #4B2E83; }
-      .bnav-item.bnav-active span { color: #4B2E83; font-weight: 700; }
+      .bnav-item.bnav-active { color: #2563EB; }
+      .bnav-item.bnav-active svg { stroke: #2563EB; }
+      .bnav-item.bnav-active span { color: #2563EB; font-weight: 700; }
 
       /* Cart badge in bottom nav */
       .bnav-cart-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
       .bnav-badge {
         position: absolute; top: -6px; right: -8px;
-        background: #FF6A2C; color: white;
+        background: #E11D48; color: white;
         font-size: 9px; font-weight: 800;
         width: 17px; height: 17px; border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
@@ -833,7 +834,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   // Computed logo URL
   logoUrl = computed(() => {
     const raw = this.settings.get('site_logo', '');
-    if (!raw) return '/logo.png';
+    if (!raw) return '/logo.svg';
     const base = raw.startsWith('/') ? raw : '/' + raw;
     return `${base}?v=${this.settings.settings()?.['_ts'] || Date.now()}`;
   });

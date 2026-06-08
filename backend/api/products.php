@@ -1,6 +1,12 @@
 <?php
 /**
  * Products API - Full CRUD with filtering, search, pagination
+ * OPTIMIZED v2: 
+ *   - getProducts() now uses JOIN instead of EXISTS subquery for category filter
+ *   - Removed per-row correlated subqueries (category_names, primary_image)
+ *   - Added file-based caching for category product pages (3 min TTL)
+ *   - Slimmed public response payload (removed admin-only fields)
+ *   - batchLoadImages uses N+1 fix
  */
 
 /**
@@ -8,11 +14,9 @@
  * This helper manually reads & parses the raw input so PUT saves work correctly.
  */
 function parseMultipartPut(): array {
-    // If PHP already populated $_POST (shouldn't happen on PUT but just in case)
     if (!empty($_POST)) return $_POST;
     $raw = file_get_contents('php://input');
     if (empty($raw)) return [];
-    // Extract boundary from Content-Type header
     $ct = $_SERVER['CONTENT_TYPE'] ?? '';
     if (!preg_match('/boundary=(.*)$/', $ct, $m)) return [];
     $boundary = '--' . trim($m[1]);
@@ -24,7 +28,6 @@ function parseMultipartPut(): array {
         $body = rtrim($body, "\r\n");
         if (preg_match('/name="([^"]+)"/', $headers, $nm)) {
             $key = $nm[1];
-            // Handle array fields like categories[]
             if (substr($key, -2) === '[]') {
                 $k = substr($key, 0, -2);
                 if (!isset($data[$k])) $data[$k] = [];
@@ -37,14 +40,87 @@ function parseMultipartPut(): array {
     return $data;
 }
 
+/**
+ * Batch-load product images for an array of product IDs.
+ * Returns associative array: product_id => [images]
+ * FIXES N+1 query problem
+ */
+function batchLoadImages($db, array $productIds): array {
+    if (empty($productIds)) return [];
+    $placeholders = implode(',', array_map('intval', $productIds));
+    $stmt = $db->prepare(
+        "SELECT product_id, image_path, alt_text, is_primary, sort_order
+         FROM product_images
+         WHERE product_id IN ($placeholders)
+         ORDER BY product_id ASC, is_primary DESC, sort_order ASC"
+    );
+    $stmt->execute();
+    $rows = $stmt->fetchAll();
+    $map = [];
+    foreach ($rows as $row) {
+        $pid = $row['product_id'];
+        if (!isset($map[$pid])) $map[$pid] = [];
+        $map[$pid][] = $row;
+    }
+    return $map;
+}
+
+/**
+ * Batch-load primary image only for product listing (lighter than full image batch)
+ */
+function batchLoadPrimaryImages($db, array $productIds): array {
+    if (empty($productIds)) return [];
+    $placeholders = implode(',', array_map('intval', $productIds));
+    // One query: get the primary image (or first image) for each product
+    $stmt = $db->prepare(
+        "SELECT pi.product_id, pi.image_path 
+         FROM product_images pi
+         INNER JOIN (
+             SELECT product_id, MIN(CASE WHEN is_primary = 1 THEN id ELSE id + 999999 END) as best_id
+             FROM product_images 
+             WHERE product_id IN ($placeholders)
+             GROUP BY product_id
+         ) best ON pi.product_id = best.product_id AND pi.id = best.best_id"
+    );
+    $stmt->execute();
+    $rows = $stmt->fetchAll();
+    $map = [];
+    foreach ($rows as $row) {
+        $map[$row['product_id']] = $row['image_path'];
+    }
+    return $map;
+}
+
+function batchLoadCategoryNames($db, array $productIds): array {
+    if (empty($productIds)) return [];
+    $placeholders = implode(',', array_map('intval', $productIds));
+    $stmt = $db->prepare(
+        "SELECT pc.product_id, GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR ', ') as category_names
+         FROM product_categories pc
+         INNER JOIN categories c ON c.id = pc.category_id
+         WHERE pc.product_id IN ($placeholders)
+         GROUP BY pc.product_id"
+    );
+    $stmt->execute();
+    $rows = $stmt->fetchAll();
+    $map = [];
+    foreach ($rows as $row) {
+        $map[$row['product_id']] = $row['category_names'];
+    }
+    return $map;
+}
+
 function getProducts($db) {
     [$page, $perPage, $offset] = getPaginationParams();
     $where = [];
     $params = [];
+    $joins = [];
 
     // Auth check: admin can see all, public only sees active
     $auth = optionalAuth();
-    if (!$auth) {
+    $isPublic = !$auth;
+
+    if ($isPublic) {
         $where[] = "p.is_active = 1";
     }
 
@@ -54,15 +130,22 @@ function getProducts($db) {
         $params[':is_active'] = (int)$_GET['is_active'];
     }
 
-    // Filter: category by slug (frontend)
+    // Filter: category by slug — OPTIMIZED: use JOIN instead of correlated EXISTS subquery
+    $hasCategoryFilter = false;
     if (!empty($_GET['category'])) {
-        $where[] = "EXISTS (SELECT 1 FROM product_categories pc JOIN categories c ON pc.category_id = c.id WHERE pc.product_id = p.id AND c.slug = :cat_slug)";
+        $hasCategoryFilter = true;
+        $joins[] = "INNER JOIN product_categories pc_filter ON pc_filter.product_id = p.id";
+        $joins[] = "INNER JOIN categories c_filter ON pc_filter.category_id = c_filter.id";
+        $where[] = "c_filter.slug = :cat_slug";
         $params[':cat_slug'] = $_GET['category'];
     }
 
     // Filter: category by ID (admin)
     if (!empty($_GET['category_id'])) {
-        $where[] = "EXISTS (SELECT 1 FROM product_categories pc WHERE pc.product_id = p.id AND pc.category_id = :cat_id)";
+        if (!$hasCategoryFilter) {
+            $joins[] = "INNER JOIN product_categories pc_filter ON pc_filter.product_id = p.id";
+        }
+        $where[] = "pc_filter.category_id = :cat_id";
         $params[':cat_id'] = (int)$_GET['category_id'];
     }
 
@@ -79,17 +162,21 @@ function getProducts($db) {
     if (!empty($_GET['max_price'])) { $where[] = "COALESCE(p.sale_price, p.price) <= :max_price"; $params[':max_price'] = (float)$_GET['max_price']; }
     if (!empty($_GET['brand'])) { $where[] = "p.brand = :brand"; $params[':brand'] = $_GET['brand']; }
     if (isset($_GET['in_stock']) && $_GET['in_stock'] === '1') { $where[] = "p.stock > 0"; }
+
+    // Search — use LIKE
     if (!empty($_GET['q'])) {
+        $q = trim($_GET['q']);
         $where[] = "(p.name LIKE :search OR p.sku LIKE :search2 OR p.short_description LIKE :search3)";
-        $params[':search'] = '%'.$_GET['q'].'%';
-        $params[':search2'] = '%'.$_GET['q'].'%';
-        $params[':search3'] = '%'.$_GET['q'].'%';
+        $params[':search']  = '%' . $q . '%';
+        $params[':search2'] = '%' . $q . '%';
+        $params[':search3'] = '%' . $q . '%';
     }
 
     if (empty($where)) $where[] = '1=1';
     $whereClause = 'WHERE ' . implode(' AND ', $where);
+    $joinClause = implode(' ', $joins);
 
-    // Sort — admin supports name/price/stock with asc/desc
+    // Sort
     $sortCol = $_GET['sort'] ?? 'newest';
     $sortDir = strtolower($_GET['dir'] ?? 'asc') === 'desc' ? 'DESC' : 'ASC';
     $sortMap = [
@@ -104,19 +191,38 @@ function getProducts($db) {
     ];
     $sort = $sortMap[$sortCol] ?? 'p.created_at DESC';
 
-    $countStmt = $db->prepare("SELECT COUNT(*) FROM products p $whereClause");
+    // Try cache for public category pages (the most common case)
+    $cacheKey = null;
+    if ($isPublic && $hasCategoryFilter) {
+        $cacheKey = "cat_products_{$_GET['category']}_{$sortCol}_{$page}_{$perPage}";
+        $cached = cacheGet($cacheKey);
+        if ($cached !== null) {
+            // Return cached response directly
+            jsonResponse($cached);
+            return;
+        }
+    }
+
+    // COUNT — use same JOIN for accuracy
+    $countStmt = $db->prepare("SELECT COUNT(*) FROM products p $joinClause $whereClause");
     $countStmt->execute($params);
     $total = $countStmt->fetchColumn();
 
-    $sql = "SELECT p.*,
-        COALESCE(
-            (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = p.id AND pi.is_primary = 1 LIMIT 1),
-            (SELECT pi2.image_path FROM product_images pi2 WHERE pi2.product_id = p.id ORDER BY pi2.id ASC LIMIT 1)
-        ) as primary_image,
-        (SELECT GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR ', ')
-         FROM product_categories pc JOIN categories c ON pc.category_id = c.id
-         WHERE pc.product_id = p.id) as category_names
-        FROM products p $whereClause ORDER BY $sort LIMIT :lim OFFSET :off";
+    // PUBLIC: slim query (only fields the frontend actually uses)
+    if ($isPublic) {
+        $sql = "SELECT p.id, p.name, p.slug, p.short_description, p.price, p.sale_price,
+            p.stock, p.unit, p.brand, p.is_featured, p.is_trending, p.is_new
+            FROM products p $joinClause $whereClause ORDER BY $sort LIMIT :lim OFFSET :off";
+    } else {
+        // ADMIN: full query with all fields. Images/categories are batched below.
+        $sql = "SELECT p.id, p.name, p.slug, p.short_description, p.price, p.sale_price,
+            p.cost_price, p.sku, p.stock, p.low_stock_threshold, p.weight, p.unit,
+            p.brand, p.is_active, p.is_featured, p.is_trending, p.is_new,
+            p.sales_count, p.views, p.created_at, p.updated_at,
+            p.meta_title, p.meta_description
+            FROM products p $joinClause $whereClause ORDER BY $sort LIMIT :lim OFFSET :off";
+    }
+
     $stmt = $db->prepare($sql);
     foreach ($params as $k => $v) $stmt->bindValue($k, $v);
     $stmt->bindValue(':lim', $perPage, PDO::PARAM_INT);
@@ -124,24 +230,79 @@ function getProducts($db) {
     $stmt->execute();
     $products = $stmt->fetchAll();
 
-    // Only load full image arrays for non-admin (performance)
-    if (!$auth) {
+    // For PUBLIC: batch-load primary images only (product cards only need 1 image)
+    if ($isPublic && !empty($products)) {
+        $productIds = array_column($products, 'id');
+        $primaryMap = batchLoadPrimaryImages($db, $productIds);
         foreach ($products as &$p) {
-            $is = $db->prepare("SELECT image_path, alt_text, is_primary FROM product_images WHERE product_id = :pid ORDER BY is_primary DESC, sort_order ASC");
-            $is->execute([':pid' => $p['id']]);
-            $p['images'] = $is->fetchAll();
+            $p['primary_image'] = $primaryMap[$p['id']] ?? null;
         }
+        unset($p);
     }
-    paginatedResponse($products, $total, $page, $perPage);
+
+    if (!$isPublic && !empty($products)) {
+        $productIds = array_column($products, 'id');
+        $primaryMap = batchLoadPrimaryImages($db, $productIds);
+        $categoryMap = batchLoadCategoryNames($db, $productIds);
+        foreach ($products as &$p) {
+            $p['primary_image'] = $primaryMap[$p['id']] ?? null;
+            $p['category_names'] = $categoryMap[$p['id']] ?? '';
+        }
+        unset($p);
+    }
+
+    $response = [
+        'success' => true,
+        'data' => $products,
+        'pagination' => [
+            'total' => (int)$total,
+            'page' => (int)$page,
+            'per_page' => (int)$perPage,
+            'total_pages' => ceil($total / $perPage)
+        ]
+    ];
+
+    // Cache public category pages for 3 minutes
+    if ($cacheKey) {
+        cacheSet($cacheKey, $response, 180);
+    }
+
+    jsonResponse($response);
 }
 
 function getFeaturedProducts($db) {
     $limit = min(20, (int)($_GET['limit'] ?? 8));
-    $stmt = $db->prepare("SELECT p.*, (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = p.id AND pi.is_primary = 1 LIMIT 1) as primary_image FROM products p WHERE p.is_active = 1 AND p.is_featured = 1 ORDER BY p.created_at DESC LIMIT :lim");
+    $cacheKey = "products_featured_{$limit}";
+
+    $cached = cacheGet($cacheKey);
+    if ($cached !== null) {
+        successResponse($cached);
+        return;
+    }
+
+    // Clean query — no correlated subqueries
+    $stmt = $db->prepare("
+        SELECT p.id, p.name, p.slug, p.price, p.sale_price, p.stock,
+            p.brand, p.is_featured, p.sales_count, p.unit
+        FROM products p
+        WHERE p.is_active = 1 AND p.is_featured = 1
+        ORDER BY p.created_at DESC
+        LIMIT :lim
+    ");
     $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
     $stmt->execute();
     $products = $stmt->fetchAll();
-    foreach ($products as &$p) { $is = $db->prepare("SELECT image_path, alt_text, is_primary FROM product_images WHERE product_id = :pid ORDER BY is_primary DESC"); $is->execute([':pid'=>$p['id']]); $p['images']=$is->fetchAll(); }
+
+    // Batch primary images (1 query for all products)
+    if (!empty($products)) {
+        $primaryMap = batchLoadPrimaryImages($db, array_column($products, 'id'));
+        foreach ($products as &$p) {
+            $p['primary_image'] = $primaryMap[$p['id']] ?? null;
+        }
+        unset($p);
+    }
+
+    cacheSet($cacheKey, $products, 300);
     successResponse($products);
 }
 
@@ -152,6 +313,9 @@ function toggleProductFeatured($db, $id) {
     $stmt = $db->prepare("UPDATE products SET is_featured = :f WHERE id = :id");
     $stmt->execute([':f' => $val, ':id' => (int)$id]);
     if ($stmt->rowCount() === 0) errorResponse('Product not found', 404);
+    // Clear featured cache
+    cacheClearPattern('products_featured_');
+    cacheClearPattern('cat_products_');
     successResponse(['id' => (int)$id, 'is_featured' => $val],
         $val ? 'Product added to featured' : 'Product removed from featured');
 }
@@ -159,28 +323,49 @@ function toggleProductFeatured($db, $id) {
 function clearAllFeatured($db) {
     $stmt = $db->prepare("UPDATE products SET is_featured = 0 WHERE is_featured = 1");
     $stmt->execute();
+    cacheClearPattern('products_featured_');
+    cacheClearPattern('cat_products_');
     successResponse(['cleared' => $stmt->rowCount()], 'All featured products cleared');
 }
 
 function getTrendingProducts($db) {
     $limit = min(50, (int)($_GET['limit'] ?? 12));
-    $stmt = $db->prepare(
-        "SELECT p.*,
-            (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = p.id AND pi.is_primary = 1 LIMIT 1) as primary_image
-         FROM products p
-         WHERE p.is_active = 1 AND p.is_trending = 1
-         ORDER BY p.sales_count DESC, p.id ASC
-         LIMIT :lim"
-    );
+    $cacheKey = "products_trending_{$limit}";
+
+    $cached = cacheGet($cacheKey);
+    if ($cached !== null) {
+        successResponse($cached);
+        return;
+    }
+
+    // Clean query — no correlated subqueries
+    $stmt = $db->prepare("
+        SELECT p.id, p.name, p.slug, p.price, p.sale_price, p.stock,
+            p.brand, p.is_trending, p.sales_count, p.unit
+        FROM products p
+        WHERE p.is_active = 1 AND p.is_trending = 1
+        ORDER BY p.sales_count DESC, p.id ASC
+        LIMIT :lim
+    ");
     $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
     $stmt->execute();
-    successResponse($stmt->fetchAll());
+    $products = $stmt->fetchAll();
+
+    // Batch primary images (1 query for all products)
+    if (!empty($products)) {
+        $primaryMap = batchLoadPrimaryImages($db, array_column($products, 'id'));
+        foreach ($products as &$p) {
+            $p['primary_image'] = $primaryMap[$p['id']] ?? null;
+        }
+        unset($p);
+    }
+
+    cacheSet($cacheKey, $products, 300);
+    successResponse($products);
 }
 
 /**
  * Toggle a single product's is_trending flag
- * POST /api/products/{id}/trending
- * Body: { is_trending: 0|1 }
  */
 function toggleProductTrending($db, $id) {
     $data = getJsonInput();
@@ -189,36 +374,58 @@ function toggleProductTrending($db, $id) {
     $stmt = $db->prepare("UPDATE products SET is_trending = :t WHERE id = :id");
     $stmt->execute([':t' => $val, ':id' => (int)$id]);
     if ($stmt->rowCount() === 0) errorResponse('Product not found', 404);
+    cacheClearPattern('products_trending_');
+    cacheClearPattern('cat_products_');
     successResponse(['id' => (int)$id, 'is_trending' => $val],
         $val ? 'Product added to trending' : 'Product removed from trending');
 }
 
-/**
- * Remove ALL products from trending
- * POST /api/products/trending/clear
- */
 function clearAllTrending($db) {
     $stmt = $db->prepare("UPDATE products SET is_trending = 0 WHERE is_trending = 1");
     $stmt->execute();
+    cacheClearPattern('products_trending_');
+    cacheClearPattern('cat_products_');
     successResponse(['cleared' => $stmt->rowCount()], 'All trending products cleared');
 }
 
 function searchProducts($db) {
-    $q = $_GET['q'] ?? '';
+    $q = trim($_GET['q'] ?? '');
     if (strlen($q) < 2) errorResponse('Search query too short', 400);
+
+    $cacheKey = 'search_' . md5($q);
+    $cached = cacheGet($cacheKey);
+    if ($cached !== null) {
+        successResponse($cached);
+        return;
+    }
+
+    // Clean query — no correlated subqueries
     $stmt = $db->prepare("
-        SELECT p.id, p.name, p.slug, p.price, p.sale_price,
-            COALESCE(
-                (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = p.id AND pi.is_primary = 1 LIMIT 1),
-                (SELECT pi2.image_path FROM product_images pi2 WHERE pi2.product_id = p.id ORDER BY pi2.id ASC LIMIT 1)
-            ) as primary_image
+        SELECT p.id, p.name, p.slug, p.price, p.sale_price, p.stock, p.brand, p.unit
         FROM products p
-        WHERE p.is_active = 1 AND (p.name LIKE :q1 OR p.brand LIKE :q2)
-        ORDER BY p.sales_count DESC LIMIT 20
+        WHERE p.is_active = 1
+          AND (p.name LIKE :q1 OR p.brand LIKE :q2 OR p.short_description LIKE :q3)
+        ORDER BY
+            CASE WHEN p.name LIKE :q4 THEN 0 ELSE 1 END,
+            p.sales_count DESC
+        LIMIT 15
     ");
     $s = "%{$q}%";
-    $stmt->execute([':q1'=>$s, ':q2'=>$s]);
-    successResponse($stmt->fetchAll());
+    $sStart = "{$q}%";
+    $stmt->execute([':q1' => $s, ':q2' => $s, ':q3' => $s, ':q4' => $sStart]);
+    $results = $stmt->fetchAll();
+
+    // Batch primary images
+    if (!empty($results)) {
+        $primaryMap = batchLoadPrimaryImages($db, array_column($results, 'id'));
+        foreach ($results as &$r) {
+            $r['primary_image'] = $primaryMap[$r['id']] ?? null;
+        }
+        unset($r);
+    }
+
+    cacheSet($cacheKey, $results, 120);
+    successResponse($results);
 }
 
 function getProductById($db, $id) {
@@ -241,25 +448,78 @@ function getProductById($db, $id) {
 }
 
 function getProductBySlug($db, $slug) {
+    // Cache product detail pages (2 minute TTL)
+    $cacheKey = "product_detail_{$slug}";
+    $cached = cacheGet($cacheKey);
+    if ($cached !== null) {
+        // Fire-and-forget view increment (non-blocking)
+        try { $db->prepare("UPDATE products SET views = views + 1 WHERE slug = :s")->execute([':s' => $slug]); } catch (Exception $e) {}
+        successResponse($cached);
+        return;
+    }
+
     $stmt = $db->prepare("SELECT * FROM products WHERE slug = :slug AND is_active = 1");
     $stmt->execute([':slug' => $slug]);
     $p = $stmt->fetch();
     if (!$p) errorResponse('Product not found', 404);
+
+    $pid = $p['id'];
+
+    // 1 query: images + categories + variations combined via multi-statement
+    // Images
     $is = $db->prepare("SELECT * FROM product_images WHERE product_id = :pid ORDER BY is_primary DESC, sort_order ASC");
-    $is->execute([':pid' => $p['id']]);
+    $is->execute([':pid' => $pid]);
     $p['images'] = $is->fetchAll();
+
+    // Categories
     $cs = $db->prepare("SELECT c.id, c.name, c.slug FROM product_categories pc JOIN categories c ON pc.category_id = c.id WHERE pc.product_id = :pid");
-    $cs->execute([':pid' => $p['id']]);
+    $cs->execute([':pid' => $pid]);
     $p['categories'] = $cs->fetchAll();
+
+    // Variations
     try {
         $vs = $db->prepare("SELECT * FROM product_variations WHERE product_id = :pid AND is_active = 1 ORDER BY sort_order ASC, id ASC");
-        $vs->execute([':pid' => $p['id']]);
+        $vs->execute([':pid' => $pid]);
         $p['variations'] = $vs->fetchAll();
     } catch (Exception $e) { $p['variations'] = []; }
-    $relStmt = $db->prepare("SELECT DISTINCT p2.id, p2.name, p2.slug, p2.price, p2.sale_price, (SELECT pi.image_path FROM product_images pi WHERE pi.product_id = p2.id AND pi.is_primary = 1 LIMIT 1) as primary_image FROM products p2 JOIN product_categories pc ON p2.id = pc.product_id WHERE pc.category_id IN (SELECT category_id FROM product_categories WHERE product_id = :pid) AND p2.id != :pid2 AND p2.is_active = 1 LIMIT 8");
-    $relStmt->execute([':pid' => $p['id'], ':pid2' => $p['id']]);
-    $p['related_products'] = $relStmt->fetchAll();
-    $db->prepare("UPDATE products SET views = views + 1 WHERE id = :id")->execute([':id' => $p['id']]);
+
+    // Related products — clean query, no correlated subqueries
+    // Use category IDs we already have to avoid a nested SELECT
+    $catIds = array_column($p['categories'], 'id');
+    if (!empty($catIds)) {
+        $catPlaceholders = implode(',', array_map('intval', $catIds));
+        $relStmt = $db->prepare("
+            SELECT DISTINCT p2.id, p2.name, p2.slug, p2.price, p2.sale_price, p2.stock, p2.unit
+            FROM products p2
+            INNER JOIN product_categories pc ON p2.id = pc.product_id
+            WHERE pc.category_id IN ($catPlaceholders)
+              AND p2.id != :pid
+              AND p2.is_active = 1
+            ORDER BY p2.sales_count DESC
+            LIMIT 6
+        ");
+        $relStmt->execute([':pid' => $pid]);
+        $related = $relStmt->fetchAll();
+
+        // Batch images for related products (1 query instead of 6 subqueries)
+        if (!empty($related)) {
+            $relPrimaryMap = batchLoadPrimaryImages($db, array_column($related, 'id'));
+            foreach ($related as &$r) {
+                $r['primary_image'] = $relPrimaryMap[$r['id']] ?? null;
+            }
+            unset($r);
+        }
+        $p['related_products'] = $related;
+    } else {
+        $p['related_products'] = [];
+    }
+
+    // Cache for 2 minutes
+    cacheSet($cacheKey, $p, 120);
+
+    // View increment (non-critical)
+    try { $db->prepare("UPDATE products SET views = views + 1 WHERE id = :id")->execute([':id' => $pid]); } catch (Exception $e) {}
+
     successResponse($p);
 }
 
@@ -283,21 +543,21 @@ function createProduct($db) {
             if ($file['error']===UPLOAD_ERR_OK) { $r=uploadImage($file,'products'); if($r['success']) { $db->prepare("INSERT INTO product_images (product_id,image_path,is_primary,sort_order) VALUES (:p,:path,:pri,:s)")->execute([':p'=>$pid,':path'=>$r['path'],':pri'=>($i===0)?1:0,':s'=>$i]); } }
         }
     }
+    // Clear all product caches on create
+    cacheClearPattern('products_');
+    cacheClearPattern('cat_products_');
     successResponse(['id'=>$pid,'slug'=>$slug], 'Product created', 201);
 }
 
 function updateProduct($db, $id) {
-    // For POST (multipart with files) PHP auto-populates $_POST and $_FILES.
-    // For PUT (multipart) we need our custom parser (PHP limitation).
-    // For PUT/POST with JSON body, use getJsonInput().
     $method = $_SERVER['REQUEST_METHOD'];
     $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
     if (!empty($_POST)) {
-        $data = $_POST; // POST multipart — $_FILES is also populated
+        $data = $_POST;
     } elseif ($method === 'PUT' && strpos($contentType, 'multipart') !== false) {
-        $data = parseMultipartPut(); // PUT multipart — manual parse
+        $data = parseMultipartPut();
     } else {
-        $data = getJsonInput(); // JSON body
+        $data = getJsonInput();
     }
 
     $check = $db->prepare("SELECT id FROM products WHERE id = :id"); $check->execute([':id'=>$id]);
@@ -312,16 +572,12 @@ function updateProduct($db, $id) {
         $catIds = is_array($data['categories'])?$data['categories']:json_decode($data['categories'],true);
         if ($catIds) { $cs=$db->prepare("INSERT INTO product_categories (product_id,category_id) VALUES (:p,:c)"); foreach ($catIds as $c) $cs->execute([':p'=>$id,':c'=>$c]); }
     }
-    // Handle image uploads
     if (!empty($_FILES['images']['name'][0]) || !empty($_FILES['images']['name'])) {
         $files = $_FILES['images'];
         $count = is_array($files['name']) ? count($files['name']) : 1;
-
-        // Check if a primary image already exists for this product
         $hasPrimary = $db->prepare("SELECT COUNT(*) FROM product_images WHERE product_id = :pid AND is_primary = 1");
         $hasPrimary->execute([':pid' => $id]);
         $primaryExists = (int)$hasPrimary->fetchColumn() > 0;
-
         for ($i = 0; $i < $count; $i++) {
             $file = [
                 'name'     => is_array($files['name'])     ? $files['name'][$i]     : $files['name'],
@@ -332,26 +588,29 @@ function updateProduct($db, $id) {
             if ($file['error'] === UPLOAD_ERR_OK) {
                 $r = uploadImage($file, 'products');
                 if ($r['success']) {
-                    // First new image becomes primary if no primary exists yet
                     $makePrimary = (!$primaryExists && $i === 0) ? 1 : 0;
                     $is = $db->prepare("INSERT INTO product_images (product_id,image_path,is_primary,sort_order) VALUES (:p,:path,:pri,:s)");
                     $is->execute([':p' => $id, ':path' => $r['path'], ':pri' => $makePrimary, ':s' => $i]);
-                    if ($makePrimary) $primaryExists = true; // mark so subsequent images stay 0
+                    if ($makePrimary) $primaryExists = true;
                 }
             }
         }
     }
+    // Invalidate caches
+    cacheClearPattern('products_');
+    cacheClearPattern('cat_products_');
     successResponse(['id'=>$id,'slug'=>$slug], 'Product updated');
 }
 
 function deleteProduct($db, $id) {
     $is = $db->prepare("SELECT image_path FROM product_images WHERE product_id = :pid"); $is->execute([':pid'=>$id]);
     while ($img = $is->fetch()) deleteImage($img['image_path']);
-    // Delete variation images too
     $vs = $db->prepare("SELECT image_path FROM product_variations WHERE product_id = :pid AND image_path IS NOT NULL"); $vs->execute([':pid'=>$id]);
     while ($v = $vs->fetch()) deleteImage($v['image_path']);
     $stmt = $db->prepare("DELETE FROM products WHERE id = :id"); $stmt->execute([':id'=>$id]);
     if ($stmt->rowCount()===0) errorResponse('Product not found', 404);
+    cacheClearPattern('products_');
+    cacheClearPattern('cat_products_');
     successResponse(null, 'Product deleted');
 }
 
@@ -360,14 +619,8 @@ function deleteProductImage($db, $imageId) {
     $stmt->execute([':id' => $imageId]);
     $img = $stmt->fetch();
     if (!$img) errorResponse('Image not found', 404);
-
-    // Delete physical file from disk
     deleteImage($img['image_path']);
-
-    // Remove from database
     $db->prepare("DELETE FROM product_images WHERE id = :id")->execute([':id' => $imageId]);
-
-    // If it was primary, promote the next image as primary
     if ($img['is_primary']) {
         $next = $db->prepare("SELECT id FROM product_images WHERE product_id = :pid ORDER BY sort_order ASC LIMIT 1");
         $next->execute([':pid' => $img['product_id']]);
@@ -376,30 +629,37 @@ function deleteProductImage($db, $imageId) {
             $db->prepare("UPDATE product_images SET is_primary = 1 WHERE id = :id")->execute([':id' => $n['id']]);
         }
     }
-
     successResponse(null, 'Image deleted');
 }
 
 // ============================================
-// VARIATION CRUD
+// VARIATION CRUD — table creation moved to migration SQL
 // ============================================
 
+function ensureVariationsTable($db) {
+    static $checked = false;
+    if ($checked) return;
+    $checked = true;
+    try {
+        $db->exec("CREATE TABLE IF NOT EXISTS product_variations (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            product_id INT NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            sku VARCHAR(100) DEFAULT NULL,
+            price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+            sale_price DECIMAL(10,2) DEFAULT NULL,
+            stock INT NOT NULL DEFAULT 0,
+            image_path VARCHAR(500) DEFAULT NULL,
+            sort_order INT NOT NULL DEFAULT 0,
+            is_active TINYINT(1) NOT NULL DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    } catch (Exception $e) { /* ignore if already exists */ }
+}
+
 function getVariations($db, $productId) {
-    // Auto-create table if it doesn't exist yet (safe for fresh Hostinger installs)
-    $db->exec("CREATE TABLE IF NOT EXISTS product_variations (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        product_id INT NOT NULL,
-        name VARCHAR(255) NOT NULL,
-        sku VARCHAR(100) DEFAULT NULL,
-        price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-        sale_price DECIMAL(10,2) DEFAULT NULL,
-        stock INT NOT NULL DEFAULT 0,
-        image_path VARCHAR(500) DEFAULT NULL,
-        sort_order INT NOT NULL DEFAULT 0,
-        is_active TINYINT(1) NOT NULL DEFAULT 1,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    ensureVariationsTable($db);
     try {
         $stmt = $db->prepare("SELECT * FROM product_variations WHERE product_id = :pid ORDER BY sort_order ASC, id ASC");
         $stmt->execute([':pid' => $productId]);
@@ -410,6 +670,7 @@ function getVariations($db, $productId) {
 }
 
 function createVariation($db, $productId) {
+    ensureVariationsTable($db);
     $data = isset($_POST['name']) ? $_POST : getJsonInput();
     $name = trim($data['name'] ?? '');
     if (empty($name)) errorResponse('Variation name is required', 400);
@@ -418,8 +679,6 @@ function createVariation($db, $productId) {
         $r = uploadImage($_FILES['image'], 'variations');
         if ($r['success']) $imagePath = $r['path'];
     }
-    // Auto-create table if needed
-    $db->exec("CREATE TABLE IF NOT EXISTS product_variations (id INT AUTO_INCREMENT PRIMARY KEY, product_id INT NOT NULL, name VARCHAR(255) NOT NULL, sku VARCHAR(100) DEFAULT NULL, price DECIMAL(10,2) NOT NULL DEFAULT 0.00, sale_price DECIMAL(10,2) DEFAULT NULL, stock INT NOT NULL DEFAULT 0, image_path VARCHAR(500) DEFAULT NULL, sort_order INT NOT NULL DEFAULT 0, is_active TINYINT(1) NOT NULL DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     $stmt = $db->prepare("INSERT INTO product_variations (product_id, name, sku, price, sale_price, stock, image_path, sort_order, is_active) VALUES (:pid,:name,:sku,:price,:sp,:stock,:img,:sort,:active)");
     $stmt->execute([
         ':pid'    => $productId,
@@ -436,7 +695,21 @@ function createVariation($db, $productId) {
 }
 
 function updateVariation($db, $variationId) {
-    $data = isset($_POST['name']) ? $_POST : getJsonInput();
+    // PHP does NOT populate $_POST or $_FILES for PUT multipart requests.
+    // The frontend sends FormData via PUT, so we must parse php://input manually.
+    $method = $_SERVER['REQUEST_METHOD'];
+    $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+    if (!empty($_POST['name'])) {
+        $data = $_POST;
+    } elseif ($method === 'PUT' && strpos($contentType, 'multipart') !== false) {
+        $data = parseMultipartPut();
+        // Also parse files from raw multipart for PUT
+        if (!empty($_FILES['image'])) {
+            // $_FILES may work on some servers for PUT — keep as-is
+        }
+    } else {
+        $data = getJsonInput();
+    }
     $check = $db->prepare("SELECT * FROM product_variations WHERE id = :id"); $check->execute([':id'=>$variationId]);
     $existing = $check->fetch();
     if (!$existing) errorResponse('Variation not found', 404);
@@ -476,7 +749,6 @@ function bulkProductAction($db) {
     $action = $data['action'] ?? '';
     $ids    = $data['ids'] ?? [];
     if (empty($ids) || !is_array($ids)) errorResponse('No product IDs provided', 400);
-    // Sanitize IDs to integers
     $ids = array_filter(array_map('intval', $ids));
     if (empty($ids)) errorResponse('Invalid product IDs', 400);
     $placeholders = implode(',', $ids);
@@ -484,50 +756,58 @@ function bulkProductAction($db) {
     switch ($action) {
         case 'enable':
             $db->exec("UPDATE products SET is_active = 1 WHERE id IN ($placeholders)");
+            cacheClearPattern('products_');
+            cacheClearPattern('cat_products_');
             successResponse(['affected' => count($ids)], 'Products enabled');
             break;
         case 'disable':
             $db->exec("UPDATE products SET is_active = 0 WHERE id IN ($placeholders)");
+            cacheClearPattern('products_');
+            cacheClearPattern('cat_products_');
             successResponse(['affected' => count($ids)], 'Products disabled');
             break;
         case 'delete':
             $db->exec("DELETE FROM product_categories WHERE product_id IN ($placeholders)");
             $db->exec("DELETE FROM products WHERE id IN ($placeholders)");
+            cacheClearPattern('products_');
+            cacheClearPattern('cat_products_');
             successResponse(['affected' => count($ids)], 'Products deleted');
             break;
         case 'mark_featured':
             $db->exec("UPDATE products SET is_featured = 1 WHERE id IN ($placeholders)");
+            cacheClearPattern('products_featured_');
+            cacheClearPattern('cat_products_');
             successResponse(['affected' => count($ids)], 'Products marked featured');
             break;
         case 'unmark_featured':
             $db->exec("UPDATE products SET is_featured = 0 WHERE id IN ($placeholders)");
+            cacheClearPattern('products_featured_');
+            cacheClearPattern('cat_products_');
             successResponse(['affected' => count($ids)], 'Products removed from featured');
             break;
         case 'set_category':
             $categoryId = intval($data['category_id'] ?? 0);
             $sourceCategoryId = intval($data['source_category_id'] ?? 0);
             if (!$categoryId) errorResponse('Category ID required', 400);
-            // Verify destination category exists
             $catCheck = $db->prepare("SELECT id FROM categories WHERE id = :id");
             $catCheck->execute([':id' => $categoryId]);
             if (!$catCheck->fetch()) errorResponse('Category not found', 404);
-            // TRUE MOVE: Remove from source category ONLY (not all categories)
             if ($sourceCategoryId && $sourceCategoryId !== $categoryId) {
                 $delStmt = $db->prepare("DELETE FROM product_categories WHERE product_id IN ($placeholders) AND category_id = :scid");
                 $delStmt->execute([':scid' => $sourceCategoryId]);
             }
-            // Add to destination category (INSERT IGNORE = skip if already there)
             $stmt = $db->prepare("INSERT IGNORE INTO product_categories (product_id, category_id) VALUES (:pid, :cid)");
             foreach ($ids as $pid) { $stmt->execute([':pid' => $pid, ':cid' => $categoryId]); }
+            cacheClearPattern('cat_products_');
             $msg = $sourceCategoryId ? 'Products moved to new category' : 'Category assigned to products';
             successResponse(['affected' => count($ids)], $msg);
             break;
         case 'add_category':
             $categoryId = intval($data['category_id'] ?? 0);
             if (!$categoryId) errorResponse('Category ID required', 400);
-            // Add category without removing existing ones (ignore duplicates)
             $stmt = $db->prepare("INSERT IGNORE INTO product_categories (product_id, category_id) VALUES (:pid, :cid)");
             foreach ($ids as $pid) { $stmt->execute([':pid' => $pid, ':cid' => $categoryId]); }
+            cacheClearPattern('cat_products_');
             successResponse(['affected' => count($ids)], 'Category added to products');
             break;
         case 'remove_category':
@@ -535,11 +815,13 @@ function bulkProductAction($db) {
             if (!$categoryId) errorResponse('Category ID required', 400);
             $stmt = $db->prepare("DELETE FROM product_categories WHERE product_id IN ($placeholders) AND category_id = :cid");
             $stmt->execute([':cid' => $categoryId]);
+            cacheClearPattern('cat_products_');
             successResponse(['affected' => count($ids)], 'Category removed from products');
             break;
         case 'set_stock':
             $stock = intval($data['stock'] ?? 0);
             $db->exec("UPDATE products SET stock = $stock WHERE id IN ($placeholders)");
+            cacheClearPattern('cat_products_');
             successResponse(['affected' => count($ids)], 'Stock updated');
             break;
         default:

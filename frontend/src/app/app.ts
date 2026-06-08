@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './shared/components/header/header.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
@@ -9,6 +9,7 @@ import { SplashComponent } from './shared/components/splash/splash.component';
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, HeaderComponent, FooterComponent, CartDrawerComponent, SplashComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-splash (done)="splashDone.set(true)" />
     <div class="app-body" [class.app-ready]="splashDone()">

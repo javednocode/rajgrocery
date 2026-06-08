@@ -1,15 +1,33 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+/**
+ * API Service with in-memory caching for frequently-accessed endpoints.
+ * 
+ * Cached endpoints (shareReplay):
+ * - getCategories()         — called by header + home + category pages
+ * - getFeaturedCategories()  — called by home page
+ * - getSettings()           — called by SettingsService on app boot
+ * - getBanners()            — called by home page
+ * 
+ * These create a SINGLE HTTP request that is shared across all subscribers.
+ * Navigation between pages no longer fires duplicate requests.
+ */
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private baseUrl = environment.apiUrl;
 
+  // ── In-memory cache (shared observables) ──
+  private _categoriesCache$: Observable<any> | null = null;
+  private _featuredCategoriesCache$: Observable<any> | null = null;
+  private _settingsCache$: Observable<any> | null = null;
+  private _bannersCache$: Observable<any> | null = null;
+
   constructor(private http: HttpClient) {}
 
-  // Products
+  // ── Products (not cached — filtered/paginated) ──
   getProducts(params: any = {}): Observable<any> {
     let httpParams = new HttpParams();
     Object.keys(params).forEach(key => {
@@ -40,30 +58,50 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/products/search?q=${encodeURIComponent(query)}`);
   }
 
-  // Categories
+  // ── Categories (CACHED — called by header on every page) ──
   getCategories(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/categories`);
+    if (!this._categoriesCache$) {
+      this._categoriesCache$ = this.http.get(`${this.baseUrl}/categories`).pipe(
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+    }
+    return this._categoriesCache$;
   }
 
   getFeaturedCategories(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/categories/featured`);
+    if (!this._featuredCategoriesCache$) {
+      this._featuredCategoriesCache$ = this.http.get(`${this.baseUrl}/categories/featured`).pipe(
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+    }
+    return this._featuredCategoriesCache$;
   }
 
   getCategoryBySlug(slug: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/categories/slug/${slug}`);
   }
 
-  // Banners
+  // ── Banners (CACHED — only used on homepage) ──
   getBanners(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/banners`);
+    if (!this._bannersCache$) {
+      this._bannersCache$ = this.http.get(`${this.baseUrl}/banners`).pipe(
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+    }
+    return this._bannersCache$;
   }
 
-  // Settings
+  // ── Settings (CACHED — loaded once at app boot) ──
   getSettings(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/settings`);
+    if (!this._settingsCache$) {
+      this._settingsCache$ = this.http.get(`${this.baseUrl}/settings`).pipe(
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+    }
+    return this._settingsCache$;
   }
 
-  // Blogs
+  // ── Blogs ──
   getBlogs(page = 1): Observable<any> {
     return this.http.get(`${this.baseUrl}/blogs?page=${page}`);
   }
@@ -72,7 +110,7 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/blogs/slug/${slug}`);
   }
 
-  // Orders
+  // ── Orders ──
   placeOrder(orderData: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/orders`, orderData);
   }
@@ -81,13 +119,29 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/orders/track/${orderNumber}`);
   }
 
-  // Coupons
+  // ── Coupons ──
   validateCoupon(code: string, cartTotal: number): Observable<any> {
     return this.http.post(`${this.baseUrl}/coupons/validate`, { code, cart_total: cartTotal });
   }
 
-  // Customer registration
+  // ── Customer registration ──
   registerCustomer(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/customers/register`, data);
+  }
+
+  // ── Delivery ──
+  calculateDelivery(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/delivery/calculate`, data);
+  }
+
+  /**
+   * Clear all in-memory caches.
+   * Call this after admin updates categories/settings/banners.
+   */
+  clearCache(): void {
+    this._categoriesCache$ = null;
+    this._featuredCategoriesCache$ = null;
+    this._settingsCache$ = null;
+    this._bannersCache$ = null;
   }
 }

@@ -1,11 +1,31 @@
 <?php
 /**
  * Banners API — hero slider with desktop + mobile images AND video support
+ * OPTIMIZED: SHOW COLUMNS replaced with static flag — runs at most once per process
  */
 
-// ── Auto-migrate video columns on every request (safe, idempotent) ──────────
+// ── Run schema migration only once per PHP process (static flag) ─────────────
 function ensureVideoBannerColumns($db) {
-    $cols = ['media_type','video','mobile_video','fallback_image','button_color'];
+    static $migrated = false;
+    if ($migrated) return; // Already ran this request — skip
+
+    // Check file cache before doing DB query
+    if (function_exists('cacheGet') && cacheGet('banner_schema_v2') === '1') {
+        $migrated = true;
+        return; // Schema already applied
+    }
+
+    // Check a lightweight settings flag before doing SHOW COLUMNS
+    try {
+        $flag = $db->query("SELECT setting_value FROM site_settings WHERE setting_key = 'banner_schema_v2' LIMIT 1")->fetchColumn();
+        if ($flag === '1') {
+            if (function_exists('cacheSet')) cacheSet('banner_schema_v2', '1', 86400 * 30);
+            $migrated = true;
+            return; // Schema already applied
+        }
+    } catch (Exception $e) { /* site_settings may not exist yet */ }
+
+    // Only run SHOW COLUMNS if flag not set
     try {
         $existing = $db->query("SHOW COLUMNS FROM banners")->fetchAll(PDO::FETCH_COLUMN);
         if (!in_array('media_type', $existing)) {
@@ -23,7 +43,14 @@ function ensureVideoBannerColumns($db) {
         if (!in_array('button_color', $existing)) {
             $db->exec("ALTER TABLE banners ADD COLUMN button_color VARCHAR(30) DEFAULT '#e06400' AFTER button_text");
         }
+        // Mark as done in site_settings so future requests skip SHOW COLUMNS
+        try {
+            $db->exec("INSERT IGNORE INTO site_settings (setting_key, setting_value, setting_group) VALUES ('banner_schema_v2', '1', 'system')
+                       ON DUPLICATE KEY UPDATE setting_value = '1'");
+        } catch (Exception $e) { /* ignore */ }
     } catch (Exception $e) { /* ignore */ }
+
+    $migrated = true;
 }
 
 function getBanners($db) {

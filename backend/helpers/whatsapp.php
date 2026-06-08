@@ -1,6 +1,6 @@
 <?php
 /**
- * Asian Food Cork - WhatsApp Notification Helper
+ * White-label ecommerce WhatsApp notification helper
  * Uses CallMeBot API (free) - no paid account needed
  */
 
@@ -10,13 +10,17 @@ function sendWhatsAppNotification($cfg, $order) {
 
     if (empty($number) || empty($apiKey)) return;
 
-    $msg = "🛒 *New Order - Asian Food Cork*\n"
+    $siteName = function_exists('settingOrDefault') ? settingOrDefault($cfg, 'site_name', 'Your Store') : ($cfg['site_name'] ?? 'Your Store');
+    $adminUrl = function_exists('settingOrDefault') ? settingOrDefault($cfg, 'admin_url', '/admin/orders.php') : ($cfg['admin_url'] ?? '/admin/orders.php');
+    $currency = function_exists('settingOrDefault') ? settingOrDefault($cfg, 'currency_symbol', '$') : ($cfg['currency_symbol'] ?? '$');
+
+    $msg = "🛒 *New Order - {$siteName}*\n"
          . "Order: *{$order['order_number']}*\n"
          . "Customer: {$order['customer_name']}\n"
          . "Phone: {$order['customer_phone']}\n"
-         . "Total: €" . number_format($order['total'] ?? 0, 2) . "\n"
+         . "Total: {$currency}" . number_format($order['total'] ?? 0, 2) . "\n"
          . "Payment: " . strtoupper($order['payment_method'] ?? 'COD') . "\n"
-         . "View: https://mediumturquoise-rat-568948.hostingersite.com/admin/orders.php";
+         . "View: {$adminUrl}";
 
     $url = 'https://api.callmebot.com/whatsapp.php?'
          . http_build_query([

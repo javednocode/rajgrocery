@@ -1,4 +1,4 @@
-import { Component, Input, signal } from '@angular/core';
+import { Component, Input, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 import { environment } from '../../../../environments/environment';
@@ -7,6 +7,7 @@ import { environment } from '../../../../environments/environment';
   selector: 'app-product-card',
   standalone: true,
   imports: [RouterLink],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="pcard" [class.added]="justAdded()">
       <!-- Badges -->
@@ -19,7 +20,7 @@ import { environment } from '../../../../environments/environment';
       <!-- Image -->
       <a [routerLink]="['/product', product.slug]" class="pcard-img-wrap">
         <img [src]="getImageUrl()"
-             [alt]="product.name" class="pcard-img" loading="lazy"
+             [alt]="product.name" class="pcard-img" loading="lazy" decoding="async"
              (error)="onImgError($event)">
         <div class="pcard-hover-panel">
           <button class="quick-add-btn" (click)="addToCart($event)" [disabled]="product.stock <= 0">

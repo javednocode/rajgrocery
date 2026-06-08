@@ -61,7 +61,7 @@ export class BlogListComponent implements OnInit {
   posts = signal<any[]>([]);
   constructor(private api: ApiService, private seo: SeoService) {}
   ngOnInit() {
-    this.seo.setMeta({ title: 'Blog', description: 'Tips, recipes, and grocery news from Asian Food Cork' });
+    this.seo.setMeta({ title: 'Blog', description: 'Tips, product guides, and store updates.' });
     this.api.getBlogs().subscribe({ next: (res: any) => { if (res.success) this.posts.set(res.data); } });
   }
 }

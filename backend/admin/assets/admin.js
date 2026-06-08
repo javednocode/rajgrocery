@@ -1,8 +1,9 @@
 /**
- * asianfoodcork Admin Panel - JavaScript
+ * Ecommerce Admin Panel - JavaScript
  */
 
-const API_BASE = '../api';
+const API_BASE = '/api';
+const ADMIN_BASE = '/admin';
 let authToken = localStorage.getItem('admin_token') || '';
 
 // ========== API HELPER ==========
@@ -29,7 +30,10 @@ async function api(endpoint, method = 'GET', data = null, isFormData = false) {
             throw new Error('Server error: ' + (text.slice(0, 200) || 'Empty response'));
         }
 
-        if (!res.ok || json.success === false) throw new Error(json.message || 'Request failed');
+        if (!res.ok || json.success === false) {
+            if (res.status === 401) clearStoredAuth();
+            throw new Error(json.message || 'Request failed');
+        }
         return json;
     } catch (err) {
         showAlert(err.message, 'danger');
@@ -40,7 +44,36 @@ async function api(endpoint, method = 'GET', data = null, isFormData = false) {
 // ========== AUTH ==========
 function checkAuth() {
     if (!authToken && !window.location.pathname.includes('index.php') && !window.location.pathname.endsWith('/admin/')) {
-        window.location.href = 'index.php';
+        window.location.href = `${ADMIN_BASE}/index.php`;
+    }
+}
+
+function clearStoredAuth() {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
+    authToken = '';
+}
+
+async function parseJsonResponse(res) {
+    const text = await res.text();
+    const jsonStart = text.indexOf('{');
+    const jsonText = jsonStart >= 0 ? text.slice(jsonStart) : text;
+
+    try {
+        return JSON.parse(jsonText);
+    } catch (err) {
+        throw new Error('Server error: ' + (text.slice(0, 200) || 'Empty response'));
+    }
+}
+
+async function validateExistingSession() {
+    if (!authToken) return;
+
+    try {
+        await api('/dashboard/stats');
+        window.location.href = `${ADMIN_BASE}/dashboard.php`;
+    } catch (err) {
+        clearStoredAuth();
     }
 }
 
@@ -58,29 +91,35 @@ async function handleLogin(e) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
-        const json = await res.json();
+        const json = await parseJsonResponse(res);
         if (json.success) {
             localStorage.setItem('admin_token', json.data.token);
             localStorage.setItem('admin_user', JSON.stringify(json.data.admin));
-            window.location.href = 'dashboard.php';
+            window.location.href = `${ADMIN_BASE}/dashboard.php`;
         } else {
             showAlert(json.message, 'danger');
         }
     } catch (err) {
-        showAlert('Login failed. Please try again.', 'danger');
+        showAlert(err.message || 'Login failed. Please try again.', 'danger');
     }
     btn.disabled = false;
-    btn.textContent = 'Sign In';
+    btn.textContent = 'Sign In to Dashboard';
 }
 
 function logout() {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
-    window.location.href = 'index.php';
+    clearStoredAuth();
+    window.location.href = `${ADMIN_BASE}/index.php`;
 }
 
 // ========== ALERTS ==========
 function showAlert(message, type = 'success') {
+    const loginAlert = document.getElementById('loginAlert');
+    if (loginAlert) {
+        loginAlert.className = type === 'danger' ? 'error' : 'success';
+        loginAlert.textContent = message;
+        return;
+    }
+
     const existing = document.querySelector('.alert-float');
     if (existing) existing.remove();
     

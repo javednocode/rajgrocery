@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, PLATFORM_ID, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SlicePipe, UpperCasePipe } from '@angular/common';
@@ -12,6 +12,7 @@ import { environment } from '../../../environments/environment';
   selector: 'app-home',
   standalone: true,
   imports: [RouterLink, ProductCardComponent, ScrollAnimateDirective, SlicePipe, UpperCasePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- ── HERO MEDIA SLIDER ── -->
     <section class="hero-slider-section">
@@ -111,14 +112,14 @@ import { environment } from '../../../environments/environment';
         <!-- Fallback when no banners set -->
         <div class="slider-fallback">
           <div class="slider-fallback-content">
-            <div class="fallback-chip">Cork's #1 Asian Grocery Store</div>
-            <h1>Taste the Authentic<br><span class="fallback-highlight">Flavours of Asia</span></h1>
-            <p>Japanese, Korean, Chinese &amp; Thai — fresh, authentic, delivered fast in Cork.</p>
+            <div class="fallback-chip">Reusable Ecommerce Storefront</div>
+            <h1>Shop Fresh Finds<br><span class="fallback-highlight">For Every Day</span></h1>
+            <p>Curated products, simple checkout, and fast fulfilment for your next online store.</p>
             <div class="fallback-btns">
               <a routerLink="/categories" class="slide-btn" style="background:#e06400;">Shop Now
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
               </a>
-              <a routerLink="/admin/banners.php" class="fallback-admin-hint">Add banners from Admin panel →</a>
+              <a href="/admin/banners.php" class="fallback-admin-hint">Add banners from Admin panel →</a>
             </div>
           </div>
         </div>
@@ -217,9 +218,9 @@ import { environment } from '../../../environments/environment';
       <div class="container">
         <div class="section-header" appScrollAnimate>
           <div class="section-label">Why Choose Us</div>
-          <h2 class="section-title">The Asian Food Cork Difference</h2>
+          <h2 class="section-title">Reusable Ecommerce Foundation</h2>
           <div class="title-underline"></div>
-          <p class="why-subtitle">We’re not just a grocery store — we’re your local connection to authentic Asian flavours.</p>
+          <p class="why-subtitle">A flexible ecommerce foundation with the essentials already in place.</p>
         </div>
         <div class="why-grid">
           @for (f of whyFeatures; track f.title; let i = $index) {
@@ -433,7 +434,7 @@ import { environment } from '../../../environments/environment';
       margin: 0 0 16px;
     }
     .fallback-highlight {
-      background: linear-gradient(90deg, #4DC47B, #FF6A2C);
+      background: linear-gradient(90deg, #14B8A6, #E11D48);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -463,15 +464,15 @@ import { environment } from '../../../environments/environment';
     .hero-mesh {
       position: absolute; inset: 0; z-index: 0;
       background-image:
-        radial-gradient(ellipse 70% 55% at 75% 45%, rgba(46,159,92,0.2) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 45% at 15% 75%, rgba(255,106,44,0.13) 0%, transparent 55%),
-        radial-gradient(ellipse 40% 35% at 85% 85%, rgba(75,46,131,0.25) 0%, transparent 50%);
+        radial-gradient(ellipse 70% 55% at 75% 45%, rgba(15,118,110,0.2) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 45% at 15% 75%, rgba(225,29,72,0.13) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 35% at 85% 85%, rgba(37,99,235,0.25) 0%, transparent 50%);
       animation: meshShift 14s ease-in-out infinite alternate;
     }
     .hero-bg-gradient {
       position: absolute; inset: 0; z-index: 0;
-      background: radial-gradient(ellipse 80% 60% at 70% 50%, rgba(46,159,92,0.18) 0%, transparent 65%),
-                  radial-gradient(ellipse 60% 50% at 10% 80%, rgba(255,106,44,0.12) 0%, transparent 60%);
+      background: radial-gradient(ellipse 80% 60% at 70% 50%, rgba(15,118,110,0.18) 0%, transparent 65%),
+                  radial-gradient(ellipse 60% 50% at 10% 80%, rgba(225,29,72,0.12) 0%, transparent 60%);
     }
     .hero-orb {
       position: absolute; border-radius: 50%;
@@ -512,7 +513,7 @@ import { environment } from '../../../environments/environment';
       line-height: 1.1; margin-bottom: 20px; letter-spacing: -0.03em;
     }
     .hero-highlight {
-      background: linear-gradient(90deg, #4DC47B, #FF6A2C);
+      background: linear-gradient(90deg, #14B8A6, #E11D48);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
     }
@@ -578,7 +579,7 @@ import { environment } from '../../../environments/environment';
     /* Ambient glows */
     .hv-glow {
       position: absolute; width: 380px; height: 380px;
-      background: radial-gradient(circle, rgba(46,159,92,0.28) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(15,118,110,0.28) 0%, transparent 70%);
       border-radius: 50%; filter: blur(60px);
       top: 50%; left: 50%; transform: translate(-50%,-50%);
       pointer-events: none;
@@ -586,7 +587,7 @@ import { environment } from '../../../environments/environment';
     }
     .hv-glow2 {
       width: 220px; height: 220px;
-      background: radial-gradient(circle, rgba(75,46,131,0.35) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(37,99,235,0.35) 0%, transparent 70%);
       top: 20%; left: 60%;
       animation-delay: 2.5s;
     }
@@ -629,7 +630,7 @@ import { environment } from '../../../environments/environment';
       background-color: rgba(255,255,255,0.06);
     }
     .hp-img-placeholder {
-      background: linear-gradient(135deg, rgba(75,46,131,0.4) 0%, rgba(46,159,92,0.2) 100%);
+      background: linear-gradient(135deg, rgba(37,99,235,0.4) 0%, rgba(15,118,110,0.2) 100%);
     }
     .hp-card-body { padding: 12px 14px 14px; }
     .hp-badge {
@@ -706,7 +707,7 @@ import { environment } from '../../../environments/environment';
     }
     .cat-card:hover {
       border-color: #4b2e83;
-      box-shadow: 0 8px 28px rgba(75,46,131,0.14);
+      box-shadow: 0 8px 28px rgba(37,99,235,0.14);
       transform: translateY(-3px);
     }
     .cat-img-wrap {
@@ -855,7 +856,7 @@ import { environment } from '../../../environments/environment';
 
     /* ── CTA BAND ── */
     .cta-band {
-      background: linear-gradient(135deg, #217A45 0%, #2E9F5C 60%, #4B2E83 100%);
+      background: linear-gradient(135deg, #115E59 0%, #0F766E 60%, #2563EB 100%);
       position: relative;
     }
     /* Seamless dark shadow edge into footer */
@@ -937,17 +938,17 @@ export class HomeComponent implements OnInit, OnDestroy {
         <circle cx="5.5" cy="19" r="2" stroke="#22C55E" stroke-width="1.8"/>
         <circle cx="18.5" cy="19" r="2" stroke="#22C55E" stroke-width="1.8"/>
       </svg>`,
-      title: 'Cork-Wide Delivery',
-      desc: 'Same-day and next-day delivery across Cork city and county. Order by 2pm for evening delivery.'
+      title: 'Flexible Delivery',
+      desc: 'Configure local and standard delivery zones, fees, and free-shipping thresholds from settings.'
     },
     {
       iconBg: '#F0EDFB',
       icon: `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2L3.5 6.5v5C3.5 16.1 7.2 20.6 12 22c4.8-1.4 8.5-5.9 8.5-10.5v-5L12 2z" stroke="#4B2E83" stroke-width="1.8" stroke-linejoin="round"/>
-        <path d="M8.5 12l2.5 2.5 4.5-5" stroke="#4B2E83" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M12 2L3.5 6.5v5C3.5 16.1 7.2 20.6 12 22c4.8-1.4 8.5-5.9 8.5-10.5v-5L12 2z" stroke="#2563EB" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M8.5 12l2.5 2.5 4.5-5" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>`,
-      title: '100% Authentic',
-      desc: 'Genuine imported products sourced directly from Japan, Korea, China, and Thailand.'
+      title: 'Reusable Catalog',
+      desc: 'Manage categories, products, variants, stock, and promotions from the admin panel.'
     },
     {
       iconBg: '#FFF4EE',
@@ -975,6 +976,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private api: ApiService,
     private sanitizer: DomSanitizer,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: object
   ) {
     this._isBrowser = isPlatformBrowser(this.platformId);
@@ -1045,14 +1047,16 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.startAutoSlide();
       }
       this.bannersLoaded.set(true);
-    }, error: () => this.bannersLoaded.set(true) });
+      this.cdr.markForCheck();
+    }, error: () => { this.bannersLoaded.set(true); this.cdr.markForCheck(); } });
     this.api.getFeaturedCategories().subscribe({ next: (r: any) => {
       if (r.success) {
         this.categories.set(r.data);
         this.promoCategories.set(r.data.filter((c: any) => c.is_active == 1).slice(0, 4));
       }
+      this.cdr.markForCheck();
     }});
-    this.api.getFeaturedProducts(8).subscribe({ next: (r: any) => { if (r.success) this.featured.set(r.data); } });
-    this.api.getTrendingProducts(12).subscribe({ next: (r: any) => { if (r.success) this.trending.set(r.data); } });
+    this.api.getFeaturedProducts(8).subscribe({ next: (r: any) => { if (r.success) this.featured.set(r.data); this.cdr.markForCheck(); } });
+    this.api.getTrendingProducts(12).subscribe({ next: (r: any) => { if (r.success) this.trending.set(r.data); this.cdr.markForCheck(); } });
   }
 }

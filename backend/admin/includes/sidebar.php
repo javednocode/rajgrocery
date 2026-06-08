@@ -3,7 +3,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 ?>
 <aside class="admin-sidebar" id="adminSidebar">
     <div class="sidebar-logo">
-        <h2>Asian Food Cork</h2>
+        <h2>Ecommerce Admin</h2>
     </div>
     <nav class="sidebar-nav">
         <div class="nav-section">Main</div>

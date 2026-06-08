@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 
@@ -6,6 +6,7 @@ import { CartService } from '../../../core/services/cart.service';
   selector: 'app-cart-drawer',
   standalone: true,
   imports: [RouterLink],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (cart.isOpen()) {
       <div class="drawer-overlay" (click)="cart.closeCart()"></div>

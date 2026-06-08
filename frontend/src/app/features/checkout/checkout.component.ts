@@ -1,9 +1,10 @@
-import { Component, OnInit, OnDestroy, signal, computed, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, effect, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ApiService } from '../../core/services/api.service';
 import { CartService } from '../../core/services/cart.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { environment } from '../../../environments/environment';
 import { Subject, debounceTime, takeUntil } from 'rxjs';
 
@@ -11,6 +12,7 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
   selector: 'app-checkout',
   standalone: true,
   imports: [RouterLink, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="checkout-wrap">
       <div class="checkout-header">
@@ -54,8 +56,10 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
               <div class="fg">
                 <label>Country / Region <span class="req">*</span></label>
                 <select [(ngModel)]="form.country" class="fc">
-                  <option value="Ireland">Ireland</option>
+                  <option value="">Select country / region</option>
+                  <option value="United States">United States</option>
                   <option value="United Kingdom">United Kingdom</option>
+                  <option value="Ireland">Ireland</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
@@ -76,37 +80,21 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
                     (ngModelChange)="onLocationChange()">
                 </div>
                 <div class="fg">
-                  <label>County <span class="req">*</span></label>
-                  <select [(ngModel)]="form.county" class="fc" (ngModelChange)="onLocationChange()">
-                    <option>Cork</option>
-                    <option>Dublin</option>
-                    <option>Galway</option>
-                    <option>Limerick</option>
-                    <option>Waterford</option>
-                    <option>Kerry</option>
-                    <option>Clare</option>
-                    <option>Tipperary</option>
-                    <option>Kilkenny</option>
-                    <option>Wexford</option>
-                    <option>Wicklow</option>
-                    <option>Kildare</option>
-                    <option>Meath</option>
-                    <option>Louth</option>
-                    <option>Westmeath</option>
-                    <option>Other</option>
-                  </select>
+                  <label>State / County / Region <span class="req">*</span></label>
+                  <input [(ngModel)]="form.county" class="fc" placeholder="State, county or region" required
+                    (ngModelChange)="onLocationChange()">
                 </div>
               </div>
 
               <div class="fg">
-                <label>Eircode <span class="req">*</span></label>
+                <label>Postal Code <span class="req">*</span></label>
                 <div class="eircode-wrap">
-                  <input [(ngModel)]="form.eircode" class="fc" placeholder="e.g. T12 XY34" required
+                  <input [(ngModel)]="form.eircode" class="fc" placeholder="Postal code" required
                     (ngModelChange)="onLocationChange()" style="text-transform:uppercase">
                   @if (deliveryZone()) {
-                    <span class="zone-badge" [class.zone-cork]="deliveryZone() === 'cork_city'"
-                          [class.zone-outside]="deliveryZone() === 'outside_cork'">
-                      {{ deliveryZone() === 'cork_city' ? '🏙️ Cork City' : '🚐 Outside Cork' }}
+                    <span class="zone-badge" [class.zone-local]="deliveryZone() === 'local'"
+                          [class.zone-standard]="deliveryZone() === 'standard'">
+                      {{ deliveryInfo()?.zone_label || (deliveryZone() === 'local' ? 'Local Delivery' : 'Standard Delivery') }}
                     </span>
                   }
                 </div>
@@ -114,7 +102,7 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
 
               <div class="fg">
                 <label>Phone <span class="req">*</span></label>
-                <input [(ngModel)]="form.phone" class="fc" placeholder="+353..." required>
+                <input [(ngModel)]="form.phone" class="fc" placeholder="+1 555 123 4567" required>
               </div>
 
               <div class="fg">
@@ -147,7 +135,7 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
                       }
                       <span class="order-item-name">{{ item.name }} <strong>× {{ item.quantity }}</strong></span>
                     </div>
-                    <span class="order-item-price">€{{ ((item.salePrice ?? item.price) * item.quantity).toFixed(2) }}</span>
+                    <span class="order-item-price">{{ settings.get('currency_symbol', '$') }}{{ ((item.salePrice ?? item.price) * item.quantity).toFixed(2) }}</span>
                   </div>
                 }
 
@@ -164,7 +152,7 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
                     } @else if (deliveryInfo()?.amount_to_free > 0) {
                       <div class="delivery-msg delivery-hint">
                         <span class="msg-icon">🚚</span>
-                        <span>Add <strong>€{{ deliveryInfo()?.amount_to_free?.toFixed(2) }}</strong> more for free delivery</span>
+                        <span>Add <strong>{{ settings.get('currency_symbol', '$') }}{{ deliveryInfo()?.amount_to_free?.toFixed(2) }}</strong> more for free delivery</span>
                       </div>
                     }
                     <div class="progress-track">
@@ -172,8 +160,8 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
                            [class.fill-complete]="deliveryInfo()?.is_free"></div>
                     </div>
                     <div class="progress-labels">
-                      <span>€0</span>
-                      <span>Free above €{{ deliveryInfo()?.settings?.free_above || 50 }}</span>
+                      <span>{{ settings.get('currency_symbol', '$') }}0</span>
+                      <span>Free above {{ settings.get('currency_symbol', '$') }}{{ deliveryInfo()?.settings?.free_above || 50 }}</span>
                     </div>
                   </div>
                 }
@@ -182,15 +170,15 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
                 <div class="order-totals">
                   <div class="total-row">
                     <span>Subtotal</span>
-                    <span>€{{ cart.subtotal().toFixed(2) }}</span>
+                    <span>{{ settings.get('currency_symbol', '$') }}{{ cart.subtotal().toFixed(2) }}</span>
                   </div>
                   <div class="total-row delivery-row">
                     <span>
                       Delivery
                       @if (deliveryZone()) {
-                        <span class="zone-tag" [class.zone-tag-cork]="deliveryZone() === 'cork_city'"
-                              [class.zone-tag-out]="deliveryZone() === 'outside_cork'">
-                          {{ deliveryZone() === 'cork_city' ? 'Cork City' : 'Outside Cork' }}
+                        <span class="zone-tag" [class.zone-tag-local]="deliveryZone() === 'local'"
+                              [class.zone-tag-standard]="deliveryZone() === 'standard'">
+                          {{ deliveryInfo()?.zone_label || (deliveryZone() === 'local' ? 'Local' : 'Standard') }}
                         </span>
                       }
                     </span>
@@ -200,19 +188,19 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
                       } @else if (shippingCost() === 0) {
                         <span class="ship-free">FREE</span>
                       } @else {
-                        €{{ shippingCost().toFixed(2) }}
+                        {{ settings.get('currency_symbol', '$') }}{{ shippingCost().toFixed(2) }}
                       }
                     </span>
                   </div>
                   @if (deliveryInfo()?.has_small_fee) {
                     <div class="total-row small-fee-note">
                       <span>↳ Includes small order fee</span>
-                      <span>+€{{ deliveryInfo()?.settings?.small_order_fee?.toFixed(2) }}</span>
+                      <span>+{{ settings.get('currency_symbol', '$') }}{{ deliveryInfo()?.settings?.small_order_fee?.toFixed(2) }}</span>
                     </div>
                   }
                   <div class="total-row grand-total">
                     <span>TOTAL</span>
-                    <span>€{{ grandTotal().toFixed(2) }}</span>
+                    <span>{{ settings.get('currency_symbol', '$') }}{{ grandTotal().toFixed(2) }}</span>
                   </div>
                 </div>
 
@@ -222,14 +210,6 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
                 <div class="enquiry-section">
                   <div class="enquiry-label">Send Enquiry</div>
                   <p class="cod-note">Pay with cash or credit/debit card upon delivery.</p>
-                </div>
-
-                <!-- Pay Online -->
-                <div class="pay-online-section">
-                  <a href="https://checkout.revolut.com/pay/05f16f5b-9d65-4e3d-b818-5305aec92b8e"
-                     target="_blank" class="btn-pay-online" rel="noopener">
-                    💳 Pay Online
-                  </a>
                 </div>
 
                 <p class="privacy-note">
@@ -264,7 +244,7 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
       font-family: 'Inter', sans-serif;
     }
     .breadcrumb { font-size: 13px; color: #888; }
-    .breadcrumb a { color: #CC2936; text-decoration: none; }
+    .breadcrumb a { color: #E11D48; text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
 
     .checkout-body { padding-top: 36px; }
@@ -283,7 +263,7 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
 
     .fg { margin-bottom: 16px; }
     .fg label { display: block; font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px; }
-    .req { color: #CC2936; }
+    .req { color: #E11D48; }
     .fc {
       width: 100%; padding: 11px 14px;
       border: 1px solid #D1D5DB; border-radius: 4px;
@@ -291,20 +271,20 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
       outline: none; transition: border-color 0.2s;
       box-sizing: border-box; font-family: 'Inter', sans-serif;
     }
-    .fc:focus { border-color: #CC2936; box-shadow: 0 0 0 2px rgba(204,41,54,0.08); }
+    .fc:focus { border-color: #E11D48; box-shadow: 0 0 0 2px rgba(225,29,72,0.08); }
     select.fc { cursor: pointer; }
     textarea.fc { resize: vertical; }
     .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
-    /* Eircode zone badge */
+    /* Postal code zone badge */
     .eircode-wrap { position: relative; }
     .zone-badge {
       position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
       font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px;
       white-space: nowrap;
     }
-    .zone-cork    { background: #dcfce7; color: #166534; }
-    .zone-outside { background: #fff7ed; color: #9a3412; }
+    .zone-local    { background: #dcfce7; color: #166534; }
+    .zone-standard { background: #fff7ed; color: #9a3412; }
 
     /* Order box */
     .order-box {
@@ -348,14 +328,14 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
     }
     .delivery-free { color: #16a34a; }
     .delivery-hint { color: #6b7280; }
-    .delivery-hint strong { color: #CC2936; }
+    .delivery-hint strong { color: #E11D48; }
     .msg-icon { font-size: 15px; }
     .progress-track {
       background: #f3f4f6; border-radius: 99px; height: 6px; overflow: hidden;
     }
     .progress-fill {
       height: 100%; border-radius: 99px;
-      background: linear-gradient(90deg, #f59e0b, #CC2936);
+      background: linear-gradient(90deg, #f59e0b, #E11D48);
       transition: width 0.4s ease;
     }
     .progress-fill.fill-complete { background: #16a34a; }
@@ -375,8 +355,8 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
       font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
       margin-left: 6px; text-transform: uppercase; letter-spacing: 0.04em;
     }
-    .zone-tag-cork { background: #dcfce7; color: #166534; }
-    .zone-tag-out  { background: #fff7ed; color: #9a3412; }
+    .zone-tag-local    { background: #dcfce7; color: #166534; }
+    .zone-tag-standard { background: #fff7ed; color: #9a3412; }
     .ship-free   { color: #16a34a; font-weight: 700; }
     .ship-loading { color: #9ca3af; font-style: italic; }
     .small-fee-note { font-size: 12px; color: #9ca3af; padding: 1px 0; }
@@ -390,21 +370,12 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
     .enquiry-label { font-size: 16px; font-weight: 700; color: #111; margin-bottom: 6px; }
     .cod-note { font-size: 13px; color: #555; margin-bottom: 0; }
 
-    .pay-online-section { padding: 4px 24px 12px; }
-    .btn-pay-online {
-      display: block; text-align: center; padding: 11px 16px;
-      background: #0d1827; color: white; border-radius: 4px;
-      font-size: 14px; font-weight: 700; text-decoration: none;
-      transition: background 0.2s;
-    }
-    .btn-pay-online:hover { background: #1e3050; }
-
-    .privacy-note { font-size: 12px; color: #888; line-height: 1.6; padding: 4px 24px 8px; margin: 0; }
+    .privacy-note { font-size: 12px; color: #888; line-height: 1.6; padding: 10px 24px 12px; margin: 0; }
 
     .error-alert {
       margin: 0 24px 12px;
-      background: #FDF0F1; color: #CC2936;
-      border: 1px solid rgba(204,41,54,0.2);
+      background: #FDF0F1; color: #E11D48;
+      border: 1px solid rgba(225,29,72,0.2);
       padding: 12px 16px; border-radius: 6px;
       font-size: 13px;
     }
@@ -412,7 +383,7 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
     .btn-send-enquiry {
       display: block; width: calc(100% - 48px);
       margin: 0 24px 24px;
-      background: #CC2936; color: white;
+      background: #E11D48; color: white;
       border: none; border-radius: 4px;
       padding: 16px; font-size: 16px; font-weight: 700;
       cursor: pointer; transition: all 0.2s;
@@ -433,7 +404,7 @@ import { Subject, debounceTime, takeUntil } from 'rxjs';
     .success-box p { font-size: 15px; color: #555; margin-bottom: 10px; line-height: 1.6; }
     .btn-shop-more {
       display: inline-block; margin-top: 24px;
-      background: #CC2936; color: white;
+      background: #E11D48; color: white;
       padding: 14px 36px; border-radius: 4px;
       font-size: 15px; font-weight: 700; text-decoration: none;
       transition: all 0.2s;
@@ -462,14 +433,15 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   private destroy$        = new Subject<void>();
 
   form = {
-    first_name: '', last_name: '', country: 'Ireland',
+    first_name: '', last_name: '', country: '',
     address_line1: '', address_line2: '',
-    city: '', county: 'Cork', eircode: '',
+    city: '', county: '', eircode: '',
     phone: '', email: '', notes: ''
   };
 
   constructor(
     public cart: CartService,
+    public settings: SettingsService,
     private api: ApiService,
     private http: HttpClient,
     private router: Router
@@ -487,7 +459,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe(() => this.fetchDelivery());
 
-    // Initial calculation (Cork City defaults)
+    // Initial calculation
     this.fetchDelivery();
   }
 
@@ -538,7 +510,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   showProgress(): boolean {
     const info = this.deliveryInfo();
-    return !!(info && info.zone === 'cork_city' && info.settings?.free_enabled !== false);
+    return !!(info && info.zone === 'local' && info.settings?.free_enabled !== false);
   }
 
   sendEnquiry() {
@@ -566,11 +538,15 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       payment_method:  'cod',
       delivery_zone:   this.deliveryZone(),
       shipping_charge: this.shippingCost(),
-      items: this.cart.items().map(i => ({
-        product_id: i.id,
-        quantity:   i.quantity,
-        price:      i.salePrice ?? i.price
-      }))
+      items: this.cart.items().map(i => {
+        const parsed = this.parseCartProductId(i.id);
+        return {
+          product_id: i.baseProductId ?? parsed.productId,
+          variation_id: i.variationId ?? parsed.variationId,
+          quantity: i.quantity,
+          price: i.salePrice ?? i.price
+        };
+      })
     };
 
     this.api.placeOrder(payload).subscribe({
@@ -579,6 +555,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           this.enquiryRef.set(res.data?.order_number || 'ENQ-' + Date.now());
           this.cart.clearCart();
           this.enquirySent.set(true);
+          this.triggerEmailQueueProcessing(res.data?.order_id);
         } else {
           this.errorMsg.set(res.message || 'Failed to send enquiry. Please try again.');
         }
@@ -590,5 +567,21 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         this.submitting.set(false);
       }
     });
+  }
+
+  private triggerEmailQueueProcessing(orderId?: number | string) {
+    const query = orderId ? `?order_id=${encodeURIComponent(String(orderId))}` : '';
+    window.setTimeout(() => {
+      fetch(`${environment.apiUrl}/email/process${query}`, {
+        method: 'POST',
+        keepalive: true
+      }).catch(() => {});
+    }, 500);
+  }
+
+  private parseCartProductId(id: number | string): { productId: number | string; variationId?: number } {
+    const match = String(id).match(/^(\d+)_v(\d+)$/);
+    if (!match) return { productId: id };
+    return { productId: Number(match[1]), variationId: Number(match[2]) };
   }
 }

@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Email Settings | Asian Food Cork Admin</title>
+<title>Email Settings | Ecommerce Admin</title>
 <link rel="stylesheet" href="assets/admin.css">
 <style>
 .email-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -13,7 +13,7 @@
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .7px; margin-bottom: 6px; }
 .form-group input, .form-group select { width: 100%; padding: 10px 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 8px; color: #e2e8f0; font-size: 13px; box-sizing: border-box; }
-.form-group input:focus, .form-group select:focus { outline: none; border-color: #4B2E83; }
+.form-group input:focus, .form-group select:focus { outline: none; border-color: #2563EB; }
 .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
 .toggle-row:last-child { border: none; }
 .toggle-label { font-size: 13px; color: #cbd5e1; }
@@ -25,7 +25,7 @@
 .toggle input:checked + .slider { background: #22C55E; }
 .toggle input:checked + .slider:before { transform: translateX(18px); }
 .btn-primary { background: #22C55E; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; }
-.btn-purple { background: #4B2E83; }
+.btn-purple { background: #2563EB; }
 .btn-danger { background: #dc2626; }
 .log-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .log-table th { background: rgba(255,255,255,.05); padding: 8px 10px; text-align: left; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
@@ -55,7 +55,7 @@
       <form id="smtpForm">
         <div class="form-group">
           <label>SMTP Host</label>
-          <input type="text" name="smtp_host" id="smtp_host" value="asianfoodcork.com">
+          <input type="text" name="smtp_host" id="smtp_host" placeholder="smtp.example.com">
         </div>
         <div class="form-group">
           <label>Port</label>
@@ -70,7 +70,7 @@
         </div>
         <div class="form-group">
           <label>Username</label>
-          <input type="email" name="smtp_username" id="smtp_username" value="orders@asianfoodcork.com">
+          <input type="email" name="smtp_username" id="smtp_username" placeholder="smtp-user@example.com">
         </div>
         <div class="form-group">
           <label>Password</label>
@@ -78,15 +78,15 @@
         </div>
         <div class="form-group">
           <label>From Email</label>
-          <input type="email" name="smtp_from_email" id="smtp_from_email" value="orders@asianfoodcork.com">
+          <input type="email" name="smtp_from_email" id="smtp_from_email" placeholder="hello@example.com">
         </div>
         <div class="form-group">
           <label>From Name</label>
-          <input type="text" name="smtp_from_name" id="smtp_from_name" value="Asian Food Cork">
+          <input type="text" name="smtp_from_name" id="smtp_from_name" value="Your Store">
         </div>
         <div class="form-group">
           <label>Admin Email (receives order copies)</label>
-          <input type="email" name="admin_email" id="admin_email" value="orders@asianfoodcork.com">
+          <input type="email" name="admin_email" id="admin_email" placeholder="admin@example.com">
         </div>
         <button type="submit" class="btn-primary">💾 Save SMTP Settings</button>
       </form>
@@ -99,7 +99,7 @@
         <div class="alert-info">Send a test email to verify your SMTP settings are working correctly.</div>
         <div class="form-group">
           <label>Send Test To</label>
-          <input type="email" id="testEmailTo" placeholder="Enter email address" value="orders@asianfoodcork.com">
+          <input type="email" id="testEmailTo" placeholder="Enter email address">
         </div>
         <button class="btn-primary btn-purple" onclick="sendTest()">📤 Send Test Email</button>
         <div id="testResult" style="margin-top:12px;font-size:13px"></div>
@@ -124,7 +124,7 @@
         <div id="waFields" style="display:none;margin-top:16px">
           <div class="form-group">
             <label>WhatsApp Number (with country code)</label>
-            <input type="text" id="whatsapp_number" placeholder="+353851234567">
+            <input type="text" id="whatsapp_number" placeholder="+15551234567">
           </div>
           <div class="form-group">
             <label>CallMeBot API Key</label>
@@ -211,7 +211,7 @@ async function loadSettings() {
     try {
         var r = await emailApi('/email/settings');
         var s = r.data || {};
-        document.getElementById('smtp_host').value = s.smtp_host || 'asianfoodcork.com';
+        document.getElementById('smtp_host').value = s.smtp_host || '';
         document.getElementById('smtp_port').value = s.smtp_port || 465;
         document.getElementById('smtp_encryption').value = s.smtp_encryption || 'ssl';
         document.getElementById('smtp_username').value = s.smtp_username || '';
@@ -285,7 +285,7 @@ async function loadLogs() {
         }
         document.getElementById('logTableBody').innerHTML = html;
     } catch(e) {
-        document.getElementById('logTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;padding:20px">No logs (run SQL migration)</td></tr>';
+        document.getElementById('logTableBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#fca5a5;padding:20px">' + (e.message || 'Unable to load logs') + '</td></tr>';
     }
 }
 

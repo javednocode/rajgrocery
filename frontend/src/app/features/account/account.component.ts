@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
+import { SettingsService } from '../../core/services/settings.service';
 
 @Component({
   selector: 'app-account',
@@ -13,7 +14,7 @@ import { ApiService } from '../../core/services/api.service';
 
         <!-- Logo -->
         <div class="account-logo">
-          <img src="/logo.png" alt="Asian Food Cork" style="height:52px;object-fit:contain;">
+          <img [src]="settings.assetUrl('site_logo', '/logo.svg')" [alt]="settings.get('site_name', 'Your Store')" style="height:52px;object-fit:contain;">
         </div>
 
         <!-- Tabs -->
@@ -60,7 +61,7 @@ import { ApiService } from '../../core/services/api.service';
             </div>
             <div class="form-group">
               <label>Phone Number</label>
-              <input type="tel" [(ngModel)]="regPhone" name="regPhone" placeholder="+353 xx xxx xxxx" class="form-control">
+              <input type="tel" [(ngModel)]="regPhone" name="regPhone" placeholder="+1 555 123 4567" class="form-control">
             </div>
             <div class="form-group">
               <label>Password</label>
@@ -93,7 +94,7 @@ import { ApiService } from '../../core/services/api.service';
     .account-card {
       background: white;
       border-radius: 20px;
-      box-shadow: 0 8px 48px rgba(75,46,131,0.14);
+      box-shadow: 0 8px 48px rgba(37,99,235,0.14);
       padding: 40px 36px;
       width: 100%; max-width: 420px;
       animation: fadeUp 0.4s ease both;
@@ -114,13 +115,13 @@ import { ApiService } from '../../core/services/api.service';
       font-family: 'Inter', sans-serif;
     }
     .tab-btn.active {
-      background: white; color: #4B2E83;
-      box-shadow: 0 2px 8px rgba(75,46,131,0.12);
+      background: white; color: #2563EB;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.12);
     }
 
     .account-msg {
-      background: #EAF7EF; color: #2E9F5C;
-      border: 1px solid rgba(46,159,92,0.25);
+      background: #EAF7EF; color: #0F766E;
+      border: 1px solid rgba(15,118,110,0.25);
       padding: 10px 14px; border-radius: 8px;
       font-size: 13.5px; font-weight: 500;
       margin-bottom: 16px; text-align: center;
@@ -134,7 +135,7 @@ import { ApiService } from '../../core/services/api.service';
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label {
       font-size: 13px; font-weight: 600;
-      color: #351F60; letter-spacing: 0.01em;
+      color: #1E3A8A; letter-spacing: 0.01em;
     }
     .form-control {
       padding: 11px 14px; border: 1.5px solid #D1D5DB;
@@ -143,12 +144,12 @@ import { ApiService } from '../../core/services/api.service';
       font-family: 'Inter', sans-serif; background: white;
     }
     .form-control:focus {
-      border-color: #4B2E83;
-      box-shadow: 0 0 0 3px rgba(75,46,131,0.12);
+      border-color: #2563EB;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
     }
 
     .btn-submit {
-      background: linear-gradient(135deg, #4B2E83, #2E9F5C);
+      background: linear-gradient(135deg, #2563EB, #0F766E);
       color: white; border: none;
       padding: 13px; border-radius: 10px;
       font-size: 15px; font-weight: 700;
@@ -164,7 +165,7 @@ import { ApiService } from '../../core/services/api.service';
       margin-top: 4px;
     }
     .link-btn {
-      background: none; border: none; color: #4B2E83;
+      background: none; border: none; color: #2563EB;
       font-weight: 700; cursor: pointer; font-size: 13px;
       text-decoration: underline; font-family: 'Inter', sans-serif;
     }
@@ -174,7 +175,7 @@ import { ApiService } from '../../core/services/api.service';
       border-top: 1px solid #E5E7EB;
       text-align: center; font-size: 13px; color: #9CA3AF;
     }
-    .guest-note a { color: #2E9F5C; font-weight: 600; text-decoration: none; }
+    .guest-note a { color: #0F766E; font-weight: 600; text-decoration: none; }
     .guest-note a:hover { text-decoration: underline; }
 
     @media (max-width: 480px) {
@@ -195,7 +196,10 @@ export class AccountComponent {
   regPhone = '';
   regPassword = '';
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    public settings: SettingsService
+  ) {}
 
   doLogin() {
     if (!this.loginEmail || !this.loginPassword) {
@@ -227,7 +231,7 @@ export class AccountComponent {
       next: (res: any) => {
         this.loading.set(false);
         if (res?.success) {
-          this.showMsg('Account created! Welcome to Asian Food Cork 🎉', false);
+          this.showMsg(`Account created! Welcome to ${this.settings.get('site_name', 'Your Store')}.`, false);
           this.activeTab.set('login');
           this.loginEmail = this.regEmail;
           this.regName = this.regEmail = this.regPhone = this.regPassword = '';

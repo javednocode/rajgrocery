@@ -52,7 +52,7 @@
 .variation-thumb:hover .upload-hint { opacity:1; }
 .variation-badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
 .badge-active   { background:rgba(42,122,59,0.15); color:#34d399; }
-.badge-inactive { background:rgba(204,41,54,0.12); color:#f87171; }
+.badge-inactive { background:rgba(225,29,72,0.12); color:#f87171; }
 .var-actions { display:flex; gap:6px; }
 .var-actions button { padding:6px 12px; border-radius:8px; border:none; cursor:pointer; font-size:12px; font-weight:600; transition:0.15s; }
 .var-btn-edit   { background:rgba(99,102,241,0.15); color:#818cf8; }
@@ -311,7 +311,7 @@
                 <span>🎨</span>
                 <span id="varModalTitle">Add Variation</span>
             </div>
-            <button class="var-modal-close" onclick="closeVariationModal()">✕</button>
+            <button type="button" class="var-modal-close" onclick="closeVariationModal()">✕</button>
         </div>
 
         <div class="var-modal-body">
@@ -409,12 +409,12 @@ function renderPendingVariations() {
                 <div style="font-size:12px;color:var(--admin-text-dim);">SKU: ${v.sku||'—'} &nbsp;|&nbsp; Stock: ${v.stock}</div>
             </div>
             <div style="font-size:13px;font-weight:700;">€${parseFloat(v.price||0).toFixed(2)}</div>
-            <div style="font-size:13px;color:#2A7A3B;">${v.sale_price ? '€'+parseFloat(v.sale_price).toFixed(2) : '—'}</div>
+            <div style="font-size:13px;color:#0F766E;">${v.sale_price ? '€'+parseFloat(v.sale_price).toFixed(2) : '—'}</div>
             <div><span class="variation-badge ${v.is_active?'badge-active':'badge-inactive'}">${v.is_active?'Active':'Off'}</span></div>
             <div></div>
             <div class="var-actions">
-                <button class="var-btn-edit" onclick="editPendingVariation(${i})">Edit</button>
-                <button class="var-btn-delete" onclick="deletePendingVariation(${i})">Remove</button>
+                <button type="button" class="var-btn-edit" onclick="editPendingVariation(${i})">Edit</button>
+                <button type="button" class="var-btn-delete" onclick="deletePendingVariation(${i})">Remove</button>
             </div>
         </div>
     `).join('');
@@ -553,7 +553,8 @@ document.getElementById('productForm').addEventListener('submit', async function
         if (!productId && newProductId) {
             setTimeout(() => window.location.href = `product-edit.php?id=${newProductId}`, 900);
         } else {
-            setTimeout(() => window.location.href = 'products.php', 1000);
+            // Stay on the edit page — reload in-place so variations/images are refreshed
+            setTimeout(() => window.location.reload(), 900);
         }
     } catch(e) {}
 });
@@ -578,12 +579,12 @@ function renderVariations(variations) {
                 <div style="font-size:12px;color:var(--admin-text-dim);">SKU: ${v.sku || '—'} &nbsp;|&nbsp; Stock: ${v.stock}</div>
             </div>
             <div style="font-size:13px;font-weight:700;">€${parseFloat(v.price).toFixed(2)}</div>
-            <div style="font-size:13px;color:#2A7A3B;">${v.sale_price ? '€'+parseFloat(v.sale_price).toFixed(2) : '—'}</div>
+            <div style="font-size:13px;color:#0F766E;">${v.sale_price ? '€'+parseFloat(v.sale_price).toFixed(2) : '—'}</div>
             <div><span class="variation-badge ${v.is_active==1?'badge-active':'badge-inactive'}">${v.is_active==1?'Active':'Off'}</span></div>
             <div></div>
             <div class="var-actions">
-                <button class="var-btn-edit" onclick="editVariation(${v.id})">✏️ Edit</button>
-                <button class="var-btn-delete" onclick="deleteVariation(${v.id})">🗑</button>
+                <button type="button" class="var-btn-edit" onclick="editVariation(${v.id})">✏️ Edit</button>
+                <button type="button" class="var-btn-delete" onclick="deleteVariation(${v.id})">🗑</button>
             </div>
         </div>
     `).join('');
@@ -705,7 +706,8 @@ async function saveVariation() {
 
     try {
         if (editingVariationId) {
-            await api(`/variations/${editingVariationId}`, 'PUT', formData, true);
+            // POST instead of PUT — PHP correctly populates $_POST + $_FILES for POST multipart
+            await api(`/variations/${editingVariationId}`, 'POST', formData, true);
             showAlert('Variation updated!');
         } else {
             await api(`/products/${productId}/variations`, 'POST', formData, true);

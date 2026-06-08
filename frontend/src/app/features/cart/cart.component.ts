@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../core/services/cart.service';
 import { SettingsService } from '../../core/services/settings.service';
@@ -7,6 +7,7 @@ import { SettingsService } from '../../core/services/settings.service';
   selector: 'app-cart',
   standalone: true,
   imports: [RouterLink],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="cart-page">
       <div class="container">

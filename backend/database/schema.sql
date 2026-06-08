@@ -1,4 +1,4 @@
--- asianfoodcork Grocery eCommerce Database Schema
+-- White-label Grocery eCommerce Database Schema
 -- MySQL 8.0+
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -6,8 +6,8 @@ SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+05:30";
 
-CREATE DATABASE IF NOT EXISTS `asianfoodcork_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `asianfoodcork_db`;
+CREATE DATABASE IF NOT EXISTS `ecommerce_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `ecommerce_db`;
 
 -- ============================================
 -- 1. ADMIN USERS
@@ -25,9 +25,10 @@ CREATE TABLE `admins` (
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Default admin: admin@asianfoodcork.com / password123
+-- Default admin: admin@example.com / password123
+-- Hash generated via: password_hash('password123', PASSWORD_BCRYPT)
 INSERT INTO `admins` (`name`, `email`, `password`, `role`) VALUES
-('Super Admin', 'admin@asianfoodcork.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'super_admin');
+('Super Admin', 'admin@example.com', '$2y$10$TKh8H1.PfQ0A32/C.bX5OuMFT5Q9rCp2r9mGQGRqZ8q6kNFJVfWWe', 'super_admin');
 
 -- ============================================
 -- 2. CATEGORIES (Nested with self-referencing parent_id)
@@ -286,30 +287,30 @@ CREATE TABLE `site_settings` (
 
 -- Default settings
 INSERT INTO `site_settings` (`setting_key`, `setting_value`, `setting_type`, `setting_group`) VALUES
-('site_name', 'Asian Food Cork', 'text', 'general'),
-('site_tagline', 'Fresh Groceries Delivered to Your Door', 'text', 'general'),
-('site_logo', '', 'image', 'general'),
-('site_favicon', '', 'image', 'general'),
-('site_email', 'contact@asianfoodcork.com', 'text', 'general'),
-('site_phone', '+91 9876543210', 'text', 'general'),
-('site_address', '123 Market Street, City, State 123456', 'textarea', 'general'),
-('footer_about', 'Asian Food Cork is your trusted online grocery store delivering fresh produce, pantry staples, and household essentials right to your doorstep.', 'textarea', 'footer'),
-('footer_copyright', '© 2026 Asian Food Cork. All rights reserved.', 'text', 'footer'),
+('site_name', 'Your Store', 'text', 'general'),
+('site_tagline', 'White-label ecommerce storefront', 'text', 'general'),
+('site_logo', '/logo.svg', 'image', 'general'),
+('site_favicon', '/favicon.ico', 'image', 'general'),
+('site_email', 'hello@example.com', 'text', 'general'),
+('site_phone', '', 'text', 'general'),
+('site_address', 'Configure store address in Admin Settings', 'textarea', 'general'),
+('footer_about', 'A reusable ecommerce storefront. Update this copy in Admin Settings for each new brand.', 'textarea', 'footer'),
+('footer_copyright', '© 2026 Your Store. All rights reserved.', 'text', 'footer'),
 ('social_facebook', '', 'text', 'social'),
 ('social_instagram', '', 'text', 'social'),
 ('social_twitter', '', 'text', 'social'),
 ('social_youtube', '', 'text', 'social'),
 ('social_whatsapp', '', 'text', 'social'),
-('shipping_free_above', '500', 'number', 'shipping'),
-('shipping_charge', '40', 'number', 'shipping'),
-('tax_percentage', '5', 'number', 'tax'),
-('currency_symbol', '₹', 'text', 'general'),
-('currency_code', 'INR', 'text', 'general'),
-('header_offer_text', '🎉 Free delivery on orders above ₹500!', 'text', 'header'),
+('shipping_free_above', '50', 'number', 'shipping'),
+('shipping_charge', '5', 'number', 'shipping'),
+('tax_percentage', '0', 'number', 'tax'),
+('currency_symbol', '$', 'text', 'general'),
+('currency_code', 'USD', 'text', 'general'),
+('header_offer_text', 'Free delivery options can be configured in Admin Settings.', 'text', 'header'),
 ('maintenance_mode', '0', 'boolean', 'general'),
 ('google_analytics_id', '', 'text', 'seo'),
-('meta_title', 'Asian Food Cork - Fresh Groceries Online', 'text', 'seo'),
-('meta_description', 'Order fresh groceries, fruits, vegetables, and daily essentials online. Fast delivery and best prices at Asian Food Cork.', 'textarea', 'seo');
+('meta_title', 'Your Store - Online Store', 'text', 'seo'),
+('meta_description', 'Shop products online. Fast checkout, product management, customer management, and order management are ready to customize.', 'textarea', 'seo');
 
 -- ============================================
 -- 14. COUPONS

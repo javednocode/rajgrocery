@@ -1,18 +1,48 @@
 <?php
 /**
- * Asian Food Cork - PDF Invoice Generator
+ * White-label ecommerce PDF invoice generator
  * Pure PHP PDF generation — no external library required
  */
 
-function generatePDFInvoice($order, $items) {
+require_once __DIR__ . '/branding.php';
+
+function generatePDFInvoice($order, $items, $cfg = []) {
+    $siteName = settingOrDefault($cfg, 'site_name', 'Your Store');
+    $tagline = settingOrDefault($cfg, 'site_tagline', 'White-label ecommerce storefront');
+    $email = settingOrDefault($cfg, 'site_email', settingOrDefault($cfg, 'contact_email', 'hello@example.com'));
+    $phone = settingOrDefault($cfg, 'site_phone', '');
+    $siteUrl = appBaseUrl($cfg);
+    $currencySymbol = settingOrDefault($cfg, 'currency_symbol', '$');
+
     $dir = __DIR__ . '/../uploads/invoices/';
     if (!is_dir($dir)) @mkdir($dir, 0755, true);
 
     $filename = $dir . $order['order_number'] . '.pdf';
     $webPath  = '/uploads/invoices/' . $order['order_number'] . '.pdf';
 
-    // Return cached file
-    if (file_exists($filename)) return $webPath;
+    // ── Resolve logo path (try JPG and PNG variants) ──────────────────────
+    $brandingDir = '/uploads/branding/';
+    $logoNames   = ['logo_invoice.jpg', 'logo_invoice.png', 'logo.png', 'logo.jpg'];
+    $configuredLogo = settingOrDefault($cfg, 'invoice_logo', settingOrDefault($cfg, 'site_logo', ''));
+    if ($configuredLogo !== '') {
+        array_unshift($logoNames, basename($configuredLogo));
+    }
+    $basePaths   = [
+        realpath(__DIR__ . '/..'),
+        rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/'),
+        __DIR__ . '/..',
+    ];
+    $logoPath = null;
+    foreach ($logoNames as $logoName) {
+        foreach ($basePaths as $base) {
+            if (!$base) continue;
+            $lp = $base . $brandingDir . $logoName;
+            error_log('[PDF Logo] Trying: ' . $lp . ' exists=' . (file_exists($lp) ? 'YES' : 'NO'));
+            if (file_exists($lp)) { $logoPath = $lp; break 2; }
+        }
+    }
+
+    // Always regenerate to include latest order data (e.g. notes)
 
     $pdf = new SimplePDF();
     $pdf->addPage();
@@ -21,34 +51,21 @@ function generatePDFInvoice($order, $items) {
     $pdf->setFillColor(13, 24, 39);
     $pdf->rect(10, 10, 190, 28, 'F');
 
-    // Logo image — resolve to absolute path reliably
-    // On Hostinger: invoice_pdf.php is at public_html/helpers/, uploads is at public_html/uploads/
-    // So __DIR__/../uploads/branding/ is always correct on both local and Hostinger
-    $logoRelative = '/uploads/branding/logo_invoice.jpg';
-    $logoPaths = [
-        // Most reliable: PHP real file resolution from this file's location
-        realpath(__DIR__ . '/..')  . $logoRelative,
-        // DOCUMENT_ROOT (works when PHP is called via web)
-        rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/') . $logoRelative,
-        // Absolute from __DIR__ (symlink-safe)
-        __DIR__ . '/..' . $logoRelative,
-    ];
-    $logoPath = null;
-    foreach ($logoPaths as $lp) {
-        error_log('[PDF Logo] Trying: ' . $lp . ' exists=' . (file_exists($lp) ? 'YES' : 'NO'));
-        if ($lp && file_exists($lp)) { $logoPath = $lp; break; }
-    }
-
     if ($logoPath) {
-        $pdf->addJpeg($logoPath, 14, 13, 50, 22);
+        $info = @getimagesize($logoPath);
+        $type = 'JPEG';
+        if ($info && isset($info['mime']) && $info['mime'] === 'image/png') {
+            $type = 'PNG';
+        }
+        $pdf->addImage($logoPath, 14, 13, 50, 22, $type);
     } else {
         // Fallback: white text name if logo file not found
         error_log('[PDF Logo] No logo file found, using text fallback');
         $pdf->setTextColor(255, 255, 255);
         $pdf->setFont('Helvetica', 'B', 16);
-        $pdf->text(15, 25, 'Asian Food Cork');
+        $pdf->text(15, 25, $siteName);
         $pdf->setFont('Helvetica', '', 9);
-        $pdf->text(15, 33, 'Authentic Asian Groceries | Cork, Ireland');
+        $pdf->text(15, 33, substr($tagline, 0, 48));
     }
 
     // INVOICE label top-right
@@ -120,8 +137,8 @@ function generatePDFInvoice($order, $items) {
         $alt = !$alt;
         $pdf->text(12,  $y + 5, substr((string)($item['product_name'] ?? ''), 0, 55));
         $pdf->text(112, $y + 5, (string)($item['quantity'] ?? 1));
-        $pdf->text(135, $y + 5, '€' . number_format((float)($item['price'] ?? 0), 2));
-        $pdf->text(170, $y + 5, '€' . number_format((float)($item['total'] ?? 0), 2));
+        $pdf->text(135, $y + 5, $currencySymbol . number_format((float)($item['price'] ?? 0), 2));
+        $pdf->text(170, $y + 5, $currencySymbol . number_format((float)($item['total'] ?? 0), 2));
         $y += 9;
         if ($y > 245) { $pdf->addPage(); $y = 20; }
     }
@@ -133,13 +150,13 @@ function generatePDFInvoice($order, $items) {
     $y += 6;
     $pdf->setFont('Helvetica', '', 9);
 
-    $totals = [['Subtotal', '€' . number_format((float)($order['subtotal'] ?? 0), 2)]];
+    $totals = [['Subtotal', $currencySymbol . number_format((float)($order['subtotal'] ?? 0), 2)]];
     if (!empty($order['discount']) && (float)$order['discount'] > 0)
-        $totals[] = ['Discount', '-€' . number_format((float)$order['discount'], 2)];
+        $totals[] = ['Discount', '-' . $currencySymbol . number_format((float)$order['discount'], 2)];
     if (!empty($order['shipping_charge']))
-        $totals[] = ['Shipping', '€' . number_format((float)$order['shipping_charge'], 2)];
+        $totals[] = ['Shipping', $currencySymbol . number_format((float)$order['shipping_charge'], 2)];
     if (!empty($order['tax']))
-        $totals[] = ['Tax (VAT)', '€' . number_format((float)$order['tax'], 2)];
+        $totals[] = ['Tax', $currencySymbol . number_format((float)$order['tax'], 2)];
 
     foreach ($totals as [$label, $value]) {
         $pdf->text(140, $y, $label . ':');
@@ -153,16 +170,46 @@ function generatePDFInvoice($order, $items) {
     $pdf->setTextColor(255, 255, 255);
     $pdf->setFont('Helvetica', 'B', 10);
     $pdf->text(134, $y + 7, 'TOTAL:');
-    $pdf->text(168, $y + 7, '€' . number_format((float)($order['total'] ?? 0), 2));
+    $pdf->text(168, $y + 7, $currencySymbol . number_format((float)($order['total'] ?? 0), 2));
     $pdf->setTextColor(0, 0, 0);
+
+    // ── Order Notes ───────────────────────────────────────────────────────────
+    $notes = trim((string)($order['notes'] ?? ''));
+    if ($notes !== '') {
+        $y += 14;
+        $pdf->setFillColor(245, 247, 250);
+        $pdf->rect(10, $y - 2, 190, 16, 'F');
+        $pdf->setFont('Helvetica', 'B', 9);
+        $pdf->setTextColor(80, 80, 80);
+        $pdf->text(12, $y + 5, 'Order Note:');
+        $pdf->setFont('Helvetica', '', 9);
+        $pdf->setTextColor(40, 40, 40);
+        $pdf->text(42, $y + 5, substr($notes, 0, 90));
+        $pdf->setTextColor(0, 0, 0);
+        $y += 18;
+    }
 
     // ── Footer ───────────────────────────────────────────────────────────────
     $y += 22;
     $pdf->setFont('Helvetica', 'I', 8);
     $pdf->setTextColor(130, 130, 130);
-    $pdf->text(12, $y,      'Thank you for shopping with Asian Food Cork!');
-    $pdf->text(12, $y + 6,  'Questions? orders@asianfoodcork.com | +353 21 000 0000');
-    $pdf->text(12, $y + 12, 'www.asianfoodcork.com');
+    $pdf->text(12, $y,      'Thank you for shopping with ' . $siteName . '!');
+    $contactLine = 'Questions? ' . $email . ($phone !== '' ? ' | ' . $phone : '');
+    $pdf->text(12, $y + 6,  substr($contactLine, 0, 80));
+    if ($siteUrl !== '') {
+        $pdf->text(12, $y + 12, substr($siteUrl, 0, 80));
+    }
+
+    // ── Designed-by credit with clickable hyperlink ───────────────────────────
+    $creditY = $y + 22;
+    $pdf->setFont('Helvetica', 'I', 7);
+    $pdf->setTextColor(180, 180, 180);
+    $pdf->text(12, $creditY, 'Proudly designed by ');
+    $pdf->setTextColor(99, 102, 241);   // indigo link colour
+    $pdf->text(49, $creditY, 'webcraftstech.in');
+    // Clickable annotation: x=49mm, y=creditY-4mm (top of text), w≈38mm, h≈5mm
+    $pdf->addLink(49, $creditY - 4, 38, 5, 'https://webcraftstech.in');
+    $pdf->setTextColor(0, 0, 0);
 
     $pdf->save($filename);
     return $webPath;
@@ -174,6 +221,9 @@ class SimplePDF {
     // Page content streams
     private array $pageStreams = [];
     private int   $currentPage = -1;
+
+    // Link annotations: array of ['page'=>int, 'x'=>mm, 'y'=>mm, 'w'=>mm, 'h'=>mm, 'url'=>string]
+    private array $links = [];
 
     // Colors (0–255)
     private array $fillColor = [255, 255, 255];
@@ -276,10 +326,11 @@ class SimplePDF {
         return str_replace(['\\', '(', ')', "\r"], ['\\\\', '\\(', '\\)', ''], $s);
     }
 
-    // ── Embed JPEG image ─────────────────────────────────────────────────────
+    // ── Embed image (JPEG or PNG) ─────────────────────────────────────────
     // Emits drawing commands INTO the current stream at call-time (correct order!).
     // $xMM, $yMM = top-left corner; $wMM, $hMM = displayed size in mm.
-    public function addJpeg(string $path, float $xMM, float $yMM, float $wMM, float $hMM): void {
+    // $type: 'JPEG' or 'PNG'
+    public function addImage(string $path, float $xMM, float $yMM, float $wMM, float $hMM, string $type = 'JPEG'): void {
         // Register unique image (keyed by path so the same file isn't duplicated)
         $name = null;
         foreach ($this->images as $img) {
@@ -287,7 +338,7 @@ class SimplePDF {
         }
         if (!$name) {
             $name = 'Im' . (count($this->images) + 1);
-            $this->images[] = ['path' => $path, 'name' => $name];
+            $this->images[] = ['path' => $path, 'name' => $name, 'type' => strtoupper($type)];
         }
 
         // Emit the draw command inline — this runs AFTER whatever was drawn before
@@ -297,6 +348,24 @@ class SimplePDF {
         $hPt = $hMM  * $this->k;
         $this->put(sprintf('q %.4f 0 0 %.4f %.4f %.4f cm /%s Do Q',
             $wPt, $hPt, $xPt, $yPt, $name));
+    }
+
+    // Legacy alias
+    public function addJpeg(string $path, float $xMM, float $yMM, float $wMM, float $hMM): void {
+        $this->addImage($path, $xMM, $yMM, $wMM, $hMM, 'JPEG');
+    }
+
+    // ── Hyperlink annotation ──────────────────────────────────────────────────
+    // Call after the text you want to link. xMM/yMM = top-left of hit area in mm.
+    public function addLink(float $xMM, float $yMM, float $wMM, float $hMM, string $url): void {
+        $this->links[] = [
+            'page' => $this->currentPage,
+            'x'   => $xMM,
+            'y'   => $yMM,
+            'w'   => $wMM,
+            'h'   => $hMM,
+            'url' => $url,
+        ];
     }
 
     // ── Save PDF ──────────────────────────────────────────────────────────────
@@ -325,20 +394,66 @@ class SimplePDF {
         $imageXObjIds = []; // name => object id
         foreach ($this->images as &$img) {
             if (!file_exists($img['path'])) continue;
-            $jpegData  = file_get_contents($img['path']);
-            $jpegSize  = filesize($img['path']);
-            $imgInfo   = getimagesize($img['path']);
-            $imgW      = $imgInfo[0];
-            $imgH      = $imgInfo[1];
-            $colorSpace = (isset($imgInfo['channels']) && $imgInfo['channels'] === 1) ? '/DeviceGray' : '/DeviceRGB';
+            $imgInfo    = @getimagesize($img['path']);
+            if (!$imgInfo) continue;
 
-            $imgObjId  = $nextId++;
-            $allObjects[$imgObjId] =
-                "<<\n/Type /XObject\n/Subtype /Image\n" .
-                "/Width $imgW\n/Height $imgH\n" .
-                "/ColorSpace $colorSpace\n/BitsPerComponent 8\n" .
-                "/Filter /DCTDecode\n/Length $jpegSize\n" .
-                ">>\nstream\n" . $jpegData . "\nendstream";
+            $imgW       = $imgInfo[0];
+            $imgH       = $imgInfo[1];
+            
+            // Detect actual type instead of trusting $img['type']
+            $imgType    = (isset($imgInfo['mime']) && $imgInfo['mime'] === 'image/png') ? 'PNG' : 'JPEG';
+
+            $colorSpace = '/DeviceRGB';
+            if (isset($imgInfo['channels']) && $imgInfo['channels'] === 1) {
+                $colorSpace = '/DeviceGray';
+            }
+
+            $imgObjId = $nextId++;
+
+            if ($imgType === 'PNG') {
+                // Decode PNG to raw RGB pixels using GD
+                $gd = @imagecreatefrompng($img['path']);
+                if (!$gd) {
+                    // PNG load failed — skip this image
+                    error_log('[PDF Image] Failed to load PNG: ' . $img['path']);
+                    continue;
+                }
+                // Flatten transparency onto white background
+                $flat = imagecreatetruecolor($imgW, $imgH);
+                $white = imagecolorallocate($flat, 255, 255, 255);
+                imagefill($flat, 0, 0, $white);
+                imagecopy($flat, $gd, 0, 0, 0, 0, $imgW, $imgH);
+                imagedestroy($gd);
+
+                // Extract raw RGB bytes
+                $rawData = '';
+                for ($row = 0; $row < $imgH; $row++) {
+                    for ($col = 0; $col < $imgW; $col++) {
+                        $px = imagecolorat($flat, $col, $row);
+                        $rawData .= chr(($px >> 16) & 0xFF) . chr(($px >> 8) & 0xFF) . chr($px & 0xFF);
+                    }
+                }
+                imagedestroy($flat);
+
+                $dataLen = strlen($rawData);
+                $colorSpace = '/DeviceRGB';
+                $allObjects[$imgObjId] =
+                    "<<\n/Type /XObject\n/Subtype /Image\n" .
+                    "/Width $imgW\n/Height $imgH\n" .
+                    "/ColorSpace $colorSpace\n/BitsPerComponent 8\n" .
+                    "/Length $dataLen\n" .
+                    ">>\nstream\n" . $rawData . "\nendstream";
+            } else {
+                // JPEG — embed raw file bytes directly
+                $jpegData = file_get_contents($img['path']);
+                $jpegSize = strlen($jpegData);
+                $allObjects[$imgObjId] =
+                    "<<\n/Type /XObject\n/Subtype /Image\n" .
+                    "/Width $imgW\n/Height $imgH\n" .
+                    "/ColorSpace $colorSpace\n/BitsPerComponent 8\n" .
+                    "/Filter /DCTDecode\n/Length $jpegSize\n" .
+                    ">>\nstream\n" . $jpegData . "\nendstream";
+            }
 
             $img['objId'] = $imgObjId;
             $imageXObjIds[$img['name']] = $imgObjId;
@@ -355,15 +470,43 @@ class SimplePDF {
             $xobjStr .= '>>';
         }
 
+        // ── Build link annotation objects (one per link) ──────────────────────
+        // Group links by page index so we can attach them to the right page dict.
+        $linkAnnotIdsByPage = []; // pageIndex => [annotObjId, ...]
+        foreach ($this->links as $lnk) {
+            $k     = $this->k;
+            // PDF rect: [llx lly urx ury] — origin bottom-left
+            $llx = $lnk['x'] * $k;
+            $lly = ($this->H - $lnk['y'] - $lnk['h']) * $k;
+            $urx = ($lnk['x'] + $lnk['w']) * $k;
+            $ury = ($this->H - $lnk['y']) * $k;
+            $uri = addslashes($lnk['url']);
+            $annotId = $nextId++;
+            $allObjects[$annotId] =
+                "<</Type /Annot\n/Subtype /Link\n" .
+                "/Rect [$llx $lly $urx $ury]\n" .
+                "/Border [0 0 0]\n" .
+                "/A <</S /URI /URI ($uri)>>\n" .
+                ">>";
+            $linkAnnotIdsByPage[$lnk['page']][] = $annotId;
+        }
+
         // ── Build page content streams ────────────────────────────────────────
         // Image draw commands are already embedded inline at the right position
         // by addJpeg() — no need to prepend/append here.
         $pageObjIds = [];
-        foreach ($this->pageStreams as $stream) {
+        foreach ($this->pageStreams as $pageIdx => $stream) {
             $streamLen = strlen($stream);
 
             $contentId = $nextId++;
             $pageId    = $nextId++;
+
+            // Build /Annots array for this page if any links exist
+            $annotsStr = '';
+            if (!empty($linkAnnotIdsByPage[$pageIdx])) {
+                $refs = implode(' 0 R ', $linkAnnotIdsByPage[$pageIdx]) . ' 0 R';
+                $annotsStr = "/Annots [$refs]\n";
+            }
 
             $allObjects[$contentId] = "<<\n/Length $streamLen\n>>\nstream\n$stream\nendstream";
             $allObjects[$pageId]    =
@@ -371,6 +514,7 @@ class SimplePDF {
                 "/Parent $PAGES_ID 0 R\n" .
                 "/MediaBox [0 0 $Wpt $Hpt]\n" .
                 "/Contents $contentId 0 R\n" .
+                $annotsStr .
                 "/Resources <</Font <</F1 $FONT1_ID 0 R /F2 $FONT2_ID 0 R /F3 $FONT3_ID 0 R>> $xobjStr>>\n" .
                 ">>";
             $pageObjIds[] = $pageId;

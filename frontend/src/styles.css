@@ -1,30 +1,30 @@
 /* ==========================================================
-   ASIAN FOODS CORK — Premium Design System v2
-   Brand: Green #2E9F5C | Purple #4B2E83 | Orange #FF6A2C
+   White-label ecommerce design system
+   Configure colors in this file for each storefront.
    ========================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap');
+/* Fonts loaded non-blocking via index.html <link rel="preload"> — DO NOT add @import here */
 
 /* ─── CSS Variables ─── */
 :root {
-  /* ── NEW Brand System ── */
-  --primary:        #2E9F5C;
-  --primary-dark:   #217A45;
-  --primary-light:  #4DC47B;
-  --primary-bg:     #EAF7EF;
-  --primary-glow:   rgba(46,159,92,0.22);
+  /* ── Storefront Brand System ── */
+  --primary:        #0F766E;
+  --primary-dark:   #115E59;
+  --primary-light:  #14B8A6;
+  --primary-bg:     #E6FFFA;
+  --primary-glow:   rgba(15,118,110,0.22);
 
-  --purple:         #4B2E83;
-  --purple-dark:    #351F60;
-  --purple-light:   #6B4BB5;
-  --purple-bg:      #F0ECF9;
-  --purple-glow:    rgba(75,46,131,0.20);
+  --purple:         #2563EB;
+  --purple-dark:    #1E3A8A;
+  --purple-light:   #60A5FA;
+  --purple-bg:      #EFF6FF;
+  --purple-glow:    rgba(37,99,235,0.20);
 
-  --orange:         #FF6A2C;
-  --orange-dark:    #D94F12;
-  --orange-light:   #FF8F5E;
-  --orange-bg:      #FFF2EB;
-  --orange-glow:    rgba(255,106,44,0.22);
+  --orange:         #E11D48;
+  --orange-dark:    #BE123C;
+  --orange-light:   #FB7185;
+  --orange-bg:      #FFF1F2;
+  --orange-glow:    rgba(225,29,72,0.22);
 
   /* Backward compat aliases */
   --green:          var(--primary);

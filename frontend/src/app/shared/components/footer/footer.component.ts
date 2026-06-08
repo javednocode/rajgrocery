@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,6 +10,7 @@ import { environment } from '../../../../environments/environment';
   selector: 'app-footer',
   standalone: true,
   imports: [RouterLink, NgFor, NgIf, FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <footer class="footer">
       <!-- Top accent bar -->
@@ -25,27 +26,27 @@ import { environment } from '../../../../environments/environment';
 
             <!-- ── Brand Column ── -->
             <div class="footer-brand">
-              <img src="/logo.png" alt="{{ settings.get('site_name','Asian Foods Cork') }}" class="footer-logo">
-              <p class="brand-desc">{{ settings.get('footer_about', settings.get('site_tagline','Authentic Asian groceries delivered fresh to your door in Cork, Ireland.')) }}</p>
+              <img [src]="settings.assetUrl('site_logo', '/logo.svg')" [alt]="settings.get('site_name','Your Store')" class="footer-logo">
+              <p class="brand-desc">{{ settings.get('footer_about', settings.get('site_tagline','Reusable ecommerce storefront for modern brands.')) }}</p>
 
               <div class="footer-contact">
-                <a [href]="'tel:' + settings.get('site_phone','+35321000000')" class="fc-row">
+                <a [href]="'tel:' + settings.get('site_phone','')" class="fc-row">
                   <span class="fc-icon">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3-8.57A2 2 0 012 1.5h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.37a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="currentColor" stroke-width="1.6"/></svg>
                   </span>
-                  <span>{{ settings.get('site_phone', '+353 21 000 0000') }}</span>
+                  <span>{{ settings.get('site_phone', '') }}</span>
                 </a>
-                <a [href]="'mailto:' + settings.get('site_email','hello@asianfoodcork.com')" class="fc-row">
+                <a [href]="'mailto:' + settings.get('site_email','hello@example.com')" class="fc-row">
                   <span class="fc-icon">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="m2 7 10 7 10-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
                   </span>
-                  <span>{{ settings.get('site_email', 'hello@asianfoodcork.com') }}</span>
+                  <span>{{ settings.get('site_email', 'hello@example.com') }}</span>
                 </a>
                 <div class="fc-row">
                   <span class="fc-icon">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="1.5"/></svg>
                   </span>
-                  <span>{{ settings.get('site_address', 'Cork, Ireland') }}</span>
+                  <span>{{ settings.get('site_address', 'Add your store address') }}</span>
                 </div>
               </div>
 
@@ -109,7 +110,7 @@ import { environment } from '../../../../environments/environment';
             <!-- ── Newsletter Column ── -->
             <div class="footer-col">
               <h4>Stay Updated</h4>
-              <p class="nl-desc">{{ settings.get('newsletter_desc', 'Get the latest deals, new arrivals and Asian food recipes straight to your inbox.') }}</p>
+              <p class="nl-desc">{{ settings.get('newsletter_desc', 'Get the latest deals, new arrivals and store updates straight to your inbox.') }}</p>
               <form class="newsletter-form" (submit)="subscribeNewsletter($event)">
                 <input type="email" [(ngModel)]="nlEmail" name="nlEmail"
                   placeholder="Your email address" class="nl-input">
@@ -133,7 +134,7 @@ import { environment } from '../../../../environments/environment';
                 </div>
                 <div class="tb-item">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#4ade80" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="#4ade80" stroke-width="1.8" stroke-linecap="round"/></svg>
-                  Based in Cork
+                  Local Support
                 </div>
               </div>
             </div>
@@ -145,8 +146,8 @@ import { environment } from '../../../../environments/environment';
       <!-- Footer Bottom -->
       <div class="footer-bottom">
         <div class="container fbot-inner">
-          <p class="copyright">{{ settings.get('footer_copyright', '© 2026 Asian Foods Cork. All rights reserved.') }}</p>
-          <p class="designed-by">Designed by <a href="https://webcraftstech.in" target="_blank" rel="noopener" class="wct-link">WebCraftsTech</a></p>
+          <p class="copyright">{{ settings.get('footer_copyright', '© 2026 Your Store. All rights reserved.') }}</p>
+          <p class="designed-by">Powered by {{ settings.get('site_name', 'Your Store') }}</p>
           <!-- Payment method icons — clean SVG pill badges -->
           <div class="payment-row">
             <span class="pay-badge">
@@ -177,7 +178,7 @@ import { environment } from '../../../../environments/environment';
     /* Top tricolor accent bar */
     .footer-topbar { display: flex; height: 3px; }
     .ftb-green  { flex: 1; background: #22C55E; }
-    .ftb-purple { flex: 1; background: #4B2E83; }
+    .ftb-purple { flex: 1; background: #2563EB; }
     .ftb-orange { flex: 1; background: #FB923C; }
 
     .footer-main { padding: 64px 0 48px; }

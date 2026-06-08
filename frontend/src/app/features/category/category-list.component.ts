@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { SeoService } from '../../core/services/seo.service';
@@ -9,6 +9,7 @@ import { environment } from '../../../environments/environment';
   selector: 'app-category-list',
   standalone: true,
   imports: [RouterLink, ScrollAnimateDirective],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="page-hero">
       <div class="container">
@@ -88,8 +89,8 @@ import { environment } from '../../../environments/environment';
     }
     .cat-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 28px rgba(46,159,92,0.14);
-      border-color: rgba(46,159,92,0.4);
+      box-shadow: 0 8px 28px rgba(15,118,110,0.14);
+      border-color: rgba(15,118,110,0.4);
     }
 
     /* ── Image ── */
@@ -113,7 +114,7 @@ import { environment } from '../../../environments/environment';
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    .cat-count { font-size: 11px; color: #2E9F5C; font-weight: 600; }
+    .cat-count { font-size: 11px; color: #0F766E; font-weight: 600; }
 
     /* ── Arrow ── */
     .cat-arrow {
@@ -121,7 +122,7 @@ import { environment } from '../../../environments/environment';
       color: #C4C4D4; flex-shrink: 0;
       transition: color 0.2s, transform 0.2s;
     }
-    .cat-card:hover .cat-arrow { color: #2E9F5C; transform: translateX(3px); }
+    .cat-card:hover .cat-arrow { color: #0F766E; transform: translateX(3px); }
 
     /* ── Mobile tweaks ── */
     @media (max-width: 768px) {
@@ -144,7 +145,7 @@ export class CategoryListComponent implements OnInit {
   ngOnInit() {
     this.seo.setMeta({
       title: 'All Categories',
-      description: 'Browse all grocery categories at Asian Food Cork'
+      description: 'Browse all product categories.'
     });
     this.api.getCategories().subscribe({
       next: (res: any) => { if (res.success) this.categories.set(this.flatten(res.data)); }

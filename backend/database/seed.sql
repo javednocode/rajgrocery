@@ -1,5 +1,5 @@
--- asianfoodcork Demo Seed Data
-USE `asianfoodcork_db`;
+-- White-label ecommerce demo seed data
+USE `ecommerce_db`;
 
 -- Categories
 INSERT INTO `categories` (`name`, `slug`, `description`, `icon`, `sort_order`, `is_active`, `is_featured`) VALUES

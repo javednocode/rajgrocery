@@ -42,7 +42,7 @@
 .zone-name { font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em; }
 .zone-fee  { font-size:20px; font-weight:800; color:#f1f5f9; margin-top:4px; }
 .zone-note { font-size:10px; color:#64748b; margin-top:3px; }
-.zone-cork    { background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.2); }
+.zone-local    { background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.2); }
 .zone-outside { background:rgba(251,146,60,.1); border:1px solid rgba(251,146,60,.2); }
 
 /* Preview */
@@ -73,15 +73,15 @@
 <div class="dcard" style="margin-bottom:20px">
   <h3>🗺️ Current Zone Overview</h3>
   <div class="zones-row">
-    <div class="zone-chip zone-cork">
+    <div class="zone-chip zone-local">
       <div class="zone-icon">🏙️</div>
-      <div class="zone-name">Cork City</div>
-      <div class="zone-fee" id="previewCorkFee">€2.95</div>
+      <div class="zone-name">Local delivery</div>
+      <div class="zone-fee" id="previewLocalFee">€2.95</div>
       <div class="zone-note">Free above <span id="previewFreeAbove">€50</span></div>
     </div>
     <div class="zone-chip zone-outside">
       <div class="zone-icon">🚐</div>
-      <div class="zone-name">Outside Cork</div>
+      <div class="zone-name">Standard delivery</div>
       <div class="zone-fee" id="previewOutsideFee">€4.95</div>
       <div class="zone-note">+<span id="previewSmallFee">€1.50</span> for orders under <span id="previewSmallMin">€25</span></div>
     </div>
@@ -96,7 +96,7 @@
     <div class="toggle-row">
       <div class="toggle-label">
         Enable Free Delivery
-        <small>Cork City orders above threshold get free delivery</small>
+        <small>Local delivery orders above threshold get free delivery</small>
       </div>
       <label class="tswitch">
         <input type="checkbox" id="delivery_free_enabled">
@@ -108,7 +108,7 @@
       <div class="euro-wrap">
         <input type="number" id="delivery_free_above" step="0.01" min="0" placeholder="50">
       </div>
-      <div class="field-hint">Cork City orders above this = free delivery</div>
+      <div class="field-hint">Local delivery orders above this = free delivery</div>
     </div>
   </div>
 
@@ -116,18 +116,41 @@
   <div class="dcard">
     <h3>💰 Delivery Fees</h3>
     <div class="form-group">
-      <label>Cork City Fee</label>
+      <label>Local Delivery Fee</label>
       <div class="euro-wrap">
-        <input type="number" id="delivery_cork_city_fee" step="0.01" min="0" placeholder="2.95">
+        <input type="number" id="delivery_local_fee" step="0.01" min="0" placeholder="2.95">
       </div>
       <div class="field-hint">Charged when order is below free delivery threshold</div>
     </div>
     <div class="form-group">
-      <label>Outside Cork City Fee</label>
+      <label>Standard Delivery Fee</label>
       <div class="euro-wrap">
-        <input type="number" id="delivery_outside_cork_fee" step="0.01" min="0" placeholder="4.95">
+        <input type="number" id="delivery_standard_fee" step="0.01" min="0" placeholder="4.95">
       </div>
-      <div class="field-hint">Always charged for non-Cork-City locations</div>
+      <div class="field-hint">Charged when an address is outside your configured local zone</div>
+    </div>
+  </div>
+
+  <!-- Zone Detection -->
+  <div class="dcard">
+    <h3>📍 Zone Detection</h3>
+    <div class="form-group">
+      <label>Local Zone Label</label>
+      <input type="text" id="delivery_local_zone_label" placeholder="Local delivery">
+    </div>
+    <div class="form-group">
+      <label>Standard Zone Label</label>
+      <input type="text" id="delivery_standard_zone_label" placeholder="Standard delivery">
+    </div>
+    <div class="form-group">
+      <label>Local Keywords</label>
+      <input type="text" id="delivery_local_keywords" placeholder="city name, county, neighborhood">
+      <div class="field-hint">Comma-separated city/county words that should count as local</div>
+    </div>
+    <div class="form-group">
+      <label>Local Postcode Prefixes</label>
+      <input type="text" id="delivery_local_postcode_prefixes" placeholder="123, AB, XY">
+      <div class="field-hint">Comma-separated postal/eircode prefixes for your local delivery zone</div>
     </div>
   </div>
 
@@ -137,7 +160,7 @@
     <div class="toggle-row">
       <div class="toggle-label">
         Enable Small Order Fee
-        <small>Extra fee for small orders outside Cork City</small>
+        <small>Extra fee for small orders outside Local delivery</small>
       </div>
       <label class="tswitch">
         <input type="checkbox" id="delivery_small_order_enabled">
@@ -163,32 +186,31 @@
   <!-- Pricing Preview -->
   <div class="dcard">
     <h3>👁️ Pricing Preview</h3>
-    <div class="preview-row"><span style="color:#94a3b8">🏙️ Cork City — €55 order</span><span class="pv-free">FREE</span></div>
-    <div class="preview-row"><span style="color:#94a3b8">🏙️ Cork City — €30 order</span><span class="pv-fee" id="prev2">€2.95</span></div>
-    <div class="preview-row"><span style="color:#94a3b8">🚐 Outside Cork — €40 order</span><span class="pv-fee" id="prev3">€4.95</span></div>
-    <div class="preview-row"><span style="color:#94a3b8">🚐 Outside Cork — €18 order</span><span class="pv-fee" id="prev4">€6.45</span></div>
+    <div class="preview-row"><span style="color:#94a3b8">🏙️ Local delivery — €55 order</span><span class="pv-free">FREE</span></div>
+    <div class="preview-row"><span style="color:#94a3b8">🏙️ Local delivery — €30 order</span><span class="pv-fee" id="prev2">€2.95</span></div>
+    <div class="preview-row"><span style="color:#94a3b8">🚐 Standard delivery — €40 order</span><span class="pv-fee" id="prev3">€4.95</span></div>
+    <div class="preview-row"><span style="color:#94a3b8">🚐 Standard delivery — €18 order</span><span class="pv-fee" id="prev4">€6.45</span></div>
   </div>
 
 </div><!-- /delivery-grid -->
 
 <!-- Detection Info -->
 <div class="dcard" style="margin-top:20px">
-  <h3>📍 Cork City Detection Rules</h3>
+  <h3>📍 Local delivery Detection Rules</h3>
   <div class="detection-grid">
     <div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.15);border-radius:10px;padding:14px">
-      <div style="font-size:12px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">✅ Detected as Cork City</div>
+      <div style="font-size:12px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">✅ Detected as Local delivery</div>
       <div style="font-size:12px;color:#94a3b8;line-height:2">
-        Eircode starts with <strong style="color:#e2e8f0">T</strong> (T12, T23, T34...)<br>
-        OR City contains <strong style="color:#e2e8f0">"Cork"</strong><br>
-        OR County = <strong style="color:#e2e8f0">Cork</strong>
+        Postal code starts with any configured local prefix<br>
+        OR city/county contains any configured local keyword<br>
+        OR checkout explicitly sends the local zone
       </div>
     </div>
     <div style="background:rgba(251,146,60,.07);border:1px solid rgba(251,146,60,.15);border-radius:10px;padding:14px">
-      <div style="font-size:12px;font-weight:700;color:#fb923c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">🚐 Detected as Outside Cork</div>
+      <div style="font-size:12px;font-weight:700;color:#fb923c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">🚐 Detected as Standard delivery</div>
       <div style="font-size:12px;color:#94a3b8;line-height:2">
-        Eircode starts with any other letter<br>
-        OR County ≠ Cork<br>
-        OR City does not contain "Cork"
+        Address does not match local prefixes or keywords<br>
+        OR checkout explicitly sends the standard zone
       </div>
     </div>
   </div>
@@ -204,9 +226,11 @@
 const API = window.location.origin + '/api';
 const DELIVERY_KEYS = [
   'delivery_free_above','delivery_free_enabled',
-  'delivery_cork_city_fee','delivery_outside_cork_fee',
+  'delivery_local_fee','delivery_standard_fee',
   'delivery_small_order_min','delivery_small_order_fee',
-  'delivery_small_order_enabled'
+  'delivery_small_order_enabled',
+  'delivery_local_zone_label','delivery_standard_zone_label',
+  'delivery_local_keywords','delivery_local_postcode_prefixes'
 ];
 
 async function loadDeliverySettings() {
@@ -219,10 +243,14 @@ async function loadDeliverySettings() {
 
     // Populate fields
     setVal('delivery_free_above',        s.delivery_free_above        || '50');
-    setVal('delivery_cork_city_fee',     s.delivery_cork_city_fee     || '2.95');
-    setVal('delivery_outside_cork_fee',  s.delivery_outside_cork_fee  || '4.95');
+    setVal('delivery_local_fee',     s.delivery_local_fee     || '2.95');
+    setVal('delivery_standard_fee',  s.delivery_standard_fee  || '4.95');
     setVal('delivery_small_order_min',   s.delivery_small_order_min   || '25');
     setVal('delivery_small_order_fee',   s.delivery_small_order_fee   || '1.50');
+    setVal('delivery_local_zone_label',  s.delivery_local_zone_label  || 'Local delivery');
+    setVal('delivery_standard_zone_label', s.delivery_standard_zone_label || 'Standard delivery');
+    setVal('delivery_local_keywords',    s.delivery_local_keywords    || '');
+    setVal('delivery_local_postcode_prefixes', s.delivery_local_postcode_prefixes || '');
     setChk('delivery_free_enabled',      s.delivery_free_enabled      !== '0');
     setChk('delivery_small_order_enabled', s.delivery_small_order_enabled !== '0');
 
@@ -238,20 +266,20 @@ function getVal(id) { return document.getElementById(id)?.value || ''; }
 function getChk(id) { return document.getElementById(id)?.checked ? '1' : '0'; }
 
 function updatePreview(s) {
-  const corkFee    = parseFloat(s.delivery_cork_city_fee    || s.delivery_cork_city_fee    || 2.95);
-  const outsideFee = parseFloat(s.delivery_outside_cork_fee || s.delivery_outside_cork_fee || 4.95);
+  const localFee    = parseFloat(s.delivery_local_fee    || s.delivery_local_fee    || 2.95);
+  const standardFee = parseFloat(s.delivery_standard_fee || s.delivery_standard_fee || 4.95);
   const smallFee   = parseFloat(s.delivery_small_order_fee  || s.delivery_small_order_fee  || 1.50);
   const smallMin   = parseFloat(s.delivery_small_order_min  || s.delivery_small_order_min  || 25);
   const freeAbove  = parseFloat(s.delivery_free_above       || s.delivery_free_above       || 50);
 
-  document.getElementById('previewCorkFee').textContent  = '€' + corkFee.toFixed(2);
-  document.getElementById('previewOutsideFee').textContent = '€' + outsideFee.toFixed(2);
+  document.getElementById('previewLocalFee').textContent  = '€' + localFee.toFixed(2);
+  document.getElementById('previewOutsideFee').textContent = '€' + standardFee.toFixed(2);
   document.getElementById('previewSmallFee').textContent = '€' + smallFee.toFixed(2);
   document.getElementById('previewSmallMin').textContent = '€' + smallMin.toFixed(0);
   document.getElementById('previewFreeAbove').textContent = '€' + freeAbove.toFixed(0);
-  document.getElementById('prev2').textContent = '€' + corkFee.toFixed(2);
-  document.getElementById('prev3').textContent = '€' + outsideFee.toFixed(2);
-  document.getElementById('prev4').textContent = '€' + (outsideFee + smallFee).toFixed(2);
+  document.getElementById('prev2').textContent = '€' + localFee.toFixed(2);
+  document.getElementById('prev3').textContent = '€' + standardFee.toFixed(2);
+  document.getElementById('prev4').textContent = '€' + (standardFee + smallFee).toFixed(2);
 }
 
 async function saveDeliverySettings() {
@@ -264,11 +292,15 @@ async function saveDeliverySettings() {
   const payload = {
     delivery_free_above:          getVal('delivery_free_above'),
     delivery_free_enabled:        getChk('delivery_free_enabled'),
-    delivery_cork_city_fee:       getVal('delivery_cork_city_fee'),
-    delivery_outside_cork_fee:    getVal('delivery_outside_cork_fee'),
+    delivery_local_fee:       getVal('delivery_local_fee'),
+    delivery_standard_fee:    getVal('delivery_standard_fee'),
     delivery_small_order_min:     getVal('delivery_small_order_min'),
     delivery_small_order_fee:     getVal('delivery_small_order_fee'),
     delivery_small_order_enabled: getChk('delivery_small_order_enabled'),
+    delivery_local_zone_label:    getVal('delivery_local_zone_label'),
+    delivery_standard_zone_label: getVal('delivery_standard_zone_label'),
+    delivery_local_keywords:      getVal('delivery_local_keywords'),
+    delivery_local_postcode_prefixes: getVal('delivery_local_postcode_prefixes'),
   };
 
   try {
@@ -297,11 +329,11 @@ async function saveDeliverySettings() {
 }
 
 // Live preview as user types
-['delivery_cork_city_fee','delivery_outside_cork_fee','delivery_small_order_fee','delivery_small_order_min','delivery_free_above'].forEach(id => {
+['delivery_local_fee','delivery_standard_fee','delivery_small_order_fee','delivery_small_order_min','delivery_free_above'].forEach(id => {
   document.getElementById(id)?.addEventListener('input', () => {
     updatePreview({
-      delivery_cork_city_fee:    getVal('delivery_cork_city_fee'),
-      delivery_outside_cork_fee: getVal('delivery_outside_cork_fee'),
+      delivery_local_fee:    getVal('delivery_local_fee'),
+      delivery_standard_fee: getVal('delivery_standard_fee'),
       delivery_small_order_fee:  getVal('delivery_small_order_fee'),
       delivery_small_order_min:  getVal('delivery_small_order_min'),
       delivery_free_above:       getVal('delivery_free_above'),

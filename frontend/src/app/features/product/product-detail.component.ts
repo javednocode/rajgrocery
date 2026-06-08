@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { CartService } from '../../core/services/cart.service';
@@ -12,6 +12,7 @@ const WHATSAPP_NUMBER = '353899584325';
   selector: 'app-product-detail',
   standalone: true,
   imports: [RouterLink, ProductCardComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (loading()) {
       <div class="container" style="padding:80px 0;text-align:center;color:#888;">Loading product...</div>
@@ -38,6 +39,8 @@ const WHATSAPP_NUMBER = '353899584325';
                 <img [src]="getFullImageUrl(selectedImage())"
                      [alt]="product()?.name"
                      class="main-img"
+                     fetchpriority="high"
+                     decoding="async"
                      onerror="this.src='placeholder.png'">
                 @if (product()?.sale_price && product()?.sale_price < product()?.price) {
                   <div class="sale-badge">{{ getDiscount() }}% OFF</div>
@@ -51,7 +54,7 @@ const WHATSAPP_NUMBER = '353899584325';
                   @for (img of product()?.images; track img.id) {
                     <button class="thumb" [class.active]="img.image_path === selectedImage()"
                       (click)="selectedImage.set(img.image_path)">
-                      <img [src]="getFullImageUrl(img.image_path)" [alt]="img.alt_text || product()?.name">
+                      <img [src]="getFullImageUrl(img.image_path)" [alt]="img.alt_text || product()?.name" loading="lazy" decoding="async">
                     </button>
                   }
                 </div>
@@ -94,7 +97,7 @@ const WHATSAPP_NUMBER = '353899584325';
                       <button class="var-btn" [class.active]="selectedVariation()?.id === v.id"
                               (click)="selectVariation(v)">
                         @if (v.image_path) {
-                          <img [src]="getFullImageUrl(v.image_path)" [alt]="v.name" class="var-thumb">
+                          <img [src]="getFullImageUrl(v.image_path)" [alt]="v.name" class="var-thumb" loading="lazy" decoding="async">
                         }
                         <span class="var-name">{{ v.name }}</span>
                         <span class="var-price">€{{ v.sale_price || v.price }}</span>
@@ -169,7 +172,7 @@ const WHATSAPP_NUMBER = '353899584325';
                   <div class="sidebar-products">
                     @for (fp of featuredProducts(); track fp.id) {
                       <a class="fp-item" [routerLink]="['/product', fp.slug]">
-                        <img [src]="getFullImageUrl(fp.primary_image)" [alt]="fp.name" class="fp-img"
+                        <img [src]="getFullImageUrl(fp.primary_image)" [alt]="fp.name" class="fp-img" loading="lazy" decoding="async"
                              onerror="this.src='placeholder.png'">
                         <div class="fp-info">
                           <p class="fp-name">{{ fp.name }}</p>
@@ -216,7 +219,7 @@ const WHATSAPP_NUMBER = '353899584325';
     .product-page-wrap { background: #f7f7f7; min-height: 100vh; padding: 24px 0 60px; }
 
     .bc { font-size: 13px; color: #888; margin-bottom: 20px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
-    .bc a { color: #CC2936; text-decoration: none; }
+    .bc a { color: #E11D48; text-decoration: none; }
     .bc a:hover { text-decoration: underline; }
     .bc-sep { color: #ccc; padding: 0 2px; }
 
@@ -244,17 +247,17 @@ const WHATSAPP_NUMBER = '353899584325';
     .main-img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .sale-badge {
       position: absolute; top: 12px; left: 12px;
-      background: #CC2936; color: white;
+      background: #E11D48; color: white;
       font-size: 12px; font-weight: 700; padding: 4px 10px;
       border-radius: 4px;
     }
     .stock-ribbon {
       position: absolute; top: 12px; right: 12px;
-      background: #2A7A3B; color: white;
+      background: #0F766E; color: white;
       font-size: 10px; font-weight: 700; padding: 3px 8px;
       border-radius: 3px; letter-spacing: 0.5px;
     }
-    .stock-ribbon.out { background: #CC2936; }
+    .stock-ribbon.out { background: #E11D48; }
 
     .thumb-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
     .thumb {
@@ -263,7 +266,7 @@ const WHATSAPP_NUMBER = '353899584325';
       background: white; padding: 2px; cursor: pointer;
       transition: border-color 0.2s;
     }
-    .thumb.active, .thumb:hover { border-color: #CC2936; }
+    .thumb.active, .thumb:hover { border-color: #E11D48; }
     .thumb img { width: 100%; height: 100%; object-fit: contain; }
 
     /* Details */
@@ -271,7 +274,7 @@ const WHATSAPP_NUMBER = '353899584325';
     .prod-name { font-size: 20px; font-weight: 800; color: #111; margin-bottom: 12px; text-transform: uppercase; line-height: 1.3; }
 
     .pricing { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-    .price-main { font-size: 28px; font-weight: 700; color: #CC2936; }
+    .price-main { font-size: 28px; font-weight: 700; color: #E11D48; }
     .price-old { font-size: 18px; color: #888; text-decoration: line-through; }
 
     .short-desc { font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 20px; }
@@ -291,7 +294,7 @@ const WHATSAPP_NUMBER = '353899584325';
     .qty-val { padding: 0 16px; font-size: 16px; font-weight: 600; color: #111; min-width: 24px; text-align: center; }
     .btn-add-cart {
       flex: 1; padding: 10px 16px;
-      background: #2A7A3B; color: white;
+      background: #0F766E; color: white;
       border: none; border-radius: 4px;
       font-size: 14px; font-weight: 700; cursor: pointer;
       transition: background 0.2s; font-family: 'Inter', sans-serif;
@@ -315,7 +318,7 @@ const WHATSAPP_NUMBER = '353899584325';
     .btn-buy-now {
       display: block; width: 100%;
       padding: 12px;
-      background: #CC2936; color: white;
+      background: #E11D48; color: white;
       border: none; border-radius: 4px;
       font-size: 14px; font-weight: 700; cursor: pointer;
       font-family: 'Inter', sans-serif; margin-bottom: 16px;
@@ -334,11 +337,11 @@ const WHATSAPP_NUMBER = '353899584325';
       border-radius: 8px; background: white; cursor: pointer;
       transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
-    .var-btn:hover { border-color: #CC2936; background: #fef2f2; }
-    .var-btn.active { border-color: #CC2936; background: #fef2f2; box-shadow: 0 0 0 1px #CC2936; }
+    .var-btn:hover { border-color: #E11D48; background: #fef2f2; }
+    .var-btn.active { border-color: #E11D48; background: #fef2f2; box-shadow: 0 0 0 1px #E11D48; }
     .var-thumb { width: 28px; height: 28px; border-radius: 4px; object-fit: cover; }
     .var-name { font-size: 13px; font-weight: 600; color: #333; }
-    .var-price { font-size: 12px; font-weight: 700; color: #CC2936; }
+    .var-price { font-size: 12px; font-weight: 700; color: #E11D48; }
 
     /* Cart preview */
     .cart-preview {
@@ -359,7 +362,7 @@ const WHATSAPP_NUMBER = '353899584325';
     .prod-meta { margin-top: 12px; border-top: 1px solid #f0f0f0; padding-top: 12px; }
     .meta-row { font-size: 13px; color: #555; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .meta-row span { font-weight: 600; color: #333; }
-    .cat-link { color: #CC2936; text-decoration: none; font-size: 13px; }
+    .cat-link { color: #E11D48; text-decoration: none; font-size: 13px; }
     .cat-link:hover { text-decoration: underline; }
 
     /* Sidebar */
@@ -383,7 +386,7 @@ const WHATSAPP_NUMBER = '353899584325';
     .fp-info { flex: 1; min-width: 0; }
     .fp-name { font-size: 12px; color: #333; margin-bottom: 3px; line-height: 1.3;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .fp-price { font-size: 13px; font-weight: 700; color: #CC2936; }
+    .fp-price { font-size: 13px; font-weight: 700; color: #E11D48; }
 
     /* Description */
     .desc-section { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 32px; }
@@ -410,7 +413,7 @@ const WHATSAPP_NUMBER = '353899584325';
     /* Toast */
     .toast-msg {
       position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-      background: #2A7A3B; color: white;
+      background: #0F766E; color: white;
       padding: 12px 20px; border-radius: 8px;
       font-size: 14px; font-weight: 600;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
@@ -525,6 +528,8 @@ export class ProductDetailComponent implements OnInit {
     const v = this.selectedVariation();
     if (v && !v._isBase) {
       // Real variation (5KG / 10KG) — give it a unique cart ID
+      p.base_product_id = p.id;
+      p.variation_id = v.id;
       p.id = `${p.id}_v${v.id}`;
       p.name = `${p.name} - ${v.name}`;
       p.price = v.price;
@@ -545,6 +550,8 @@ export class ProductDetailComponent implements OnInit {
     const p = { ...this.product() };
     const v = this.selectedVariation();
     if (v && !v._isBase) {
+      p.base_product_id = p.id;
+      p.variation_id = v.id;
       p.id = `${p.id}_v${v.id}`;
       p.name = `${p.name} - ${v.name}`;
       p.price = v.price;

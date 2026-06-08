@@ -1,23 +1,22 @@
-import { Component, OnInit, Output, EventEmitter, signal, computed } from '@angular/core';
-import { NgIf } from '@angular/common';
+import { Component, OnInit, Output, EventEmitter, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { SettingsService } from '../../../core/services/settings.service';
 
 @Component({
   selector: 'app-splash',
   standalone: true,
-  imports: [NgIf],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (visible()) {
       <div class="splash" [class.splash-fade-out]="fadingOut()">
         <div class="splash-inner">
           <!-- Logo -->
           <div class="splash-logo-wrap" [class.logo-revealed]="logoRevealed()">
-            <img [src]="logoUrl()" alt="Asian Food Cork" class="splash-logo">
+            <img [src]="logoUrl()" [alt]="settings.get('site_name', 'Your Store')" class="splash-logo">
           </div>
           <!-- Brand name removed to prevent double logo -->
           <!-- Tagline -->
           <p class="splash-tagline" [class.tagline-revealed]="taglineRevealed()">
-            Fresh Asian Groceries, Delivered in Cork
+            {{ settings.get('site_tagline', 'Reusable ecommerce storefront') }}
           </p>
           <!-- Loading dots -->
           <div class="splash-dots" [class.dots-revealed]="taglineRevealed()">
@@ -67,9 +66,9 @@ import { SettingsService } from '../../../core/services/settings.service';
     .splash-name.name-revealed {
       opacity: 1; transform: translateY(0);
     }
-    .brand-asian { font-size: 26px; font-weight: 800; color: #4B2E83; font-family: 'Poppins', sans-serif; letter-spacing: -0.02em; }
-    .brand-food  { font-size: 26px; font-weight: 800; color: #1a1a2e; font-family: 'Poppins', sans-serif; letter-spacing: -0.02em; }
-    .brand-cork  { font-size: 26px; font-weight: 800; color: #2E9F5C; font-family: 'Poppins', sans-serif; letter-spacing: -0.02em; }
+    .brand-primary { font-size: 26px; font-weight: 800; color: #0F766E; font-family: 'Poppins', sans-serif; letter-spacing: 0; }
+    .brand-neutral { font-size: 26px; font-weight: 800; color: #1a1a2e; font-family: 'Poppins', sans-serif; letter-spacing: 0; }
+    .brand-accent  { font-size: 26px; font-weight: 800; color: #E11D48; font-family: 'Poppins', sans-serif; letter-spacing: 0; }
 
     /* Tagline */
     .splash-tagline {
@@ -96,7 +95,7 @@ import { SettingsService } from '../../../core/services/settings.service';
     .splash-dots span:nth-child(3) { animation: dotPulse 1.2s ease-in-out 0.4s infinite; }
     @keyframes dotPulse {
       0%, 100% { background: #D1D5DB; transform: scale(1); }
-      50%       { background: #4B2E83; transform: scale(1.35); }
+      50%       { background: #0F766E; transform: scale(1.35); }
     }
   `]
 })
@@ -119,17 +118,24 @@ export class SplashComponent implements OnInit {
   constructor(public settings: SettingsService) {}
 
   ngOnInit() {
-    // Sequential reveal
-    setTimeout(() => this.logoRevealed.set(true), 80);
-    setTimeout(() => this.nameRevealed.set(true), 250);
-    setTimeout(() => this.taglineRevealed.set(true), 480);
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('ecommerce_splash_seen') === '1') {
+      this.visible.set(false);
+      this.done.emit();
+      return;
+    }
 
-    // Begin fade out at ~1.7s
-    setTimeout(() => this.fadingOut.set(true), 1700);
-    // Remove from DOM at ~2.2s
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem('ecommerce_splash_seen', '1');
+    }
+
+    setTimeout(() => this.logoRevealed.set(true), 20);
+    setTimeout(() => this.nameRevealed.set(true), 80);
+    setTimeout(() => this.taglineRevealed.set(true), 140);
+
+    setTimeout(() => this.fadingOut.set(true), 380);
     setTimeout(() => {
       this.visible.set(false);
       this.done.emit();
-    }, 2200);
+    }, 520);
   }
 }
