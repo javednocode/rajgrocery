@@ -1,191 +1,77 @@
-import { Component, OnInit, signal, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
+import { SeoService } from '../../core/services/seo.service';
+import { ScrollAnimateDirective } from '../../shared/directives/scroll-animate.directive';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-category-list',
   standalone: true,
-  imports: [RouterLink],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink, ScrollAnimateDirective],
   template: `
-    <!-- Page Hero -->
-    <div class="page-hero">
-      <div class="container">
-        <div class="breadcrumb">
-          <a routerLink="/">Home</a>
-          <span>/</span>
-          <span>All Categories</span>
-        </div>
-        <h1>Shop by Category</h1>
-        <p>Fresh halal meats, premium spices, vegetables and daily essentials</p>
-      </div>
+  <section class="cl-hero">
+    <div class="td-container">
+      <span class="td-eyebrow">The Collection</span>
+      <h1>Every aisle.<br/>One basket.</h1>
+      <p class="td-sub">Browse our full range of premium South Asian groceries — curated, authentic, delivered UK-wide.</p>
     </div>
-
-    <section class="section">
-      <div class="container">
-        @if (loading()) {
-          <div class="cats-grid">
-            @for (n of [1,2,3,4,5,6,7,8]; track n) {
-              <div class="cat-card-skeleton">
-                <div class="skeleton" style="aspect-ratio:1;border-radius:12px 12px 0 0;"></div>
-                <div style="padding:12px">
-                  <div class="skeleton" style="height:14px;border-radius:6px;"></div>
-                </div>
+  </section>
+  <section class="cl-body">
+    <div class="td-container">
+      @if (loading()) {
+        <div class="cl-grid">@for (s of [1,2,3,4,5,6]; track s) { <div class="td-skel" style="aspect-ratio:4/3"></div> }</div>
+      } @else {
+        <div class="cl-grid">
+          @for (c of categories(); track c.id; let i = $index) {
+            <a class="cl-card" [routerLink]="['/category', c.slug]" appScrollAnimate [animationDelay]="(i % 6 * 0.05) + 's'">
+              @if (c.image) { <img [src]="media(c.image)" [alt]="c.name" loading="lazy" /> }
+              <div class="cl-veil"></div>
+              <div class="cl-label">
+                <div><h3>{{ c.name }}</h3>@if (c.description) { <p>{{ c.description }}</p> }</div>
+                <span class="cl-arrow"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
               </div>
-            }
-          </div>
-        } @else if (displayCategories().length === 0) {
-          <div class="empty-state">
-            <span class="empty-icon">🗂️</span>
-            <h3>No categories found</h3>
-            <p>Categories will appear here once added from the admin panel.</p>
-            <a routerLink="/" class="btn btn-primary">Back to Home</a>
-          </div>
-        } @else {
-          <div class="cats-grid">
-            @for (cat of displayCategories(); track cat.slug) {
-              <a [routerLink]="['/category', cat.slug]" class="cat-card" id="cat-{{ cat.id }}">
-                <div class="cat-img-wrap">
-                  @if (cat.image) {
-                    <img [src]="getMediaUrl(cat.image)" [alt]="cat.name" loading="lazy" class="cat-img" (error)="onCategoryImageError($event)">
-                  }
-                  <div class="cat-img-placeholder">
-                    <span>{{ cat.icon || getCatEmoji(cat.name) }}</span>
-                  </div>
-                </div>
-                <div class="cat-body">
-                  <span class="cat-name">{{ cat.name }}</span>
-                  @if (cat.description) {
-                    <span class="cat-desc">{{ cat.description }}</span>
-                  }
-                  <span class="cat-link">Shop now →</span>
-                </div>
-              </a>
-            }
-          </div>
-        }
-      </div>
-    </section>
+            </a>
+          }
+        </div>
+      }
+    </div>
+  </section>
   `,
   styles: [`
-    .page-hero {
-      background: #070A05; color: white;
-      padding: 48px 0 36px;
-    }
-    .page-hero h1 { color: white; font-size: clamp(1.6rem, 3.5vw, 2.4rem); margin-bottom: 8px; }
-    .page-hero p  { color: rgba(255,255,255,0.65); font-size: 15px; }
-    .breadcrumb { font-size: 13px; opacity: 0.55; display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
-    .breadcrumb a { color: rgba(255,255,255,0.8); transition: opacity 0.2s; }
-    .breadcrumb a:hover { opacity: 1; }
-
-    .cats-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-    }
-    .cat-card {
-      display: flex; flex-direction: column;
-      background: white; border-radius: 14px; overflow: hidden;
-      border: 1px solid #F3F4F6; text-decoration: none;
-      transition: box-shadow 0.22s, transform 0.22s, border-color 0.22s;
-    }
-    .cat-card:hover {
-      box-shadow: 0 8px 32px rgba(242,140,0,0.12);
-      transform: translateY(-3px);
-      border-color: #F28C00;
-    }
-    .cat-img-wrap { position: relative; width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #FFF2DE; }
-    .cat-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; display: block; z-index: 2; background: #FFF2DE; }
-    .cat-img.img-error { display: none; }
-    .cat-card:hover .cat-img { transform: scale(1.06); }
-    .cat-img-placeholder {
-      width: 100%; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 48px; background: #FFF2DE;
-    }
-    .cat-body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 4px; }
-    .cat-name { font-size: 15px; font-weight: 700; color: #111; font-family: 'Poppins', sans-serif; }
-    .cat-desc { font-size: 12.5px; color: #9CA3AF; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .cat-link { font-size: 13px; font-weight: 600; color: #F28C00; margin-top: 6px; }
-    .cat-card-skeleton { background: white; border-radius: 14px; overflow: hidden; border: 1px solid #F3F4F6; }
-
-    @media (max-width: 1024px) { .cats-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 640px)  { .cats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
-    @media (max-width: 360px)  { .cats-grid { grid-template-columns: 1fr; } }
+  .cl-hero{padding:84px 0 56px;background:var(--td-secondary)}
+  .cl-hero h1{font-size:clamp(2.2rem,4.4vw,3.6rem);font-weight:800;line-height:1.06;letter-spacing:-.03em;margin:6px 0 18px}
+  .cl-body{padding:64px 0 32px}
+  .cl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .cl-card{position:relative;aspect-ratio:4/3;border-radius:var(--td-radius);overflow:hidden;background:var(--td-secondary);transition:box-shadow .35s}
+  .cl-card:hover{box-shadow:var(--td-shadow)}
+  .cl-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s var(--td-ease)}
+  .cl-card:hover img{transform:scale(1.06)}
+  .cl-veil{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,12,.66),transparent 55%)}
+  .cl-label{position:absolute;left:22px;right:22px;bottom:20px;display:flex;align-items:flex-end;justify-content:space-between;gap:14px;color:#fff}
+  .cl-label h3{color:#fff;font-size:20px;font-weight:700}
+  .cl-label p{color:rgba(255,255,255,.75);font-size:12.5px;margin:5px 0 0;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+  .cl-arrow{width:40px;height:40px;border-radius:999px;background:rgba(255,255,255,.16);backdrop-filter:blur(8px);display:grid;place-items:center;flex-shrink:0;transition:background .25s,transform .3s var(--td-ease)}
+  .cl-card:hover .cl-arrow{background:var(--td-accent);color:#111;transform:translateX(3px)}
+  @media (max-width:1000px){.cl-grid{grid-template-columns:1fr 1fr}}
+  @media (max-width:620px){.cl-grid{grid-template-columns:1fr}.cl-hero{padding:56px 0 40px}}
   `]
 })
 export class CategoryListComponent implements OnInit {
   categories = signal<any[]>([]);
   loading = signal(true);
-  mediaUrl = environment.mediaUrl;
+  mediaUrl = (environment as any).mediaUrl || '';
 
-  private brandCategories = [
-    { name: 'Halal Meats', slug: 'fresh-halal-meats', icon: '🥩', aliases: ['fresh-halal-meats', 'halal-meats', 'meat', 'meats'] },
-    { name: 'Chicken', slug: 'chicken', icon: '🍗', aliases: ['chicken', 'poultry'] },
-    { name: 'Vegetables', slug: 'vegetables', icon: '🥦', aliases: ['vegetables', 'fresh-vegetables', 'veg'] },
-    { name: 'Fresh Fruits', slug: 'fresh-fruits', icon: '🍎', aliases: ['fresh-fruits', 'fruits', 'fruit'] },
-    { name: 'Spices', slug: 'spices', icon: '🌶️', aliases: ['spices', 'spices-masala', 'masala', 'chilli'] },
-    { name: 'Rice & Flour', slug: 'rice-flour', icon: '🌾', aliases: ['rice-flour', 'rice', 'flour', 'staples', 'essentials'] },
-    { name: 'Dairy & Eggs', slug: 'dairy-eggs', icon: '🥚', aliases: ['dairy-eggs', 'dairy', 'eggs', 'milk'] },
-    { name: 'Beverages', slug: 'beverages', icon: '🧃', aliases: ['beverages', 'drinks', 'tea'] },
-  ];
-
-  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
+  constructor(private api: ApiService, private seo: SeoService) {}
 
   ngOnInit() {
-    this.api.getCategories().subscribe({
-      next: (r: any) => { this.categories.set(r?.data || []); this.loading.set(false); this.cdr.markForCheck(); },
-      error: () => { this.loading.set(false); this.cdr.markForCheck(); }
+    this.seo.setMeta({ title: 'Shop All Categories', description: 'Browse premium South Asian groceries by category — spices, snacks, frozen, rice, lentils and more. Delivered across the UK.' });
+    const anyApi = this.api as any;
+    const src = anyApi.getCategories ? anyApi.getCategories() : anyApi.getFeaturedCategories();
+    src.subscribe({
+      next: (r: any) => { if (r.success) this.categories.set((r.data || []).filter((c: any) => c.is_active == 1)); this.loading.set(false); },
+      error: () => this.loading.set(false)
     });
   }
-
-  displayCategories() {
-    const dbCats = this.categories() || [];
-    return this.brandCategories.map(cat => {
-      const match = dbCats.find((db: any) => this.categoryMatches(db, cat));
-      return {
-        ...cat,
-        id: match?.id || cat.slug,
-        slug: match?.slug || cat.slug,
-        image: this.isUsableCategoryImage(match?.image) ? match.image : null,
-        description: match?.description || '',
-      };
-    });
-  }
-
-  private categoryMatches(db: any, cat: any): boolean {
-    const slug = String(db?.slug || '').toLowerCase();
-    const name = String(db?.name || '').toLowerCase();
-    return cat.aliases.some((alias: string) => slug === alias || name.includes(alias.replace(/-/g, ' ')));
-  }
-
-  private isUsableCategoryImage(image: string | null | undefined): boolean {
-    if (!image) return false;
-    return /^(https?:\/\/|\/uploads\/|uploads\/)/i.test(image);
-  }
-
-  getMediaUrl(path: string): string {
-    if (!path) return '';
-    if (path.startsWith('http://') || path.startsWith('https://')) return path;
-    if (path.startsWith('/uploads')) return this.mediaUrl + path;
-    if (path.startsWith('uploads')) return this.mediaUrl + '/' + path;
-    return path;
-  }
-
-  onCategoryImageError(event: Event) {
-    (event.target as HTMLImageElement).classList.add('img-error');
-  }
-
-  getCatEmoji(name: string): string {
-    const n = name.toLowerCase();
-    if (n.includes('meat') || n.includes('chicken') || n.includes('lamb') || n.includes('beef')) return '🥩';
-    if (n.includes('spice') || n.includes('masala') || n.includes('chilli')) return '🌶️';
-    if (n.includes('veg') || n.includes('fruit') || n.includes('salad')) return '🥦';
-    if (n.includes('rice') || n.includes('grain') || n.includes('flour')) return '🌾';
-    if (n.includes('fish') || n.includes('seafood')) return '🐟';
-    if (n.includes('dairy') || n.includes('milk')) return '🧀';
-    if (n.includes('bread') || n.includes('bakery')) return '🫓';
-    return '🛒';
-  }
+  media(p: string) { return !p ? '' : (p.startsWith('http') ? p : this.mediaUrl + p); }
 }
