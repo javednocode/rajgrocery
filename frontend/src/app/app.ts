@@ -30,7 +30,7 @@ import { SplashComponent } from './shared/components/splash/splash.component';
       opacity: 1;
     }
     .main-content {
-      padding-top: var(--header-height);
+      padding-top: var(--header-height, var(--header-h, 148px));
     }
   `]
 })

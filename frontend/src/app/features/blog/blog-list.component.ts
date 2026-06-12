@@ -38,8 +38,8 @@ import { ScrollAnimateDirective } from '../../shared/directives/scroll-animate.d
     </section>
   `,
   styles: [`
-    .page-hero { padding: 60px 0 40px; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; text-align: center; }
-    .page-hero h1 { color: white; margin-bottom: 8px; } .page-hero p { color: rgba(255,255,255,0.8); }
+    .page-hero { padding: 48px 0 36px; background: #111; color: white; text-align: center; }
+    .page-hero h1 { color: white; margin-bottom: 8px; font-size: clamp(1.6rem,3.5vw,2.4rem); } .page-hero p { color: rgba(255,255,255,0.6); font-size: 15px; }
     .section { padding: 60px 0; }
     .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 28px; }
     .blog-card { background: var(--bg-white); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border-light); transition: var(--transition); }

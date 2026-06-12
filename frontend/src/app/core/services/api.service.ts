@@ -110,6 +110,15 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/blogs/slug/${slug}`);
   }
 
+  // ── Static Pages ──
+  getPageBySlug(slug: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/pages/slug/${slug}`);
+  }
+
+  getPages(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/pages?active=1`);
+  }
+
   // ── Orders ──
   placeOrder(orderData: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/orders`, orderData);

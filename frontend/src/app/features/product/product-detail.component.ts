@@ -216,12 +216,18 @@ const WHATSAPP_NUMBER = '353899584325';
     }
   `,
   styles: [`
-    .product-page-wrap { background: #f7f7f7; min-height: 100vh; padding: 24px 0 60px; }
+    .product-page-wrap {
+      background:
+        radial-gradient(circle at 12% 0%, rgba(200,150,30,0.08), transparent 24%),
+        linear-gradient(180deg, #fbfaf6 0%, #f7faf8 62%, #f9fafb 100%);
+      min-height: 100vh;
+      padding: 34px 0 70px;
+    }
 
-    .bc { font-size: 13px; color: #888; margin-bottom: 20px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
-    .bc a { color: #E11D48; text-decoration: none; }
-    .bc a:hover { text-decoration: underline; }
-    .bc-sep { color: #ccc; padding: 0 2px; }
+    .bc { font-size: 13px; color: #9CA3AF; margin-bottom: 20px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+    .bc a { color: #F28C00; text-decoration: none; transition: opacity 0.2s; }
+    .bc a:hover { opacity: 0.75; }
+    .bc-sep { color: #D1D5DB; }
 
     /* 3-column grid */
     .product-main-grid {
@@ -232,50 +238,56 @@ const WHATSAPP_NUMBER = '353899584325';
       margin-bottom: 40px;
     }
 
-    /* Gallery */
     .gallery-col {}
     .main-img-wrap {
       position: relative;
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 12px;
+      background: linear-gradient(180deg, #ffffff, #f7faf8);
+      border: 1px solid #E4EFE8;
+      border-radius: 20px;
+      padding: 16px;
       aspect-ratio: 1;
       display: flex; align-items: center; justify-content: center;
       overflow: hidden;
+      box-shadow: 0 18px 44px rgba(15,25,35,0.06);
     }
     .main-img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .sale-badge {
       position: absolute; top: 12px; left: 12px;
-      background: #E11D48; color: white;
-      font-size: 12px; font-weight: 700; padding: 4px 10px;
-      border-radius: 4px;
+      background: #F28C00; color: white;
+      font-size: 11px; font-weight: 700; padding: 4px 10px;
+      border-radius: 999px;
     }
     .stock-ribbon {
       position: absolute; top: 12px; right: 12px;
-      background: #0F766E; color: white;
-      font-size: 10px; font-weight: 700; padding: 3px 8px;
-      border-radius: 3px; letter-spacing: 0.5px;
+      background: #2E7D32; color: white;
+      font-size: 10px; font-weight: 700; padding: 3px 10px;
+      border-radius: 999px; letter-spacing: 0.04em;
     }
-    .stock-ribbon.out { background: #E11D48; }
+    .stock-ribbon.out { background: #DC2626; }
 
     .thumb-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
     .thumb {
-      width: 64px; height: 64px; border-radius: 6px;
-      border: 2px solid #e5e7eb; overflow: hidden;
+      width: 64px; height: 64px; border-radius: 8px;
+      border: 2px solid #E5E7EB; overflow: hidden;
       background: white; padding: 2px; cursor: pointer;
       transition: border-color 0.2s;
     }
-    .thumb.active, .thumb:hover { border-color: #E11D48; }
+    .thumb.active, .thumb:hover { border-color: #F28C00; }
     .thumb img { width: 100%; height: 100%; object-fit: contain; }
 
     /* Details */
-    .details-col { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; }
-    .prod-name { font-size: 20px; font-weight: 800; color: #111; margin-bottom: 12px; text-transform: uppercase; line-height: 1.3; }
+    .details-col {
+      background: rgba(255,255,255,0.92);
+      border: 1px solid #E4EFE8;
+      border-radius: 20px;
+      padding: 26px;
+      box-shadow: 0 18px 44px rgba(15,25,35,0.06);
+    }
+    .prod-name { font-size: 20px; font-weight: 800; color: #111; margin-bottom: 12px; line-height: 1.3; font-family: 'Poppins', sans-serif; }
 
     .pricing { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-    .price-main { font-size: 28px; font-weight: 700; color: #E11D48; }
-    .price-old { font-size: 18px; color: #888; text-decoration: line-through; }
+    .price-main { font-size: 28px; font-weight: 800; color: #F28C00; font-family: 'Poppins', sans-serif; }
+    .price-old { font-size: 18px; color: #B0B3BE; text-decoration: line-through; }
 
     .short-desc { font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 20px; }
 
@@ -283,31 +295,31 @@ const WHATSAPP_NUMBER = '353899584325';
     .atc-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
     .qty-box {
       display: flex; align-items: center;
-      border: 1px solid #d1d5db; border-radius: 4px; overflow: hidden;
+      border: 1.5px solid #E5E7EB; border-radius: 8px; overflow: hidden;
     }
     .qty-btn {
       width: 36px; height: 40px; font-size: 18px; font-weight: 700;
-      background: #f9f9f9; border: none; cursor: pointer; color: #333;
+      background: #F9FAFB; border: none; cursor: pointer; color: #374151;
       transition: background 0.15s;
     }
-    .qty-btn:hover { background: #eee; }
+    .qty-btn:hover { background: #F3F4F6; }
     .qty-val { padding: 0 16px; font-size: 16px; font-weight: 600; color: #111; min-width: 24px; text-align: center; }
     .btn-add-cart {
       flex: 1; padding: 10px 16px;
-      background: #0F766E; color: white;
-      border: none; border-radius: 4px;
+      background: #2E7D32; color: white;
+      border: none; border-radius: 8px;
       font-size: 14px; font-weight: 700; cursor: pointer;
       transition: background 0.2s; font-family: 'Inter', sans-serif;
     }
-    .btn-add-cart:hover:not(:disabled) { background: #1D5929; }
-    .btn-add-cart:disabled { background: #9ca3af; cursor: not-allowed; }
+    .btn-add-cart:hover:not(:disabled) { background: #15803D; }
+    .btn-add-cart:disabled { background: #9CA3AF; cursor: not-allowed; }
 
     /* WhatsApp */
     .btn-whatsapp {
       display: flex; align-items: center; justify-content: center; gap: 8px;
       width: 100%; padding: 11px;
       background: #25D366; color: white;
-      border: none; border-radius: 4px;
+      border: none; border-radius: 8px;
       font-size: 14px; font-weight: 700;
       text-decoration: none; margin-bottom: 10px;
       transition: background 0.2s;
@@ -318,80 +330,80 @@ const WHATSAPP_NUMBER = '353899584325';
     .btn-buy-now {
       display: block; width: 100%;
       padding: 12px;
-      background: #E11D48; color: white;
-      border: none; border-radius: 4px;
+      background: #F28C00; color: white;
+      border: none; border-radius: 8px;
       font-size: 14px; font-weight: 700; cursor: pointer;
       font-family: 'Inter', sans-serif; margin-bottom: 16px;
       transition: background 0.2s;
     }
-    .btn-buy-now:hover:not(:disabled) { background: #A31F2A; }
-    .btn-buy-now:disabled { background: #9ca3af; cursor: not-allowed; }
+    .btn-buy-now:hover:not(:disabled) { background: #070A05; }
+    .btn-buy-now:disabled { background: #9CA3AF; cursor: not-allowed; }
 
     /* Variations */
-    .var-section { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #f0f0f0; }
-    .var-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #666; margin-bottom: 10px; display: block; }
+    .var-section { margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #F3F4F6; }
+    .var-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #9CA3AF; margin-bottom: 10px; display: block; }
     .var-grid { display: flex; flex-wrap: wrap; gap: 8px; }
     .var-btn {
       display: flex; align-items: center; gap: 8px;
-      padding: 8px 14px; border: 2px solid #e5e7eb;
+      padding: 8px 14px; border: 1.5px solid #E5E7EB;
       border-radius: 8px; background: white; cursor: pointer;
       transition: all 0.2s; font-family: 'Inter', sans-serif;
     }
-    .var-btn:hover { border-color: #E11D48; background: #fef2f2; }
-    .var-btn.active { border-color: #E11D48; background: #fef2f2; box-shadow: 0 0 0 1px #E11D48; }
+    .var-btn:hover { border-color: #F28C00; background: #FFF2DE; }
+    .var-btn.active { border-color: #F28C00; background: #FFF2DE; box-shadow: 0 0 0 2px rgba(242,140,0,0.15); }
     .var-thumb { width: 28px; height: 28px; border-radius: 4px; object-fit: cover; }
-    .var-name { font-size: 13px; font-weight: 600; color: #333; }
-    .var-price { font-size: 12px; font-weight: 700; color: #E11D48; }
+    .var-name { font-size: 13px; font-weight: 600; color: #111; }
+    .var-price { font-size: 12px; font-weight: 700; color: #F28C00; }
 
     /* Cart preview */
     .cart-preview {
-      border: 1px solid #e5e7eb; border-radius: 6px;
+      border: 1px solid #F3F4F6; border-radius: 8px;
       margin-bottom: 16px; overflow: hidden;
     }
     .cp-item {
       display: flex; align-items: center; gap: 10px;
-      padding: 10px 12px; border-bottom: 1px solid #f5f5f5;
+      padding: 10px 12px; border-bottom: 1px solid #F9FAFB;
       font-size: 13px;
     }
     .cp-item:last-child { border-bottom: none; }
-    .cp-img { width: 36px; height: 36px; object-fit: contain; border-radius: 4px; flex-shrink: 0; }
-    .cp-name { flex: 1; color: #333; line-height: 1.3; }
+    .cp-img { width: 36px; height: 36px; object-fit: contain; border-radius: 6px; flex-shrink: 0; background: #F9FAFB; }
+    .cp-name { flex: 1; color: #374151; line-height: 1.3; }
     .cp-price { font-weight: 700; color: #111; white-space: nowrap; }
 
     /* Meta */
-    .prod-meta { margin-top: 12px; border-top: 1px solid #f0f0f0; padding-top: 12px; }
-    .meta-row { font-size: 13px; color: #555; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .meta-row span { font-weight: 600; color: #333; }
-    .cat-link { color: #E11D48; text-decoration: none; font-size: 13px; }
+    .prod-meta { margin-top: 12px; border-top: 1px solid #F3F4F6; padding-top: 12px; }
+    .meta-row { font-size: 13px; color: #6B7280; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .meta-row span { font-weight: 600; color: #374151; }
+    .cat-link { color: #F28C00; text-decoration: none; font-size: 13px; }
     .cat-link:hover { text-decoration: underline; }
 
     /* Sidebar */
     .sidebar-col {}
-    .sidebar-box { background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+    .sidebar-box { background: white; border: 1px solid #E4EFE8; border-radius: 18px; overflow: hidden; box-shadow: 0 12px 34px rgba(15,25,35,0.05); }
     .sidebar-title {
       display: flex; align-items: center; justify-content: space-between;
       padding: 14px 16px;
-      background: #f9f9f9; border-bottom: 1px solid #eee;
-      font-size: 14px; font-weight: 700; color: #111;
+      background: #FFF9F0; border-bottom: 1px solid #E4EFE8;
+      font-size: 13px; font-weight: 700; color: #111; text-transform: uppercase; letter-spacing: 0.04em;
     }
-    .sidebar-toggle { background: none; border: none; cursor: pointer; font-size: 16px; color: #666; padding: 0; }
+    .sidebar-toggle { background: none; border: none; cursor: pointer; font-size: 16px; color: #9CA3AF; padding: 0; }
     .sidebar-products { padding: 8px 0; }
     .fp-item {
       display: flex; align-items: center; gap: 10px;
       padding: 10px 16px; text-decoration: none;
-      border-bottom: 1px solid #f5f5f5; transition: background 0.15s;
+      border-bottom: 1px solid #F9FAFB; transition: background 0.15s;
     }
-    .fp-item:hover { background: #fafafa; }
-    .fp-img { width: 48px; height: 48px; object-fit: contain; border-radius: 4px; border: 1px solid #eee; flex-shrink: 0; }
+    .fp-item:hover { background: #FFF2DE; }
+    .fp-img { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; border: 1px solid #F3F4F6; flex-shrink: 0; }
     .fp-info { flex: 1; min-width: 0; }
-    .fp-name { font-size: 12px; color: #333; margin-bottom: 3px; line-height: 1.3;
+    .fp-name { font-size: 12px; color: #374151; margin-bottom: 3px; line-height: 1.3;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .fp-price { font-size: 13px; font-weight: 700; color: #E11D48; }
+    .fp-price { font-size: 13px; font-weight: 700; color: #F28C00; }
 
     /* Description */
-    .desc-section { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; margin-bottom: 32px; }
-    .desc-section h3 { font-size: 18px; font-weight: 700; color: #111; margin-bottom: 16px; }
-    .desc-body { font-size: 14px; color: #555; line-height: 1.8; }
+    .desc-section { background: white; border: 1px solid #E4EFE8; border-radius: 20px; padding: 28px; margin-bottom: 36px; box-shadow: 0 12px 34px rgba(15,25,35,0.04); }
+    .desc-section h3 { font-size: 17px; font-weight: 700; color: #111; margin-bottom: 16px; font-family: 'Poppins', sans-serif; }
+    .desc-body { font-size: 14px; color: #6B7280; line-height: 1.85; }
 
     /* Related */
     .related-section { margin-bottom: 40px; }
@@ -412,9 +424,9 @@ const WHATSAPP_NUMBER = '353899584325';
 
     /* Toast */
     .toast-msg {
-      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
-      background: #0F766E; color: white;
-      padding: 12px 20px; border-radius: 8px;
+      position: fixed; bottom: 80px; right: 24px; z-index: 9999;
+      background: #2E7D32; color: white;
+      padding: 12px 20px; border-radius: 10px;
       font-size: 14px; font-weight: 600;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
       animation: slideUp 0.3s ease;

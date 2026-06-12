@@ -15,172 +15,205 @@ import { environment } from '../../../../environments/environment';
   imports: [RouterLink, RouterLinkActive, FormsModule, NgFor, NgIf],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <!-- Contact Top Bar -->
-    <div class="contact-bar">
-      <div class="container contact-inner">
-
-        <!-- Mobile-only logo inside top bar -->
-        <a routerLink="/" class="mob-bar-logo">
-          <img [src]="logoUrl()" [alt]="settings.get('site_name', 'Your Store')" class="mob-bar-logo-img">
-        </a>
-
-        <!-- Desktop left: phone -->
-        <div class="contact-left">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3-8.57A2 2 0 012 1.5h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.37a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          <span>{{ settings.get('site_phone', '') }}</span>
-        </div>
-
-        <!-- Right: phone number (mobile) + offer text + pay online -->
-        <div class="contact-right">
-          <span class="mob-phone">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3-8.57A2 2 0 012 1.5h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.37a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-            {{ settings.get('site_phone', '') }}
+    <!-- ── TOP ANNOUNCEMENT BAR ── -->
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <div class="topbar-left">
+          <span class="topbar-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3-8.57A2 2 0 012 1.5h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.37a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
           </span>
-          <span class="offer-text">{{ settings.get('header_offer_text', 'Free delivery on qualifying orders') }}</span>
+          <span class="topbar-phone">{{ settings.get('site_phone', '+353 1 234 5678') }}</span>
+        </div>
+        <div class="topbar-center">
+          <span class="topbar-offer">{{ settings.get('header_offer_text', '🚚 Free delivery on orders over €50') }}</span>
+        </div>
+        <div class="topbar-right">
           @if (settings.get('payment_online_url')) {
-            <a [href]="settings.get('payment_online_url')" target="_blank" rel="noopener" class="pay-online-btn">Pay Online</a>
+            <a [href]="settings.get('payment_online_url')" target="_blank" rel="noopener" class="topbar-pay-btn">Pay Online</a>
           }
+          <a routerLink="/account" class="topbar-link">My Account</a>
         </div>
       </div>
     </div>
 
-    <!-- Main Header -->
-    <header class="header" [class.scrolled]="isScrolled()">
+    <!-- ── MAIN HEADER ── -->
+    <header class="header" [class.header-scrolled]="isScrolled()">
       <div class="container header-inner">
 
         <!-- Logo -->
-        <a routerLink="/" class="logo">
+        <a routerLink="/" class="logo" id="site-logo">
           <img [src]="logoUrl()" [alt]="settings.get('site_name', 'Your Store')" class="logo-img">
         </a>
 
         <!-- Search Bar (desktop) -->
-        <div class="search-wrap">
-          <div class="search-bar" [class.active]="searchOpen()">
-            <span class="search-icon">🔍</span>
+        <div class="search-wrap" id="desktop-search">
+          <div class="search-bar" [class.search-focused]="searchFocused()">
+            <svg class="search-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             <input
               type="text"
               [(ngModel)]="searchQuery"
-              placeholder="Search products, brands, categories..."
+              placeholder="Search products..."
               (keyup.enter)="doSearch()"
-              (focus)="searchOpen.set(true)"
+              (focus)="searchFocused.set(true)"
               (blur)="onSearchBlur()"
+              id="desktop-search-input"
+              autocomplete="off"
             >
-            <button class="search-btn" (click)="doSearch()">Search</button>
+            @if (searchQuery) {
+              <button class="search-clear" (click)="clearSearch()" aria-label="Clear search">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            }
+            <button class="search-btn" (click)="doSearch()" id="search-submit-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              Search
+            </button>
           </div>
+          <!-- Desktop search results dropdown -->
+          @if (searchResults().length > 0 && searchQuery.length > 1 && searchFocused()) {
+            <div class="desktop-search-results">
+              @for (p of searchResults().slice(0,6); track p.id) {
+                <a [routerLink]="['/product', p.slug]" class="ds-result-item" (click)="onResultClick()">
+                  <div class="ds-result-img">
+                    @if (p.image) {
+                      <img [src]="mediaUrl + p.image" [alt]="p.name" loading="lazy">
+                    } @else {
+                      <div class="ds-img-fallback">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
+                      </div>
+                    }
+                  </div>
+                  <div class="ds-result-info">
+                    <span class="ds-result-name">{{ p.name }}</span>
+                    @if (p.category_name) {
+                      <span class="ds-result-cat">{{ p.category_name }}</span>
+                    }
+                  </div>
+                  <span class="ds-result-price">€{{ (+p.price).toFixed(2) }}</span>
+                </a>
+              }
+              <a [routerLink]="['/search']" [queryParams]="{q: searchQuery}" class="ds-view-all" (click)="onResultClick()">
+                View all results for "{{ searchQuery }}" →
+              </a>
+            </div>
+          }
+          @if (searchLoading() && searchQuery.length > 1) {
+            <div class="desktop-search-results ds-loading">
+              <span></span><span></span><span></span>
+            </div>
+          }
         </div>
 
-        <!-- Actions (desktop only) -->
+        <!-- Header Actions -->
         <div class="header-actions">
-          <button class="action-btn search-toggle" (click)="searchOpen.set(!searchOpen())" title="Search">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          </button>
-          <a routerLink="/wishlist" class="action-btn" title="Wishlist">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </a>
-          <a routerLink="/account" class="action-btn" title="Account">
+          <a routerLink="/account" class="action-btn" id="account-btn" title="My Account">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span class="action-label">Account</span>
           </a>
-          <a routerLink="/cart" class="action-btn cart-btn" (click)="cart.toggleCart(); $event.preventDefault()" title="Cart">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-            @if (cart.itemCount() > 0) {
-              <span class="cart-badge animate-scaleIn">{{ cart.itemCount() }}</span>
-            }
+          <a routerLink="/wishlist" class="action-btn" id="wishlist-btn" title="Wishlist">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span class="action-label">Wishlist</span>
           </a>
-          <button class="mobile-menu-btn" (click)="mobileMenu.set(!mobileMenu())" [class.open]="mobileMenu()">
+          <button class="cart-action-btn" (click)="cart.toggleCart()" id="cart-header-btn" title="Cart">
+            <div class="cart-btn-inner">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+              @if (cart.itemCount() > 0) {
+                <span class="cart-badge animate-scaleIn">{{ cart.itemCount() }}</span>
+              }
+            </div>
+            <div class="cart-btn-text">
+              <span class="cart-label">Cart</span>
+              @if (cart.subtotal() > 0) {
+                <span class="cart-subtotal">€{{ cart.subtotal().toFixed(2) }}</span>
+              }
+            </div>
+          </button>
+          <button class="hamburger" (click)="mobileMenu.set(!mobileMenu())" [class.ham-open]="mobileMenu()" id="mobile-menu-btn" aria-label="Menu">
             <span></span><span></span><span></span>
           </button>
         </div>
       </div>
+
+      <!-- ── CATEGORY NAV BAR ── -->
+      <div class="cat-nav-bar">
+        <div class="container cat-nav-inner">
+          <a routerLink="/" routerLinkActive="cat-nav-active" [routerLinkActiveOptions]="{exact:true}" class="cat-nav-link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Home
+          </a>
+          <a routerLink="/categories" routerLinkActive="cat-nav-active" class="cat-nav-link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            All Categories
+          </a>
+          @for (cat of displayNavCategories().slice(0,6); track cat.slug) {
+            <a [routerLink]="['/category', cat.slug]" routerLinkActive="cat-nav-active" class="cat-nav-link">{{ cat.name }}</a>
+          }
+          <a routerLink="/blog" routerLinkActive="cat-nav-active" class="cat-nav-link">Blog</a>
+          <a routerLink="/contact" routerLinkActive="cat-nav-active" class="cat-nav-link">Contact</a>
+        </div>
+      </div>
     </header>
 
-    <!-- Desktop nav strip (hidden on mobile) -->
-    <div class="desk-nav-bar">
-      <div class="container desk-nav-inner">
-        <a routerLink="/" routerLinkActive="desk-nav-active" [routerLinkActiveOptions]="{exact:true}" class="desk-nav-link">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          Home
-        </a>
-        <a routerLink="/categories" routerLinkActive="desk-nav-active" class="desk-nav-link">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          All Categories
-        </a>
-        <a routerLink="/contact" routerLinkActive="desk-nav-active" class="desk-nav-link">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3-8.57A2 2 0 012 1.5h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.37a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-          Contact Us
-        </a>
-      </div>
-    </div>
-
-    <!-- ── MOBILE MENU DRAWER (slides in from right) ── -->
-    <nav class="main-nav" [class.open]="mobileMenu()">
-
-      <!-- Drawer header -->
+    <!-- ── MOBILE MENU DRAWER ── -->
+    <div class="menu-backdrop" [class.backdrop-active]="mobileMenu()" (click)="mobileMenu.set(false)"></div>
+    <nav class="mobile-nav" [class.mobile-nav-open]="mobileMenu()">
       <div class="mnav-header">
         <img [src]="logoUrl()" [alt]="settings.get('site_name', 'Your Store')" class="mnav-logo">
-        <button class="mnav-close" (click)="mobileMenu.set(false)" aria-label="Close menu">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        <button class="mnav-close" (click)="mobileMenu.set(false)" aria-label="Close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
       </div>
-
-      <!-- Main links -->
       <div class="mnav-body">
         <div class="mnav-section-label">Navigate</div>
         <a routerLink="/" routerLinkActive="mnav-active" [routerLinkActiveOptions]="{exact:true}" class="mnav-item" (click)="mobileMenu.set(false)">
-          <span class="mnav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
-          <span>Home</span>
-          <svg class="mnav-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+          <span class="mnav-icon">🏠</span> Home
+          <svg class="mnav-arr" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
         </a>
         <a routerLink="/categories" routerLinkActive="mnav-active" class="mnav-item" (click)="mobileMenu.set(false)">
-          <span class="mnav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
-          <span>All Categories</span>
-          <svg class="mnav-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
-        </a>
-        <a routerLink="/blog" routerLinkActive="mnav-active" class="mnav-item" (click)="mobileMenu.set(false)">
-          <span class="mnav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
-          <span>Blog &amp; Recipes</span>
-          <svg class="mnav-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
-        </a>
-        <a routerLink="/contact" routerLinkActive="mnav-active" class="mnav-item" (click)="mobileMenu.set(false)">
-          <span class="mnav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
-          <span>Contact Us</span>
-          <svg class="mnav-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+          <span class="mnav-icon">🗂️</span> All Categories
+          <svg class="mnav-arr" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
         </a>
         <a routerLink="/account" routerLinkActive="mnav-active" class="mnav-item" (click)="mobileMenu.set(false)">
-          <span class="mnav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-          <span>My Account</span>
-          <svg class="mnav-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+          <span class="mnav-icon">👤</span> My Account
+          <svg class="mnav-arr" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        </a>
+        <a routerLink="/blog" routerLinkActive="mnav-active" class="mnav-item" (click)="mobileMenu.set(false)">
+          <span class="mnav-icon">📰</span> Blog & Recipes
+          <svg class="mnav-arr" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        </a>
+        <a routerLink="/contact" routerLinkActive="mnav-active" class="mnav-item" (click)="mobileMenu.set(false)">
+          <span class="mnav-icon">📍</span> Contact Us
+          <svg class="mnav-arr" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
         </a>
 
-        <!-- Categories quick-links -->
-        @if (navCategories().length > 0) {
-          <div class="mnav-section-label" style="margin-top:20px">Shop by Category</div>
-          @for (cat of navCategories().slice(0,6); track cat.id) {
-            <a [routerLink]="['/category', cat.slug]" routerLinkActive="mnav-active" class="mnav-item mnav-cat" (click)="mobileMenu.set(false)">
-              <span class="mnav-dot"></span>
-              <span>{{ cat.name }}</span>
-              <svg class="mnav-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+        @if (displayNavCategories().length > 0) {
+          <div class="mnav-section-label" style="margin-top:16px">Shop by Category</div>
+          @for (cat of displayNavCategories().slice(0,8); track cat.slug) {
+            <a [routerLink]="['/category', cat.slug]" class="mnav-item mnav-cat-item" (click)="mobileMenu.set(false)">
+              <span class="mnav-cat-dot"></span>
+              {{ cat.name }}
+              <svg class="mnav-arr" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
             </a>
           }
         }
       </div>
-
-      <!-- Drawer footer -->
       <div class="mnav-footer">
-        <a href="tel:{{ settings.get('site_phone', '') }}" class="mnav-contact">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3-8.57A2 2 0 012 1.5h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.37a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-          {{ settings.get('site_phone', '') }}
-        </a>
-        <span class="mnav-tagline">{{ settings.get('site_tagline', 'Reusable ecommerce storefront') }}</span>
+        @if (settings.get('site_phone')) {
+          <a href="tel:{{ settings.get('site_phone') }}" class="mnav-phone">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3-8.57A2 2 0 012 1.5h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.37a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            {{ settings.get('site_phone') }}
+          </a>
+        }
+        <span class="mnav-tag">{{ settings.get('site_tagline', 'Your online store') }}</span>
       </div>
     </nav>
 
-    <!-- ── MOBILE SEARCH OVERLAY (live) ── -->
-    <div class="mob-search-overlay" [class.active]="mobileSearchOpen()" (click)="closeMobileSearch($event)">
+    <!-- ── MOBILE SEARCH OVERLAY ── -->
+    <div class="mob-search-overlay" [class.mob-search-active]="mobileSearchOpen()" (click)="closeMobileSearch($event)">
       <div class="mob-search-box">
-        <div class="mob-search-inner">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <div class="mob-search-row">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           <input
-            #mobileSearchInput
             type="text"
             [(ngModel)]="searchQuery"
             placeholder="Search products..."
@@ -188,34 +221,30 @@ import { environment } from '../../../../environments/environment';
             (ngModelChange)="onMobileSearchInput($event)"
             class="mob-search-input"
             autocomplete="off"
+            id="mobile-search-input"
           >
           @if (searchQuery) {
-            <button class="mob-search-clear" (click)="clearSearch()" aria-label="Clear">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            <button class="mob-clear-btn" (click)="clearSearch()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
             </button>
           }
         </div>
-        <!-- Live results -->
         @if (searchResults().length > 0 && searchQuery.length > 1) {
           <div class="mob-search-results">
             @for (p of searchResults(); track p.id) {
-              <a [routerLink]="['/product', p.slug]" class="mob-result-item" (click)="onResultClick()">
-                <div class="mob-result-img">
+              <a [routerLink]="['/product', p.slug]" class="mob-result-row" (click)="onResultClick()">
+                <div class="mob-result-thumb">
                   @if (p.image) {
                     <img [src]="mediaUrl + p.image" [alt]="p.name" loading="lazy">
                   } @else {
-                    <div class="mob-result-img-placeholder">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/></svg>
-                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>
                   }
                 </div>
                 <div class="mob-result-info">
                   <span class="mob-result-name">{{ p.name }}</span>
-                  @if (p.category_name) {
-                    <span class="mob-result-cat">{{ p.category_name }}</span>
-                  }
+                  @if (p.category_name) {<span class="mob-result-cat">{{ p.category_name }}</span>}
                 </div>
-                <span class="mob-result-price">{{ settings.get('currency_symbol', '$') }}{{ (+p.price).toFixed(2) }}</span>
+                <span class="mob-result-price">€{{ (+p.price).toFixed(2) }}</span>
               </a>
             }
           </div>
@@ -223,31 +252,27 @@ import { environment } from '../../../../environments/environment';
           <div class="mob-search-loading">
             <span></span><span></span><span></span>
           </div>
-        } @else if (searchQuery.length > 1 && searchResults().length === 0 && !searchLoading()) {
-          <div class="mob-search-empty">No products found for "{{ searchQuery }}"</div>
+        } @else if (searchQuery.length > 1 && !searchLoading()) {
+          <div class="mob-search-empty">No results for "{{ searchQuery }}"</div>
         }
       </div>
     </div>
 
-    <!-- ── MOBILE BOTTOM NAVIGATION BAR ── -->
-    <nav class="bottom-nav">
-      <a routerLink="/" routerLinkActive="bnav-active" [routerLinkActiveOptions]="{exact:true}" class="bnav-item" (click)="mobileMenu.set(false)">
+    <!-- ── BOTTOM NAV (mobile) ── -->
+    <nav class="bottom-nav" id="bottom-nav">
+      <a routerLink="/" routerLinkActive="bnav-active" [routerLinkActiveOptions]="{exact:true}" class="bnav-item">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         <span>Home</span>
       </a>
-      <button class="bnav-item" (click)="mobileMenu.set(false); openMobileSearch()">
+      <button class="bnav-item" (click)="openMobileSearch()" id="mobile-search-btn">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <span>Search</span>
       </button>
-      <a routerLink="/wishlist" routerLinkActive="bnav-active" class="bnav-item" (click)="mobileMenu.set(false)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        <span>Wishlist</span>
+      <a routerLink="/categories" routerLinkActive="bnav-active" class="bnav-item">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>Categories</span>
       </a>
-      <a routerLink="/account" routerLinkActive="bnav-active" class="bnav-item" (click)="mobileMenu.set(false)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Account</span>
-      </a>
-      <button class="bnav-item bnav-cart" (click)="mobileMenu.set(false); cart.toggleCart()">
+      <button class="bnav-item bnav-cart" (click)="cart.toggleCart()" id="bottom-cart-btn">
         <span class="bnav-cart-wrap">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           @if (cart.itemCount() > 0) {
@@ -256,7 +281,7 @@ import { environment } from '../../../../environments/environment';
         </span>
         <span>Cart</span>
       </button>
-      <button class="bnav-item" [class.bnav-active]="mobileMenu()" (click)="mobileMenu.set(!mobileMenu())">
+      <button class="bnav-item" [class.bnav-active]="mobileMenu()" (click)="mobileMenu.set(!mobileMenu())" id="bnav-menu-btn">
         @if (!mobileMenu()) {
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           <span>Menu</span>
@@ -266,681 +291,469 @@ import { environment } from '../../../../environments/environment';
         }
       </button>
     </nav>
-
-    <!-- ── MENU BACKDROP: tap outside to close ── -->
-    <div class="menu-backdrop" [class.active]="mobileMenu()" (click)="mobileMenu.set(false)"></div>
   `,
   styles: [`
-    /* ── Contact Bar ── */
-    .contact-bar {
-      background: #0F766E; color: white;
+    /* ── TOP BAR ── */
+    .topbar {
+      background:
+        radial-gradient(circle at 18% 50%, rgba(242,140,0,0.22), transparent 34%),
+        linear-gradient(90deg, #070A05 0%, #1C1208 54%, #070A05 100%);
+      color: rgba(255,255,255,0.92);
       height: 36px; display: flex; align-items: center;
-      font-size: 12.5px; font-weight: 500;
+      font-size: 12px; font-weight: 500;
       position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-      overflow: visible;    /* prevent logo crop */
     }
-    .contact-inner { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; }
-    .contact-left { display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.95); flex-shrink: 0; }
-    .contact-sep { opacity: 0.4; margin: 0 2px; }
-    .contact-tagline { font-size: 11px; opacity: 0.7; }
-    .contact-right { display: flex; align-items: center; gap: 10px; min-width: 0; }
-    .offer-text { font-size: 12px; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .pay-online-btn {
-      background: #22C55E; color: white; font-size: 11px; font-weight: 700;
-      padding: 4px 12px; border-radius: 999px; text-decoration: none;
-      transition: background 0.2s; white-space: nowrap; flex-shrink: 0;
+    .topbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .topbar-left  { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .topbar-icon  { display: flex; align-items: center; opacity: 0.7; }
+    .topbar-phone { font-weight: 600; letter-spacing: 0.02em; }
+    .topbar-center { flex: 1; text-align: center; }
+    .topbar-offer { font-size: 12px; opacity: 0.85; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .topbar-link { font-size: 12px; opacity: 0.7; transition: opacity 0.2s; }
+    .topbar-link:hover { opacity: 1; }
+    .topbar-pay-btn {
+      background: #F28C00; color: #120A03; font-size: 11px; font-weight: 800;
+      padding: 4px 12px; border-radius: 999px; transition: background 0.2s;
     }
-    .pay-online-btn:hover { background: #16a34a; }
+    .topbar-pay-btn:hover { background: #FFA31A; }
 
-    /* Mobile logo inside red bar — hidden on desktop */
-    .mob-bar-logo { display: none; flex-shrink: 0; align-items: center; }
-    .mob-bar-logo-img { height: 40px; width: auto; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.18)); }
-
-    /* Phone shown inside mobile header — hidden on desktop */
-    .mob-phone { display: none; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.97); white-space: nowrap; flex-shrink: 0; letter-spacing: 0.01em; }
-
-    /* Menu backdrop — always defined, shown when drawer is open */
-    .menu-backdrop {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.45);
-      z-index: 2400;
-      opacity: 0;
-      transition: opacity 0.22s ease;
-    }
-    .menu-backdrop.active {
-      display: block;
-      opacity: 1;
-    }
-    /* ── Main Header ── */
+    /* ── MAIN HEADER ── */
     .header {
       position: fixed; top: 36px; left: 0; right: 0; z-index: 999;
-      background: rgba(255,255,255,0.97);
-      border-bottom: 1px solid rgba(229,231,235,0.8);
-      transition: background 0.35s cubic-bezier(0.22,1,0.36,1),
-                  box-shadow 0.35s cubic-bezier(0.22,1,0.36,1),
-                  border-color 0.35s cubic-bezier(0.22,1,0.36,1);
+      background: rgba(255,250,242,0.96);
+      border-bottom: 1px solid rgba(247,233,215,0.85);
+      backdrop-filter: blur(18px);
+      transition: box-shadow 0.3s ease, background 0.3s ease;
     }
-    /* scrolled: only change visual style — position stays fixed below contact bar */
-    .header.scrolled {
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      box-shadow: 0 4px 32px rgba(37,99,235,0.12);
-      border-bottom-color: rgba(37,99,235,0.1);
+    .header-scrolled {
+      box-shadow: 0 2px 20px rgba(0,0,0,0.08);
     }
-    .header-inner { display: flex; align-items: center; height: 82px; gap: 20px; }
-
-    /* ── Nav Strip (desktop + mobile) ── */
-    .desk-nav-bar {
-      position: fixed;
-      top: 118px;   /* 36px contact bar + 82px main header */
-      left: 0; right: 0;
-      z-index: 998;
-      background: #fff;
-      border-bottom: 2px solid #F0EEFF;
-      box-shadow: 0 2px 12px rgba(37,99,235,0.06);
-    }
-    .desk-nav-inner {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      height: 40px;
-      overflow-x: auto;
-    }
-    .desk-nav-inner::-webkit-scrollbar { display: none; }
-    .desk-nav-link {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 16px; border-radius: 8px;
-      font-size: 13.5px; font-weight: 600; color: #3D3D56;
-      white-space: nowrap; flex-shrink: 0;
-      transition: all 0.2s cubic-bezier(0.22,1,0.36,1);
-      text-decoration: none;
-    }
-    .desk-nav-link:hover { background: #E8F5E9; color: #0F766E; }
-    .desk-nav-link.desk-nav-active,
-    .desk-nav-link.active { background: #0F766E; color: white; }
-    .desk-nav-link.desk-nav-active svg,
-    .desk-nav-link.active svg { stroke: white; }
-
-    /* Mobile nav strip — repositioned below red bar */
-    @media (max-width: 768px) {
-      .desk-nav-bar {
-        top: 90px;
-        border-bottom: 2px solid #E8F5E9;
-        background: #ffffff;
-      }
-      .desk-nav-inner {
-        height: 38px;
-        gap: 0;
-        padding: 0 8px;
-        justify-content: space-around;   /* 3 items spread evenly */
-      }
-      .desk-nav-link {
-        font-size: 12px;
-        padding: 5px 10px;
-        gap: 4px;
-        flex: 1;
-        justify-content: center;
-      }
-      .desk-nav-link svg { width: 13px; height: 13px; }
+    .header-inner {
+      display: flex; align-items: center;
+      height: 72px; gap: 16px;
     }
 
-    /* ── Logo ── */
+    /* ── LOGO ── */
     .logo { flex-shrink: 0; display: flex; align-items: center; }
-    .logo-img { height: 70px; width: auto; object-fit: contain; max-width: 200px; }
+    .logo-img { height: 58px; width: auto; object-fit: contain; max-width: 180px; }
 
-    /* ── Search ── */
-    .search-wrap { flex: 1; max-width: 600px; }
+    /* ── SEARCH ── */
+    .search-wrap {
+      flex: 1; max-width: 580px; position: relative;
+    }
     .search-bar {
       display: flex; align-items: center;
-      border: 2px solid #D1D5DB; border-radius: 8px;
-      overflow: hidden; background: white; transition: all 0.25s ease;
+      border: 1.5px solid #F0D8B8; border-radius: 14px;
+      overflow: visible; background: #FFF8EE;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      position: relative;
     }
-    .search-bar.active, .search-bar:focus-within {
-      border-color: #0F766E; box-shadow: 0 0 0 4px rgba(15,118,110,0.14);
+    .search-bar.search-focused {
+      border-color: #F28C00;
+      box-shadow: 0 0 0 3px rgba(242,140,0,0.14);
+      background: #fff;
     }
-    .search-cat {
-      padding: 0 12px; height: 44px; border: none;
-      background: #F6F7FB; border-right: 1.5px solid #E5E7EB;
-      font-size: 13px; font-weight: 600; color: #2563EB;
-      outline: none; min-width: 90px; cursor: pointer;
-    }
-    .search-divider { width: 1px; height: 24px; background: #E5E7EB; }
-    .search-icon { padding: 0 10px; font-size: 15px; color: #9CA3AF; flex-shrink: 0; }
+    .search-icon-svg { margin-left: 14px; flex-shrink: 0; }
     .search-bar input {
-      flex: 1; height: 44px; border: none; padding: 0 10px;
-      font-size: 14px; color: #1A1A2E; outline: none; background: transparent;
+      flex: 1; height: 46px; border: none; padding: 0 10px;
+      font-size: 14px; color: #0F1923; outline: none; background: transparent;
     }
     .search-bar input::placeholder { color: #B0B3BE; }
+    .search-clear {
+      background: none; border: none; cursor: pointer;
+      padding: 6px 4px; display: flex; align-items: center; flex-shrink: 0;
+    }
     .search-btn {
-      background: #0F766E; color: white; padding: 0 20px; height: 44px;
+      display: flex; align-items: center; gap: 6px;
+      background: linear-gradient(135deg, #F28C00, #FFB13B); color: #160B02;
+      padding: 0 18px; height: 46px;
       font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+      border-radius: 0 12px 12px 0;
       transition: background 0.2s; white-space: nowrap; flex-shrink: 0;
       font-family: 'Inter', sans-serif;
     }
-    .search-btn:hover { background: #115E59; }
+    .search-btn:hover { background: linear-gradient(135deg, #D87300, #F28C00); }
 
-    /* ── Actions ── */
-    .header-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; }
+    /* Desktop search dropdown */
+    .desktop-search-results {
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: white; border-radius: 12px;
+      border: 1px solid #E5E7EB;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      overflow: hidden; z-index: 9999;
+      animation: slideDown 0.15s ease;
+    }
+    .ds-result-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 14px; text-decoration: none;
+      border-bottom: 1px solid #F9FAFB;
+      transition: background 0.15s;
+    }
+    .ds-result-item:last-of-type { border-bottom: none; }
+    .ds-result-item:hover { background: #FFF2DE; }
+    .ds-result-img {
+      width: 42px; height: 42px; border-radius: 8px;
+      overflow: hidden; flex-shrink: 0; background: #F3F4F6;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ds-result-img img { width: 100%; height: 100%; object-fit: cover; }
+    .ds-img-fallback { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+    .ds-result-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .ds-result-name { font-size: 13px; font-weight: 600; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ds-result-cat  { font-size: 11px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 500; }
+    .ds-result-price { font-size: 13px; font-weight: 700; color: #F28C00; flex-shrink: 0; }
+    .ds-view-all {
+      display: block; padding: 11px 14px;
+      font-size: 13px; font-weight: 600; color: #B85E00;
+      border-top: 1px solid #F3F4F6;
+      text-decoration: none; transition: background 0.15s;
+    }
+    .ds-view-all:hover { background: #FFF2DE; }
+    .ds-loading {
+      display: flex; align-items: center; justify-content: center; gap: 6px; padding: 18px;
+    }
+    .ds-loading span {
+      width: 7px; height: 7px; border-radius: 50%; background: #F28C00;
+    }
+    .ds-loading span:nth-child(1) { animation: dotPop 1s ease 0s infinite; }
+    .ds-loading span:nth-child(2) { animation: dotPop 1s ease 0.18s infinite; }
+    .ds-loading span:nth-child(3) { animation: dotPop 1s ease 0.36s infinite; }
+
+    /* ── HEADER ACTIONS ── */
+    .header-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; flex-shrink: 0; }
     .action-btn {
-      width: 44px; height: 44px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      color: #2563EB; background: #F0ECF9;
-      transition: all 0.25s cubic-bezier(0.22,1,0.36,1); position: relative;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 8px 12px; border-radius: 10px; color: #374151;
+      transition: all 0.2s; text-decoration: none;
     }
-    .action-btn:hover { background: #2563EB; color: white; transform: scale(1.05); }
+    .action-btn:hover { background: #FFF2DE; color: #B85E00; }
+    .action-label { font-size: 10px; font-weight: 600; letter-spacing: 0.02em; }
+
+    .cart-action-btn {
+      display: flex; align-items: center; gap: 10px;
+      background: linear-gradient(135deg, #F28C00, #C86600); color: #160B02;
+      padding: 10px 16px; border-radius: 14px;
+      border: none; cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      font-family: 'Inter', sans-serif;
+      position: relative;
+    }
+    .cart-action-btn:hover { background: linear-gradient(135deg, #FFB13B, #F28C00); }
+    .cart-btn-inner { position: relative; display: flex; align-items: center; }
     .cart-badge {
-      position: absolute; top: -4px; right: -4px;
-      background: #E11D48; color: white;
+      position: absolute; top: -8px; right: -8px;
+      background: #070A05; color: white;
       font-size: 10px; font-weight: 800;
-      width: 19px; height: 19px; border-radius: 50%;
+      width: 18px; height: 18px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      border: 2px solid white; box-shadow: 0 2px 8px rgba(225,29,72,0.4);
+      border: 2px solid white;
     }
-    .search-toggle { display: none; }
+    .cart-btn-text { display: flex; flex-direction: column; align-items: flex-start; }
+    .cart-label { font-size: 11px; font-weight: 600; opacity: 0.85; line-height: 1; }
+    .cart-subtotal { font-size: 14px; font-weight: 800; line-height: 1.3; }
 
-    /* ── Hamburger ── */
-    .mobile-menu-btn {
-      display: none; flex-direction: column;
-      justify-content: center; align-items: center;
-      gap: 5px; width: 44px; height: 44px;
-      border-radius: 12px; background: #F0ECF9; transition: all 0.25s;
+    /* Hamburger */
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      padding: 10px; border-radius: 10px;
+      background: #F3F4F6; transition: background 0.2s;
     }
-    .mobile-menu-btn:hover { background: #2563EB; }
-    .mobile-menu-btn:hover span { background: white; }
-    .mobile-menu-btn span {
+    .hamburger:hover { background: #E5E7EB; }
+    .hamburger span {
       display: block; width: 20px; height: 2px;
-      background: #2563EB; border-radius: 2px; transition: all 0.3s;
+      background: #374151; border-radius: 2px; transition: all 0.3s;
     }
-    .mobile-menu-btn.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
-    .mobile-menu-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-    .mobile-menu-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+    .hamburger.ham-open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .hamburger.ham-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .hamburger.ham-open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
 
-    /* ── Nav / Slide-in Drawer (always fixed off-screen) ── */
-    .main-nav {
-      position: fixed;
-      top: 0; right: 0; bottom: 0;
-      width: min(320px, 88vw);
-      background: white;
-      z-index: 2500;
-      display: flex;
-      flex-direction: column;
+    /* ── CATEGORY NAV ── */
+    .cat-nav-bar {
+      background: rgba(255,250,242,0.96);
+      border-top: 1px solid rgba(247,233,215,0.9);
+    }
+    .cat-nav-inner {
+      display: flex; align-items: center; gap: 2px;
+      height: 40px; overflow-x: auto;
+    }
+    .cat-nav-inner::-webkit-scrollbar { display: none; }
+    .cat-nav-link {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 14px; border-radius: 6px;
+      font-size: 13px; font-weight: 500; color: #374151;
+      white-space: nowrap; flex-shrink: 0;
+      transition: all 0.18s; text-decoration: none;
+    }
+    .cat-nav-link:hover { color: #B85E00; background: #FFF2DE; }
+    .cat-nav-link.cat-nav-active { color: #F28C00; font-weight: 800; }
+
+    /* ── MOBILE MENU DRAWER ── */
+    .menu-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 2400;
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .menu-backdrop.backdrop-active { display: block; opacity: 1; }
+
+    .mobile-nav {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: min(320px, 88vw); background: white;
+      z-index: 2500; display: flex; flex-direction: column;
       transform: translateX(110%);
       transition: transform 0.3s cubic-bezier(0.32,0.72,0,1);
-      box-shadow: -8px 0 40px rgba(0,0,0,0.18);
-      overflow: hidden;
+      box-shadow: -8px 0 40px rgba(0,0,0,0.15);
     }
-    .main-nav.open {
-      transform: translateX(0);
-    }
+    .mobile-nav.mobile-nav-open { transform: translateX(0); }
 
-    /* Drawer header */
     .mnav-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 18px;
-      background: linear-gradient(135deg, #2563EB 0%, #0F766E 100%);
+      padding: 16px 18px;
+      background:
+        radial-gradient(circle at 12% 20%, rgba(242,140,0,0.28), transparent 34%),
+        linear-gradient(135deg, #070A05, #1C1208);
       flex-shrink: 0;
     }
-    .mnav-logo { height: 38px; object-fit: contain; }
+    .mnav-logo { height: 40px; object-fit: contain; }
     .mnav-close {
       width: 36px; height: 36px; border-radius: 50%;
-      background: rgba(255,255,255,0.18); border: none;
-      color: white; cursor: pointer;
+      background: rgba(255,255,255,0.12);
       display: flex; align-items: center; justify-content: center;
-      transition: background 0.18s;
+      color: white; border: none; cursor: pointer; transition: background 0.18s;
     }
-    .mnav-close:active { background: rgba(255,255,255,0.3); }
+    .mnav-close:hover { background: rgba(255,255,255,0.22); }
 
-    /* Drawer scrollable body */
-    .mnav-body {
-      flex: 1; overflow-y: auto;
-      padding: 12px 0;
-      -webkit-overflow-scrolling: touch;
-    }
+    .mnav-body { flex: 1; overflow-y: auto; padding: 10px 0; }
     .mnav-section-label {
-      font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
       text-transform: uppercase; color: #9CA3AF;
-      padding: 8px 20px 4px;
+      padding: 8px 18px 4px;
     }
-
-    /* Nav rows */
     .mnav-item {
-      display: flex; align-items: center; gap: 14px;
-      padding: 13px 20px;
-      color: #1A1A2E; text-decoration: none;
-      font-size: 15px; font-weight: 500;
-      border-bottom: 1px solid #F3F4F6;
-      transition: background 0.15s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .mnav-item:active { background: #F5F0FF; }
-    .mnav-item.mnav-active { color: #2563EB; font-weight: 700; background: #F5F0FF; }
-    .mnav-icon {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: #F3F0FA;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; color: #2563EB;
-    }
-    .mnav-item.mnav-active .mnav-icon { background: #2563EB; color: white; }
-    .mnav-arrow { margin-left: auto; color: #C4C4D4; flex-shrink: 0; }
-
-    /* Category sub-items */
-    .mnav-cat { padding-left: 28px; font-size: 14px; font-weight: 400; color: #4B5563; }
-    .mnav-cat.mnav-active { color: #2563EB; font-weight: 600; }
-    .mnav-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: #D1D5DB; flex-shrink: 0;
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 18px; text-decoration: none;
+      color: #111; font-size: 14.5px; font-weight: 500;
+      border-bottom: 1px solid #F9FAFB;
       transition: background 0.15s;
     }
-    .mnav-cat.mnav-active .mnav-dot { background: #2563EB; }
+    .mnav-item:hover { background: #FFF2DE; }
+    .mnav-item.mnav-active { color: #F28C00; font-weight: 800; }
+    .mnav-icon { font-size: 16px; }
+    .mnav-arr { margin-left: auto; color: #D1D5DB; flex-shrink: 0; }
+    .mnav-cat-item { font-size: 13.5px; padding: 10px 18px 10px 26px; }
+    .mnav-cat-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #F28C00; flex-shrink: 0;
+    }
 
-    /* Drawer footer */
     .mnav-footer {
-      padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
-      border-top: 1px solid #E5E7EB;
-      background: #FAFAFA;
-      flex-shrink: 0;
-      display: flex; flex-direction: column; gap: 6px;
+      padding: 16px 18px calc(16px + env(safe-area-inset-bottom));
+      border-top: 1px solid #F3F4F6; background: #FAFAFA;
+      flex-shrink: 0; display: flex; flex-direction: column; gap: 6px;
     }
-    .mnav-contact {
+    .mnav-phone {
       display: flex; align-items: center; gap: 8px;
-      font-size: 13.5px; font-weight: 700; color: #2563EB;
-      text-decoration: none;
+      font-size: 13.5px; font-weight: 700; color: #B85E00; text-decoration: none;
     }
-    .mnav-tagline { font-size: 11px; color: #9CA3AF; }
+    .mnav-tag { font-size: 11px; color: #9CA3AF; }
 
-    /* nav-inner (desktop horizontal nav — not used currently) */
-    .nav-inner { display: flex; gap: 4px; padding: 6px 0; overflow-x: auto; }
-    .nav-inner::-webkit-scrollbar { display: none; }
-    .nav-inner a {
-      padding: 7px 16px; border-radius: 8px;
-      font-size: 13.5px; font-weight: 500; color: #3D3D56;
-      transition: all 0.22s cubic-bezier(0.22,1,0.36,1);
-      white-space: nowrap; flex-shrink: 0;
-    }
-    .nav-inner a:hover { background: #F0ECF9; color: #2563EB; }
-    .nav-inner a.active { background: #2563EB; color: white; font-weight: 600; }
-
-    /* ── Mobile Search Overlay (live) ── */
+    /* ── MOBILE SEARCH OVERLAY ── */
     .mob-search-overlay {
-      display: none;
-      position: fixed; inset: 0; z-index: 2000;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      align-items: flex-start; justify-content: center;
-      padding-top: 80px;
+      display: none; position: fixed; inset: 0; z-index: 2100;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(3px);
+      align-items: flex-start; justify-content: center; padding-top: 90px;
       animation: fadeIn 0.18s ease;
     }
-    .mob-search-overlay.active { display: flex; }
+    .mob-search-overlay.mob-search-active { display: flex; }
     .mob-search-box {
-      width: calc(100% - 32px); max-width: 480px;
-      background: white; border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+      width: calc(100% - 28px); max-width: 480px;
+      background: white; border-radius: 14px;
+      overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.2);
       animation: slideDown 0.2s cubic-bezier(0.22,1,0.36,1);
     }
-    .mob-search-inner {
+    .mob-search-row {
       display: flex; align-items: center; gap: 10px;
-      border-bottom: 1.5px solid #F3F4F6;
-      padding: 0 16px; background: white;
+      padding: 0 14px; border-bottom: 1px solid #F3F4F6;
     }
     .mob-search-input {
       flex: 1; height: 52px; border: none; background: transparent;
-      font-size: 16px; color: #1A1A2E; outline: none;
+      font-size: 16px; color: #111; outline: none;
     }
     .mob-search-input::placeholder { color: #B0B3BE; }
-    .mob-search-clear {
-      background: none; border: none; cursor: pointer;
-      padding: 6px; display: flex; align-items: center;
-      flex-shrink: 0;
-    }
-    /* Results list */
-    .mob-search-results {
-      max-height: 320px; overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .mob-result-item {
+    .mob-clear-btn { background: none; border: none; cursor: pointer; padding: 6px; display: flex; }
+    .mob-search-results { max-height: 300px; overflow-y: auto; }
+    .mob-result-row {
       display: flex; align-items: center; gap: 12px;
-      padding: 10px 16px; text-decoration: none;
-      border-bottom: 1px solid #F9FAFB;
-      transition: background 0.15s;
-      -webkit-tap-highlight-color: transparent;
+      padding: 10px 14px; text-decoration: none;
+      border-bottom: 1px solid #F9FAFB; transition: background 0.15s;
     }
-    .mob-result-item:last-child { border-bottom: none; }
-    .mob-result-item:active { background: #F5F0FF; }
-    .mob-result-img {
-      width: 44px; height: 44px; border-radius: 8px;
-      overflow: hidden; flex-shrink: 0;
-      background: #F3F4F6;
-    }
-    .mob-result-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .mob-result-img-placeholder {
-      width: 100%; height: 100%;
+    .mob-result-row:hover { background: #FFF2DE; }
+    .mob-result-thumb {
+      width: 42px; height: 42px; border-radius: 8px;
+      overflow: hidden; flex-shrink: 0; background: #F3F4F6;
       display: flex; align-items: center; justify-content: center;
     }
-    .mob-result-info {
-      flex: 1; min-width: 0;
-      display: flex; flex-direction: column; gap: 2px;
-    }
-    .mob-result-name {
-      font-size: 13.5px; font-weight: 600; color: #1A1A2E;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .mob-result-cat {
-      font-size: 11px; color: #9CA3AF; font-weight: 500;
-      text-transform: uppercase; letter-spacing: 0.04em;
-    }
-    .mob-result-price {
-      font-size: 14px; font-weight: 800; color: #2563EB;
-      flex-shrink: 0;
-    }
-    /* Loading dots */
+    .mob-result-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .mob-result-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .mob-result-name { font-size: 13px; font-weight: 600; color: #111; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mob-result-cat  { font-size: 11px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.04em; }
+    .mob-result-price { font-size: 13px; font-weight: 700; color: #F28C00; flex-shrink: 0; }
     .mob-search-loading {
-      display: flex; align-items: center; justify-content: center;
-      gap: 6px; padding: 20px;
+      display: flex; align-items: center; justify-content: center; gap: 6px; padding: 20px;
     }
     .mob-search-loading span {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: #2563EB; display: block;
+      width: 7px; height: 7px; border-radius: 50%; background: #F28C00;
     }
     .mob-search-loading span:nth-child(1) { animation: dotPop 1s ease 0s infinite; }
     .mob-search-loading span:nth-child(2) { animation: dotPop 1s ease 0.18s infinite; }
     .mob-search-loading span:nth-child(3) { animation: dotPop 1s ease 0.36s infinite; }
-    @keyframes dotPop { 0%,100%{opacity:0.3;transform:scale(0.8)} 50%{opacity:1;transform:scale(1.2)} }
-    /* Empty state */
-    .mob-search-empty {
-      padding: 20px 16px; text-align: center;
-      font-size: 13px; color: #9CA3AF;
-    }
+    .mob-search-empty { padding: 20px; text-align: center; font-size: 13px; color: #9CA3AF; }
 
-    /* ── Bottom Navigation Bar (mobile only, hidden on desktop) ── */
+    /* ── BOTTOM NAV ── */
     .bottom-nav { display: none; }
 
-    /* ── 900px: hide desktop search bar ── */
+    /* ─── Responsive: hide / show ─── */
     @media (max-width: 900px) {
       .search-wrap { display: none; }
-      .search-toggle { display: flex; }
-      .mobile-menu-btn { display: flex; }
-      .offer-left, .offer-right { display: none; }
-      .offer-center { text-align: center; width: 100%; }
+      .topbar-left, .topbar-right { display: none; }
+      .topbar-center { width: 100%; }
+      .hamburger { display: flex; }
     }
 
-    /* ════════════════════════════════════════════════
-       MOBILE ≤768px  — ONE unified sticky header
-       White .header is HIDDEN. Red .contact-bar
-       becomes the single compact mobile header.
-    ════════════════════════════════════════════════ */
     @media (max-width: 768px) {
+      /* Compact mobile header: topbar collapses into announcement bar */
+      .topbar { height: 32px; }
+      .header  { top: 32px; }
+      .header-inner { height: 60px; gap: 10px; }
+      .logo-img { height: 46px; }
+      .cart-btn-text { display: none; }
+      .cart-action-btn { display: none; }
+      .action-btn { display: none; }
+      .cat-nav-bar { display: none; }
 
-      /* ── 1. HIDE the white header entirely ── */
-      .header { display: none !important; }
-
-      /* ── 2. Expand red bar into a full mobile header ── */
-      .contact-bar {
-        height: auto;        /* let bar grow around the logo — no more clipping */
-        min-height: 80px;   /* comfortable tap height */
-        padding: 10px 0;    /* even top/bottom breathing room */
-        overflow: visible;  /* ensure logo isn't cut */
-        box-shadow: 0 3px 20px rgba(0,0,0,0.22);
-        align-items: center;
-      }
-      .contact-inner {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-      }
-
-      /* ── 3. Show mobile logo — LARGE and dominant ── */
-      .mob-bar-logo {
-        display: flex;
-        flex-shrink: 0;
-      }
-      .mob-bar-logo-img {
-        height: 68px;
-        min-width: 90px;
-        width: auto;
-        object-fit: contain;
-        object-position: left center;
-        filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
-      }
-
-      /* ── 4. Hide desktop phone (contact-left) ── */
-      .contact-left { display: none; }
-
-      /* ── 5. Completely hide offer/promo text on mobile ── */
-      .offer-text { display: none !important; }
-
-      /* ── 6. Show mob-phone ── */
-      .mob-phone {
-        display: flex;
-        font-size: 14px;
-        font-weight: 700;
-        gap: 7px;
-        letter-spacing: 0.01em;
-        color: rgba(255,255,255,1);
-      }
-
-      /* ── 7. Contact right: phone + Pay Online only ── */
-      .contact-right {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        min-width: 0;
-        flex-shrink: 0;
-      }
-
-      /* ── 8. Premium Pay Online pill ── */
-      .pay-online-btn {
-        background: #22C55E;
-        color: white;
-        font-size: 13.5px;
-        font-weight: 700;
-        padding: 10px 20px;
-        border-radius: 999px;
-        letter-spacing: 0.02em;
-        box-shadow: 0 3px 14px rgba(34,197,94,0.5);
-        transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-        white-space: nowrap;
-        flex-shrink: 0;
-        line-height: 1;
-      }
-      .pay-online-btn:active {
-        transform: scale(0.95);
-        box-shadow: 0 1px 6px rgba(34,197,94,0.3);
-      }
-
-      /* ── 7. Bottom Nav visible on mobile ── */
+      /* Bottom nav */
       .bottom-nav {
-        display: flex;
-        position: fixed;
-        bottom: 0; left: 0; right: 0;
-        z-index: 1900;
-        background: white;
-        border-top: 1px solid #E5E7EB;
-        border-radius: 18px 18px 0 0;
-        box-shadow: 0 -4px 24px rgba(37,99,235,0.10);
+        display: flex; position: fixed;
+        bottom: 0; left: 0; right: 0; z-index: 1900;
+        background: #fffaf2; border-top: 1px solid #F7E9D7;
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
         padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
-        gap: 0;
       }
       .bnav-item {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 3px;
-        padding: 6px 4px;
-        color: #9CA3AF;
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 10px;
-        font-weight: 500;
-        font-family: 'Inter', sans-serif;
-        text-decoration: none;
-        transition: color 0.2s, transform 0.15s;
+        flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 3px; padding: 6px 4px;
+        color: #9CA3AF; background: none; border: none; cursor: pointer;
+        font-size: 10px; font-weight: 500; font-family: 'Inter', sans-serif;
+        text-decoration: none; transition: color 0.2s; min-height: 50px;
         -webkit-tap-highlight-color: transparent;
-        min-height: 52px;
       }
-      .bnav-item:active { transform: scale(0.9); }
-      .bnav-item svg { transition: stroke 0.2s; }
-      .bnav-item.bnav-active { color: #2563EB; }
-      .bnav-item.bnav-active svg { stroke: #2563EB; }
-      .bnav-item.bnav-active span { color: #2563EB; font-weight: 700; }
-
-      /* Cart badge in bottom nav */
-      .bnav-cart-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
+      .bnav-item:active { transform: scale(0.92); }
+      .bnav-item.bnav-active { color: #F28C00; }
+      .bnav-item.bnav-active svg { stroke: #F28C00; }
+      .bnav-item.bnav-active span { color: #F28C00; font-weight: 800; }
+      .bnav-cart-wrap { position: relative; display: flex; }
       .bnav-badge {
         position: absolute; top: -6px; right: -8px;
-        background: #E11D48; color: white;
+        background: #F28C00; color: #160B02;
         font-size: 9px; font-weight: 800;
-        width: 17px; height: 17px; border-radius: 50%;
+        width: 16px; height: 16px; border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        border: 1.5px solid white;
+        border: 2px solid white;
       }
-
-      /* ── 8. Mobile menu btn visible ── */
-      .mobile-menu-btn { display: flex; }
+      .bnav-cart { color: #B85E00; }
+      .bnav-cart svg { stroke: #B85E00; }
     }
 
-
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
+    @media (max-width: 480px) {
+      .topbar { height: 28px; font-size: 11px; }
+      .header { top: 28px; }
     }
   `]
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  searchQuery = '';
-  searchCat = '';
-  searchOpen    = signal(false);
+  isScrolled = signal(false);
+  mobileMenu = signal(false);
   mobileSearchOpen = signal(false);
-  mobileMenu    = signal(false);
-  isScrolled    = signal(false);
-  navCategories = signal<any[]>([]);
+  searchFocused = signal(false);
+  searchQuery = '';
   searchResults = signal<any[]>([]);
   searchLoading = signal(false);
+  navCategories = signal<any[]>([]);
   mediaUrl = environment.mediaUrl;
 
-  private _searchSubject = new Subject<string>();
-  private _subs: Subscription[] = [];
+  private brandCategories: any[] = [];
 
-  // Computed logo URL
-  logoUrl = computed(() => {
-    const raw = this.settings.get('site_logo', '');
-    if (!raw) return '/logo.svg';
-    const base = raw.startsWith('/') ? raw : '/' + raw;
-    return `${base}?v=${this.settings.settings()?.['_ts'] || Date.now()}`;
-  });
+  private searchSubject = new Subject<string>();
+  private subs = new Subscription();
 
   constructor(
     public cart: CartService,
     public settings: SettingsService,
-    private router: Router,
-    private api: ApiService
-  ) {
-    if (typeof window !== 'undefined') {
-      window.addEventListener('scroll', () => {
-        this.isScrolled.set(window.scrollY > 40);
-      });
-    }
-  }
+    private api: ApiService,
+    private router: Router
+  ) {}
+
+  logoUrl = computed(() => {
+    return this.settings.assetUrl('site_logo', '/logo.png');
+  });
 
   ngOnInit() {
-    // Close menu on every navigation
-    this._subs.push(this.router.events.subscribe(event => {
-      if (event instanceof NavigationEnd) {
-        this.mobileMenu.set(false);
-        this.mobileSearchOpen.set(false);
-        this.searchResults.set([]);
-      }
-    }));
+    // Scroll detection
+    this.subs.add(
+      new Observable<boolean>(obs => {
+        const handler = () => obs.next(window.scrollY > 8);
+        window.addEventListener('scroll', handler, { passive: true });
+        return () => window.removeEventListener('scroll', handler);
+      }).subscribe(v => this.isScrolled.set(v))
+    );
 
-    // Live search with debounce
-    this._subs.push(
-      this._searchSubject.pipe(
-        debounceTime(280),
+    // Nav categories
+    this.api.getCategories().subscribe((res: any) => {
+      if (res?.data) this.navCategories.set(res.data);
+    });
+
+    // Live search
+    this.subs.add(
+      this.searchSubject.pipe(
+        debounceTime(300),
         distinctUntilChanged(),
         switchMap(q => {
-          if (q.trim().length < 2) {
-            this.searchResults.set([]);
-            this.searchLoading.set(false);
-            return [];
-          }
+          if (!q || q.length < 2) { this.searchResults.set([]); this.searchLoading.set(false); return []; }
           this.searchLoading.set(true);
           return this.api.searchProducts(q);
         })
       ).subscribe({
         next: (res: any) => {
           this.searchLoading.set(false);
-          if (res?.success) {
-            this.searchResults.set((res.data || []).slice(0, 8));
-          } else {
-            this.searchResults.set([]);
-          }
+          this.searchResults.set(res?.data?.slice(0, 8) || []);
         },
         error: () => { this.searchLoading.set(false); this.searchResults.set([]); }
       })
     );
 
-    this.api.getCategories().subscribe({
-      next: (res: any) => {
-        if (res?.success && res.data) {
-          const flat: any[] = [];
-          const flatten = (cats: any[]) => {
-            cats.forEach((c: any) => {
-              if (c.is_active == 1 && !c.parent_id) flat.push(c);
-              if (c.children?.length) flatten(c.children);
-            });
-          };
-          flatten(res.data);
-          this.navCategories.set(flat);
+    // Close mobile menu on navigation
+    this.subs.add(
+      this.router.events.subscribe(e => {
+        if (e instanceof NavigationEnd) {
+          this.mobileMenu.set(false);
+          this.mobileSearchOpen.set(false);
         }
-      },
-      error: () => {}
-    });
+      })
+    );
   }
 
-  ngOnDestroy() {
-    this._subs.forEach(s => s.unsubscribe());
-  }
+  ngOnDestroy() { this.subs.unsubscribe(); }
 
-  onMobileSearchInput(q: string) {
-    this._searchSubject.next(q);
-    if (!q.trim()) this.searchResults.set([]);
-  }
-
-  clearSearch() {
-    this.searchQuery = '';
-    this.searchResults.set([]);
-    this.searchLoading.set(false);
-  }
-
-  onResultClick() {
-    this.mobileSearchOpen.set(false);
-    this.clearSearch();
-  }
-
-  openMobileSearch() {
-    this.mobileSearchOpen.set(true);
-  }
-
-  closeMobileSearch(event: MouseEvent) {
-    if ((event.target as HTMLElement).classList.contains('mob-search-overlay')) {
-      this.mobileSearchOpen.set(false);
-    }
+  displayNavCategories() {
+    // Return DB categories directly — no hardcoded aliases
+    return this.navCategories() || [];
   }
 
   doSearch() {
     if (this.searchQuery.trim()) {
       this.router.navigate(['/search'], { queryParams: { q: this.searchQuery.trim() } });
-      this.searchOpen.set(false);
+      this.searchFocused.set(false);
     }
   }
 
@@ -948,11 +761,47 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.searchQuery.trim()) {
       this.router.navigate(['/search'], { queryParams: { q: this.searchQuery.trim() } });
       this.mobileSearchOpen.set(false);
-      this.clearSearch();
     }
   }
 
   onSearchBlur() {
-    setTimeout(() => this.searchOpen.set(false), 200);
+    setTimeout(() => this.searchFocused.set(false), 200);
+  }
+
+  onMobileSearchInput(q: string) {
+    this.searchSubject.next(q);
+  }
+
+  openMobileSearch() {
+    this.mobileSearchOpen.set(true);
+  }
+
+  closeMobileSearch(e: Event) {
+    if ((e.target as HTMLElement).classList.contains('mob-search-overlay')) {
+      this.mobileSearchOpen.set(false);
+    }
+  }
+
+  onResultClick() {
+    this.searchFocused.set(false);
+    this.mobileSearchOpen.set(false);
+    this.searchQuery = '';
+    this.searchResults.set([]);
+  }
+
+  clearSearch() {
+    this.searchQuery = '';
+    this.searchResults.set([]);
+    this.searchSubject.next('');
+  }
+}
+
+// Mini Observable helper for scroll
+class Observable<T> {
+  constructor(private subscribeFn: (obs: any) => () => void) {}
+  subscribe(next: (v: T) => void) {
+    let active = true;
+    const cleanup = this.subscribeFn({ next: (v: T) => { if (active) next(v); } });
+    return new Subscription();
   }
 }

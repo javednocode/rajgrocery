@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { NgIf, NgFor } from '@angular/common';
+import { NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SettingsService } from '../../core/services/settings.service';
@@ -9,338 +9,733 @@ import { SeoService } from '../../core/services/seo.service';
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [RouterLink, NgIf, NgFor, FormsModule],
+  imports: [RouterLink, NgIf, FormsModule],
   template: `
-    <div class="contact-page">
-
-      <!-- ── SEO: LocalBusiness Schema ── -->
+    <main class="contact-page">
       <script type="application/ld+json" [innerHTML]="schemaJson()"></script>
 
-      <!-- ── Hero ── -->
-      <section class="ct-hero">
-        <div class="container ct-hero-inner">
-          <div class="ct-hero-badge">📍 We're Here For You</div>
-          <h1 class="ct-hero-title">Contact Us</h1>
-          <p class="ct-hero-sub">Visit our store, give us a call, or drop us a message — we'd love to help.</p>
-        </div>
-      </section>
+      <section class="contact-hero">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <span class="eyebrow">Customer Care</span>
+            <h1>Talk to {{ s.get('site_name', 'Asian Spices & Halal Meats') }}</h1>
+            <p>
+              Need help with fresh halal meat, grocery delivery, store timing, or a custom order?
+              Reach the team directly and we will guide you properly.
+            </p>
 
-      <!-- ── Contact Info Cards ── -->
-      <section class="ct-cards-section">
-        <div class="container ct-cards-grid">
-
-          <!-- Phone -->
-          <a [href]="'tel:' + s.get('site_phone','')" class="ct-card">
-            <div class="ct-card-icon ct-icon-phone">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10a19.79 19.79 0 01-3-8.57A2 2 0 012 1.5h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.37a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-              </svg>
-            </div>
-            <div class="ct-card-body">
-              <span class="ct-card-label">Call Us Anytime</span>
-              <span class="ct-card-value">{{ s.get('site_phone', '') }}</span>
-              <span class="ct-card-hint">Tap to call</span>
-            </div>
-          </a>
-
-          <!-- Email -->
-          <a [href]="'mailto:' + s.get('contact_email', s.get('site_email','hello@example.com'))" class="ct-card">
-            <div class="ct-card-icon ct-icon-email">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                <polyline points="22,6 12,13 2,6"/>
-              </svg>
-            </div>
-            <div class="ct-card-body">
-              <span class="ct-card-label">Email Us</span>
-              <span class="ct-card-value">{{ s.get('contact_email', s.get('site_email', 'hello@example.com')) }}</span>
-              <span class="ct-card-hint">We reply within 24h</span>
-            </div>
-          </a>
-
-          <!-- Address -->
-          <div class="ct-card">
-            <div class="ct-card-icon ct-icon-pin">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-                <circle cx="12" cy="10" r="3"/>
-              </svg>
-            </div>
-            <div class="ct-card-body">
-              <span class="ct-card-label">Our Address</span>
-              <span class="ct-card-value">{{ s.get('contact_address', s.get('site_address', 'Add your store address')) }}</span>
-              <span class="ct-card-hint">Come visit us</span>
+            <div class="hero-actions">
+              <a [href]="'tel:' + s.get('site_phone','')" class="btn btn-primary" *ngIf="s.get('site_phone','')">
+                Call Store
+              </a>
+              <a [href]="'mailto:' + contactEmail()" class="btn btn-outline">
+                Email Us
+              </a>
+              <a routerLink="/categories" class="btn btn-ghost">
+                Browse Products
+              </a>
             </div>
           </div>
 
-          <!-- Hours -->
-          <div class="ct-card">
-            <div class="ct-card-icon ct-icon-clock">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-              </svg>
-            </div>
-            <div class="ct-card-body">
-              <span class="ct-card-label">Opening Hours</span>
-              <span class="ct-card-value" [innerHTML]="s.get('contact_hours','Mon–Sun: 9am – 9pm')"></span>
-              <span class="ct-card-hint">We're open daily</span>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- ── Map + Form ── -->
-      <section class="ct-main-section">
-        <div class="container ct-main-grid">
-
-          <!-- Google Map -->
-          <div class="ct-map-wrap">
-            <h2 class="ct-section-title">
-              <span class="ct-title-dot"></span>Find Us on the Map
-            </h2>
-            <div class="ct-map-frame">
-              <ng-container *ngIf="safeMapUrl(); else mapFallback">
-                <iframe
-                  [src]="safeMapUrl()!"
-                  width="100%" height="100%"
-                  style="border:0" allowfullscreen
-                  loading="lazy"
-                  referrerpolicy="no-referrer-when-downgrade"
-                  [title]="s.get('site_name', 'Your Store') + ' location map'"
-                ></iframe>
-              </ng-container>
-              <ng-template #mapFallback>
-                <div class="ct-map-placeholder">
-                  <div class="ct-map-ph-icon">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-                      <circle cx="12" cy="10" r="3"/>
-                    </svg>
-                  </div>
-                  <p class="ct-map-ph-text">Map not configured yet.</p>
-                  <p class="ct-map-ph-hint">Set the Google Maps Embed URL in<br><strong>Admin → Settings → Contact Us</strong></p>
-                </div>
-              </ng-template>
+          <aside class="store-card" aria-label="Store contact summary">
+            <div class="store-card-top">
+              <img [src]="s.assetUrl('site_logo', '/logo.png')" [alt]="s.get('site_name', 'Your Store')" class="store-logo">
+              <div>
+                <span class="store-label">Premium Grocery Store</span>
+                <strong>{{ s.get('site_name', 'Asian Spices & Halal Meats') }}</strong>
+              </div>
             </div>
 
-            <!-- WhatsApp CTA -->
-            <a *ngIf="s.get('social_whatsapp','')"
-               [href]="'https://wa.me/' + s.get('social_whatsapp','')"
-               target="_blank" class="ct-whatsapp-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-              </svg>
-              Chat on WhatsApp
-            </a>
-          </div>
-
-          <!-- Contact Form -->
-          <div class="ct-form-wrap">
-            <h2 class="ct-section-title">
-              <span class="ct-title-dot"></span>Send Us a Message
-            </h2>
-            <form class="ct-form" (ngSubmit)="submitForm()" #contactForm="ngForm">
-              <div class="ct-form-row">
-                <div class="ct-field">
-                  <label>Your Name *</label>
-                  <input type="text" [(ngModel)]="form.name" name="name" required placeholder="e.g. John Murphy">
-                </div>
-                <div class="ct-field">
-                  <label>Email Address *</label>
-                  <input type="email" [(ngModel)]="form.email" name="email" required placeholder="john@example.com">
-                </div>
-              </div>
-              <div class="ct-field">
-                <label>Subject</label>
-                <input type="text" [(ngModel)]="form.subject" name="subject" placeholder="Order enquiry, product question...">
-              </div>
-              <div class="ct-field">
-                <label>Message *</label>
-                <textarea [(ngModel)]="form.message" name="message" required rows="5" placeholder="How can we help you?"></textarea>
-              </div>
-              <button type="submit" class="ct-submit-btn" [disabled]="sending()">
-                <span *ngIf="!sending()">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9l20-7z"/></svg>
-                  Send Message
+            <div class="store-detail-list">
+              <a [href]="'tel:' + s.get('site_phone','')" class="store-detail" *ngIf="s.get('site_phone','')">
+                <span class="detail-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 19 19.5 19.5 0 0 1 5 12.81 19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.22a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
                 </span>
-                <span *ngIf="sending()">Sending...</span>
-              </button>
-              <div class="ct-success" *ngIf="sent()">
-                ✅ Thank you! We'll get back to you shortly.
+                <span>
+                  <small>Phone</small>
+                  {{ s.get('site_phone', '') }}
+                </span>
+              </a>
+
+              <a [href]="'mailto:' + contactEmail()" class="store-detail">
+                <span class="detail-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <path d="m22 6-10 7L2 6"/>
+                  </svg>
+                </span>
+                <span>
+                  <small>Email</small>
+                  {{ contactEmail() }}
+                </span>
+              </a>
+
+              <div class="store-detail">
+                <span class="detail-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </span>
+                <span>
+                  <small>Address</small>
+                  {{ s.get('contact_address', s.get('site_address', 'Configure store address in Admin Settings')) }}
+                </span>
               </div>
-              <div class="ct-error" *ngIf="formError()">❌ {{ formError() }}</div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="quick-section">
+        <div class="container quick-grid">
+          <a [href]="'tel:' + s.get('site_phone','')" class="quick-card" *ngIf="s.get('site_phone','')">
+            <span class="quick-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 19 19.5 19.5 0 0 1 5 12.81 19.79 19.79 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72"/>
+              </svg>
+            </span>
+            <span>
+              <small>Call for orders</small>
+              {{ s.get('site_phone', '') }}
+            </span>
+          </a>
+
+          <a [href]="'mailto:' + contactEmail()" class="quick-card">
+            <span class="quick-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16v16H4z"/>
+                <path d="m22 6-10 7L2 6"/>
+              </svg>
+            </span>
+            <span>
+              <small>Support email</small>
+              {{ contactEmail() }}
+            </span>
+          </a>
+
+          <div class="quick-card">
+            <span class="quick-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </span>
+            <span>
+              <small>Opening hours</small>
+              <span [innerHTML]="s.get('contact_hours','Mon-Fri: 9am-6pm')"></span>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="contact-main">
+        <div class="container main-grid">
+          <div class="form-panel">
+            <span class="section-tag">Send Enquiry</span>
+            <h2>Tell us what you need</h2>
+            <p class="section-text">
+              For product availability, bulk orders, delivery questions, and store enquiries,
+              send a message here. The form opens your email app with the details ready.
+            </p>
+
+            <form class="contact-form" (ngSubmit)="submitForm()">
+              <div class="form-row">
+                <label>
+                  <span>Name *</span>
+                  <input type="text" [(ngModel)]="form.name" name="name" required placeholder="Your full name">
+                </label>
+                <label>
+                  <span>Email *</span>
+                  <input type="email" [(ngModel)]="form.email" name="email" required placeholder="you@example.com">
+                </label>
+              </div>
+
+              <label>
+                <span>Subject</span>
+                <input type="text" [(ngModel)]="form.subject" name="subject" placeholder="Order, delivery, stock, or general enquiry">
+              </label>
+
+              <label>
+                <span>Message *</span>
+                <textarea [(ngModel)]="form.message" name="message" required rows="6" placeholder="Write your message here"></textarea>
+              </label>
+
+              <button type="submit" class="submit-btn" [disabled]="sending()">
+                <span *ngIf="!sending()">Send Message</span>
+                <span *ngIf="sending()">Preparing Email...</span>
+              </button>
+
+              <div class="notice success" *ngIf="sent()">Thank you. Your email draft has been opened.</div>
+              <div class="notice error" *ngIf="formError()">{{ formError() }}</div>
             </form>
           </div>
 
+          <div class="info-panel">
+            <div class="map-card">
+              <div class="map-header">
+                <span class="section-tag">Store Location</span>
+                <h2>Find us easily</h2>
+              </div>
+
+              <div class="map-frame">
+                <ng-container *ngIf="safeMapUrl(); else mapFallback">
+                  <iframe
+                    [src]="safeMapUrl()!"
+                    width="100%"
+                    height="100%"
+                    style="border:0"
+                    allowfullscreen
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    [title]="s.get('site_name', 'Your Store') + ' location map'"
+                  ></iframe>
+                </ng-container>
+                <ng-template #mapFallback>
+                  <div class="map-placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <strong>Map not configured</strong>
+                    <span>Set Google Maps Embed URL in Admin Settings.</span>
+                  </div>
+                </ng-template>
+              </div>
+            </div>
+
+            <div class="service-card">
+              <h3>Store support</h3>
+              <ul>
+                <li>Fresh meat and grocery order help</li>
+                <li>Delivery timing and order updates</li>
+                <li>Bulk buying and product availability</li>
+              </ul>
+
+              <a *ngIf="s.get('social_whatsapp','')"
+                 [href]="'https://wa.me/' + s.get('social_whatsapp','')"
+                 target="_blank"
+                 rel="noopener"
+                 class="whatsapp-btn">
+                Chat on WhatsApp
+              </a>
+            </div>
+          </div>
         </div>
       </section>
-
-    </div>
+    </main>
   `,
   styles: [`
-    :host { display: block; }
+    :host { display: block; color: #211306; }
+    .container { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
 
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    .contact-page {
+      background:
+        radial-gradient(circle at 8% 8%, rgba(255, 153, 0, 0.12), transparent 28%),
+        linear-gradient(180deg, #fff8ec 0%, #fffaf3 44%, #ffffff 100%);
+      min-height: 100vh;
+    }
 
-    /* ── Hero ── */
-    .ct-hero {
-      background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 45%, #1a6e3c 100%);
-      padding: 56px 0 44px;
-      text-align: center;
-      color: white;
+    .contact-hero {
       position: relative;
       overflow: hidden;
+      padding: 72px 0 54px;
+      background:
+        linear-gradient(120deg, rgba(20, 10, 0, 0.94) 0%, rgba(49, 24, 0, 0.9) 48%, rgba(255, 153, 0, 0.18) 100%),
+        linear-gradient(180deg, #170c02, #321900);
+      color: #fffaf2;
     }
-    /* Dark vignette overlay for depth */
-    .ct-hero::before {
+    .contact-hero::before {
       content: '';
-      position: absolute; inset: 0;
-      background: rgba(0,0,0,0.28);
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(90deg, rgba(0,0,0,0.8), transparent);
+      pointer-events: none;
     }
-    /* Soft radial highlight */
-    .ct-hero::after {
+    .hero-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.72fr);
+      gap: 48px;
+      align-items: center;
+    }
+    .eyebrow,
+    .section-tag {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      border: 1px solid rgba(255, 153, 0, 0.28);
+      border-radius: 999px;
+      color: #ff9800;
+      background: rgba(255, 153, 0, 0.1);
+      padding: 8px 14px;
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .hero-copy h1 {
+      max-width: 720px;
+      margin: 22px 0 18px;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(3rem, 6.2vw, 6rem);
+      line-height: 0.94;
+      letter-spacing: -0.055em;
+      color: #fff;
+    }
+    .hero-copy p {
+      max-width: 620px;
+      margin: 0;
+      color: rgba(255,255,255,0.76);
+      font-size: 18px;
+      line-height: 1.75;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 32px;
+    }
+    .btn {
+      min-height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 0 24px;
+      text-decoration: none;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      background: linear-gradient(135deg, #ff9800, #ffb13b);
+      color: #180b00;
+      box-shadow: 0 18px 38px rgba(255, 152, 0, 0.25);
+    }
+    .btn-outline {
+      color: #fff7ea;
+      border: 1px solid rgba(255,255,255,0.45);
+      background: rgba(255,255,255,0.06);
+    }
+    .btn-ghost {
+      color: #ffbf63;
+      border: 1px solid rgba(255, 152, 0, 0.38);
+      background: rgba(255, 152, 0, 0.08);
+    }
+
+    .store-card {
+      border-radius: 28px;
+      padding: 26px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.05)),
+        rgba(13, 9, 4, 0.8);
+      border: 1px solid rgba(255, 214, 149, 0.22);
+      box-shadow: 0 28px 80px rgba(0,0,0,0.28);
+      backdrop-filter: blur(16px);
+    }
+    .store-card-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .store-logo {
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
+    }
+    .store-card-top strong {
+      display: block;
+      margin-top: 5px;
+      color: #fff;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+    .store-label {
+      color: #ffbd59;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+    .store-detail-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 22px;
+    }
+    .store-detail {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      color: #fffaf2;
+      text-decoration: none;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .detail-icon,
+    .quick-icon {
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      background: rgba(255, 152, 0, 0.14);
+      color: #ff9800;
+      flex: 0 0 auto;
+    }
+    .detail-icon svg,
+    .quick-icon svg {
+      width: 21px;
+      height: 21px;
+    }
+    .store-detail small,
+    .quick-card small {
+      display: block;
+      margin-bottom: 4px;
+      color: rgba(255,255,255,0.58);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .quick-section {
+      transform: translateY(-28px);
+      margin-bottom: -8px;
+    }
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .quick-card {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      min-height: 96px;
+      padding: 20px;
+      border-radius: 22px;
+      text-decoration: none;
+      color: #211306;
+      background: rgba(255,255,255,0.96);
+      border: 1px solid rgba(255, 152, 0, 0.18);
+      box-shadow: 0 18px 46px rgba(56, 28, 0, 0.1);
+    }
+    .quick-card small {
+      color: #a36610;
+    }
+    .quick-card span:last-child {
+      min-width: 0;
+      font-weight: 900;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .contact-main {
+      padding: 42px 0 92px;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(340px, 0.82fr);
+      gap: 28px;
+      align-items: start;
+    }
+    .form-panel,
+    .map-card,
+    .service-card {
+      border-radius: 28px;
+      background: #fff;
+      border: 1px solid rgba(255, 152, 0, 0.15);
+      box-shadow: 0 20px 60px rgba(56, 28, 0, 0.08);
+    }
+    .form-panel {
+      padding: 34px;
+    }
+    .form-panel .section-tag,
+    .map-header .section-tag {
+      background: #fff2dc;
+      border-color: #ffdba8;
+    }
+    .form-panel h2,
+    .map-header h2 {
+      margin: 16px 0 10px;
+      font-size: clamp(2rem, 3.2vw, 3.1rem);
+      line-height: 1;
+      letter-spacing: -0.045em;
+      color: #170c02;
+    }
+    .section-text {
+      margin: 0 0 26px;
+      max-width: 660px;
+      color: #765f48;
+      line-height: 1.7;
+    }
+    .contact-form {
+      display: grid;
+      gap: 18px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .contact-form label {
+      display: grid;
+      gap: 8px;
+      color: #39200b;
+      font-weight: 900;
+      font-size: 13px;
+    }
+    .contact-form label span {
+      letter-spacing: 0.02em;
+    }
+    .contact-form input,
+    .contact-form textarea {
+      width: 100%;
+      border: 1.5px solid #f0dfc6;
+      border-radius: 18px;
+      background: #fffaf2;
+      color: #211306;
+      font: inherit;
+      font-weight: 600;
+      padding: 15px 16px;
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      resize: vertical;
+    }
+    .contact-form input:focus,
+    .contact-form textarea:focus {
+      background: #fff;
+      border-color: #ff9800;
+      box-shadow: 0 0 0 4px rgba(255, 152, 0, 0.13);
+    }
+    .submit-btn {
+      width: fit-content;
+      min-width: 178px;
+      min-height: 52px;
+      border: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #ff9800, #df7b00);
+      color: #160900;
+      font-weight: 950;
+      letter-spacing: 0.04em;
+      padding: 0 28px;
+      box-shadow: 0 16px 32px rgba(255, 152, 0, 0.22);
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+    }
+    .submit-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    .notice {
+      border-radius: 16px;
+      padding: 13px 16px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .notice.success {
+      color: #12522a;
+      background: #e7f8ed;
+      border: 1px solid #b8e7c8;
+    }
+    .notice.error {
+      color: #8f1d1d;
+      background: #fff0f0;
+      border: 1px solid #f0baba;
+    }
+
+    .info-panel {
+      display: grid;
+      gap: 22px;
+    }
+    .map-card {
+      overflow: hidden;
+    }
+    .map-header {
+      padding: 28px 28px 18px;
+    }
+    .map-header h2 {
+      font-size: clamp(1.8rem, 2.8vw, 2.5rem);
+    }
+    .map-frame {
+      height: 392px;
+      margin: 0 18px 18px;
+      overflow: hidden;
+      border-radius: 22px;
+      background: #1b1107;
+      border: 1px solid #ead8bd;
+    }
+    .map-placeholder {
+      height: 100%;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 10px;
+      padding: 28px;
+      text-align: center;
+      color: #ad8b66;
+      background:
+        radial-gradient(circle at center, rgba(255, 152, 0, 0.13), transparent 44%),
+        #fff8ef;
+    }
+    .map-placeholder svg {
+      width: 54px;
+      height: 54px;
+      color: #ff9800;
+    }
+    .map-placeholder strong {
+      color: #281604;
+      font-size: 18px;
+    }
+    .service-card {
+      padding: 28px;
+      background:
+        linear-gradient(135deg, #0b2b16, #125d2d);
+      color: #fff;
+    }
+    .service-card h3 {
+      margin: 0 0 16px;
+      font-size: 26px;
+      letter-spacing: -0.03em;
+    }
+    .service-card ul {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.55;
+    }
+    .service-card li {
+      position: relative;
+      padding-left: 22px;
+    }
+    .service-card li::before {
       content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.08) 0%, transparent 65%);
+      position: absolute;
+      left: 0;
+      top: 0.66em;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ff9800;
     }
-    .ct-hero-inner { position: relative; z-index: 2; }
-    .ct-hero-badge {
-      display: inline-block;
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.28);
-      backdrop-filter: blur(8px);
-      color: rgba(255,255,255,0.95);
-      font-size: 12px; font-weight: 700;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      padding: 6px 16px; border-radius: 999px; margin-bottom: 18px;
-    }
-    .ct-hero-title {
-      font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 900;
-      margin: 0 0 14px; letter-spacing: -0.03em;
-      color: #ffffff;
-      text-shadow: 0 2px 24px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.6);
-    }
-    .ct-hero-sub {
-      font-size: 1.05rem;
-      color: rgba(255,255,255,0.88);
-      margin: 0 auto;
-      max-width: 480px;
-      line-height: 1.6;
-      text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+    .whatsapp-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      margin-top: 22px;
+      padding: 0 22px;
+      border-radius: 999px;
+      background: #fff;
+      color: #0f552a;
+      text-decoration: none;
+      font-weight: 950;
     }
 
-    /* ── Cards ── */
-    .ct-cards-section { padding: 52px 0 0; }
-    .ct-cards-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
-    }
-    .ct-card {
-      background: white; border-radius: 18px;
-      box-shadow: 0 2px 20px rgba(37,99,235,0.08);
-      padding: 22px 18px; display: flex; align-items: flex-start; gap: 14px;
-      text-decoration: none; color: inherit;
-      border: 1.5px solid #F0EEFF;
-      transition: transform 0.22s ease, box-shadow 0.22s ease;
-    }
-    a.ct-card:hover { transform: translateY(-4px); box-shadow: 0 10px 36px rgba(37,99,235,0.14); }
-    .ct-card-icon {
-      width: 50px; height: 50px; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .ct-icon-phone { background: #EDE9FF; color: #2563EB; }
-    .ct-icon-email { background: #D1FAE5; color: #065F46; }
-    .ct-icon-pin   { background: #FEE2E2; color: #991B1B; }
-    .ct-icon-clock { background: #FEF3C7; color: #92400E; }
-    .ct-card-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-    .ct-card-label { font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #9CA3AF; }
-    .ct-card-value { font-size: 14px; font-weight: 700; color: #1A1A2E; line-height: 1.4; word-break: break-word; }
-    .ct-card-hint  { font-size: 11.5px; color: #9CA3AF; margin-top: 2px; }
-
-    /* ── Main Section ── */
-    .ct-main-section { padding: 52px 0 80px; }
-    .ct-main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
-    .ct-section-title {
-      font-size: 1.3rem; font-weight: 800; color: #1A1A2E;
-      margin: 0 0 20px; display: flex; align-items: center; gap: 10px;
-    }
-    .ct-title-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: linear-gradient(135deg, #2563EB, #0F766E);
-      flex-shrink: 0;
-    }
-
-    /* ── Map ── */
-    .ct-map-frame {
-      height: 420px; border-radius: 20px; overflow: hidden;
-      box-shadow: 0 8px 40px rgba(37,99,235,0.13);
-      border: 2px solid #F0EEFF;
-    }
-    .ct-map-placeholder {
-      height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 12px; background: #F8FAFF; color: #94A3B8; text-align: center; font-size: 14px; padding: 32px;
-    }
-    .ct-map-ph-icon {
-      width: 72px; height: 72px; border-radius: 50%; background: #EEF2FF;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .ct-map-ph-text { font-size: 15px; font-weight: 600; color: #6B7280; margin: 0; }
-    .ct-map-ph-hint { font-size: 13px; color: #9CA3AF; margin: 0; line-height: 1.6; }
-    .ct-whatsapp-btn {
-      display: flex; align-items: center; gap: 10px; margin-top: 16px;
-      background: #25D366; color: white; font-size: 14px; font-weight: 700;
-      padding: 12px 22px; border-radius: 12px; text-decoration: none;
-      transition: background 0.2s, transform 0.15s; width: fit-content;
-    }
-    .ct-whatsapp-btn:hover { background: #1eb858; transform: translateY(-1px); }
-
-    /* ── Form ── */
-    .ct-form { display: flex; flex-direction: column; gap: 16px; }
-    .ct-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .ct-field { display: flex; flex-direction: column; gap: 6px; }
-    .ct-field label { font-size: 12.5px; font-weight: 700; color: #374151; letter-spacing: 0.02em; }
-    .ct-field input, .ct-field textarea {
-      padding: 12px 14px; border: 1.5px solid #E5E7EB; border-radius: 12px;
-      font-size: 14px; font-family: inherit; color: #1A1A2E; outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s; background: white; resize: vertical;
-    }
-    .ct-field input:focus, .ct-field textarea:focus {
-      border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-    }
-    .ct-submit-btn {
-      background: linear-gradient(135deg, #2563EB 0%, #0F766E 100%);
-      color: white; border: none; border-radius: 12px;
-      padding: 14px 28px; font-size: 15px; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s, transform 0.15s;
-      font-family: inherit; align-self: flex-start;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .ct-submit-btn:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
-    .ct-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .ct-success { background: #D1FAE5; color: #065F46; padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; }
-    .ct-error   { background: #FEE2E2; color: #991B1B; padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; }
-
-    /* ── Responsive ── */
     @media (max-width: 1024px) {
-      .ct-cards-grid { grid-template-columns: repeat(2, 1fr); }
+      .hero-grid,
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+      .store-card {
+        max-width: 680px;
+      }
     }
+
     @media (max-width: 768px) {
-      .ct-hero { padding: 40px 0 28px; }
-      .ct-cards-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
-      .ct-main-grid { grid-template-columns: 1fr; }
-      .ct-form-row { grid-template-columns: 1fr; }
-      .ct-map-frame { height: 300px; }
+      .container {
+        width: min(100% - 28px, 1180px);
+      }
+      .contact-hero {
+        padding: 46px 0 42px;
+      }
+      .hero-copy h1 {
+        font-size: clamp(2.7rem, 15vw, 4.4rem);
+      }
+      .hero-copy p {
+        font-size: 16px;
+      }
+      .hero-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+      .quick-section {
+        transform: none;
+        margin: 18px 0 0;
+      }
+      .quick-grid {
+        grid-template-columns: 1fr;
+      }
+      .contact-main {
+        padding: 28px 0 74px;
+      }
+      .form-panel,
+      .map-header,
+      .service-card {
+        padding: 24px;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      .map-frame {
+        height: 330px;
+        margin: 0 14px 14px;
+      }
+      .submit-btn {
+        width: 100%;
+      }
     }
+
     @media (max-width: 480px) {
-      .ct-cards-grid { grid-template-columns: 1fr; }
+      .store-card {
+        padding: 20px;
+        border-radius: 24px;
+      }
+      .store-card-top {
+        align-items: flex-start;
+      }
+      .store-logo {
+        width: 62px;
+        height: 62px;
+      }
+      .store-card-top strong {
+        font-size: 18px;
+      }
+      .form-panel h2,
+      .map-header h2 {
+        font-size: 2rem;
+      }
     }
   `]
 })
 export class ContactComponent implements OnInit {
   form = { name: '', email: '', subject: '', message: '' };
   sending = signal(false);
-  sent    = signal(false);
+  sent = signal(false);
   formError = signal('');
 
   private sanitizer = inject(DomSanitizer);
@@ -353,25 +748,27 @@ export class ContactComponent implements OnInit {
   ngOnInit() {
     this.seo.setMeta({
       title: 'Contact Us',
-      description: `Contact ${this.s.get('site_name', 'Your Store')} — visit our store, call us, or send a message.`
+      description: `Contact ${this.s.get('site_name', 'Your Store')} for store support, delivery questions, and product enquiries.`
     });
   }
 
-  /** Returns a sanitized SafeResourceUrl for the map iframe, or null if not set */
+  contactEmail(): string {
+    return this.s.get('contact_email', this.s.get('site_email', 'hello@example.com'));
+  }
+
   safeMapUrl(): SafeResourceUrl | null {
     const url = this.s.get('contact_map_embed', '');
     if (!url) return null;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
-  /** LocalBusiness JSON-LD for SEO */
   schemaJson(): string {
     return JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'LocalBusiness',
       'name': this.s.get('site_name', 'Your Store'),
       'telephone': this.s.get('site_phone', ''),
-      'email': this.s.get('contact_email', this.s.get('site_email', '')),
+      'email': this.contactEmail(),
       'address': {
         '@type': 'PostalAddress',
         'streetAddress': this.s.get('contact_address', this.s.get('site_address', '')),
@@ -390,16 +787,15 @@ export class ContactComponent implements OnInit {
       this.formError.set('Please fill in all required fields.');
       return;
     }
+
     this.formError.set('');
     this.sending.set(true);
 
-    // Compose mailto link as fallback
-    const to = this.s.get('contact_email', this.s.get('site_email', 'hello@example.com'));
     const subject = encodeURIComponent(this.form.subject || 'Website Enquiry');
     const body = encodeURIComponent(
       `Name: ${this.form.name}\nEmail: ${this.form.email}\n\n${this.form.message}`
     );
-    window.open(`mailto:${to}?subject=${subject}&body=${body}`, '_blank');
+    window.open(`mailto:${this.contactEmail()}?subject=${subject}&body=${body}`, '_blank');
 
     setTimeout(() => {
       this.sending.set(false);

@@ -14,7 +14,7 @@ import { SettingsService } from '../../core/services/settings.service';
 
         <!-- Logo -->
         <div class="account-logo">
-          <img [src]="settings.assetUrl('site_logo', '/logo.svg')" [alt]="settings.get('site_name', 'Your Store')" style="height:52px;object-fit:contain;">
+          <img [src]="settings.assetUrl('site_logo', '/logo.png')" [alt]="settings.get('site_name', 'Your Store')" style="height:52px;object-fit:contain;">
         </div>
 
         <!-- Tabs -->
@@ -86,22 +86,22 @@ import { SettingsService } from '../../core/services/settings.service';
   `,
   styles: [`
     .account-page {
-      min-height: calc(100vh - var(--header-height, 80px));
+      min-height: calc(100vh - var(--header-height, 116px));
       display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, #F0ECF9 0%, #EAF7EF 100%);
-      padding: 40px 16px;
+      background: #F9FAFB; padding: 40px 16px;
     }
     .account-card {
       background: white;
-      border-radius: 20px;
-      box-shadow: 0 8px 48px rgba(37,99,235,0.14);
+      border-radius: 16px;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.08);
       padding: 40px 36px;
       width: 100%; max-width: 420px;
+      border: 1px solid #F3F4F6;
       animation: fadeUp 0.4s ease both;
     }
     @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 
-    .account-logo { text-align: center; margin-bottom: 24px; }
+    .account-logo { text-align: center; margin-bottom: 28px; }
 
     .account-tabs {
       display: flex; gap: 0;
@@ -115,19 +115,19 @@ import { SettingsService } from '../../core/services/settings.service';
       font-family: 'Inter', sans-serif;
     }
     .tab-btn.active {
-      background: white; color: #2563EB;
-      box-shadow: 0 2px 8px rgba(37,99,235,0.12);
+      background: white; color: #F28C00;
+      box-shadow: 0 2px 8px rgba(242,140,0,0.12);
     }
 
     .account-msg {
-      background: #EAF7EF; color: #0F766E;
-      border: 1px solid rgba(15,118,110,0.25);
+      background: #F0FDF4; color: #15803D;
+      border: 1px solid rgba(22,163,74,0.25);
       padding: 10px 14px; border-radius: 8px;
       font-size: 13.5px; font-weight: 500;
       margin-bottom: 16px; text-align: center;
     }
     .account-msg.error {
-      background: #FFECEC; color: #DC2626;
+      background: #FEF2F2; color: #DC2626;
       border-color: rgba(220,38,38,0.25);
     }
 
@@ -135,29 +135,29 @@ import { SettingsService } from '../../core/services/settings.service';
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label {
       font-size: 13px; font-weight: 600;
-      color: #1E3A8A; letter-spacing: 0.01em;
+      color: #374151; letter-spacing: 0.01em;
     }
     .form-control {
-      padding: 11px 14px; border: 1.5px solid #D1D5DB;
-      border-radius: 9px; font-size: 14px; color: #1A1A2E;
+      padding: 11px 14px; border: 1.5px solid #E5E7EB;
+      border-radius: 9px; font-size: 14px; color: #111;
       outline: none; transition: border-color 0.2s, box-shadow 0.2s;
       font-family: 'Inter', sans-serif; background: white;
     }
     .form-control:focus {
-      border-color: #2563EB;
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+      border-color: #F28C00;
+      box-shadow: 0 0 0 3px rgba(242,140,0,0.12);
     }
 
     .btn-submit {
-      background: linear-gradient(135deg, #2563EB, #0F766E);
+      background: #F28C00;
       color: white; border: none;
       padding: 13px; border-radius: 10px;
       font-size: 15px; font-weight: 700;
-      cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+      cursor: pointer; transition: background 0.2s, transform 0.15s;
       font-family: 'Inter', sans-serif;
       margin-top: 4px;
     }
-    .btn-submit:hover { opacity: 0.92; transform: translateY(-1px); }
+    .btn-submit:hover { background: #070A05; transform: translateY(-1px); }
     .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     .switch-text {
@@ -165,17 +165,17 @@ import { SettingsService } from '../../core/services/settings.service';
       margin-top: 4px;
     }
     .link-btn {
-      background: none; border: none; color: #2563EB;
+      background: none; border: none; color: #F28C00;
       font-weight: 700; cursor: pointer; font-size: 13px;
       text-decoration: underline; font-family: 'Inter', sans-serif;
     }
 
     .guest-note {
       margin-top: 24px; padding-top: 20px;
-      border-top: 1px solid #E5E7EB;
+      border-top: 1px solid #F3F4F6;
       text-align: center; font-size: 13px; color: #9CA3AF;
     }
-    .guest-note a { color: #0F766E; font-weight: 600; text-decoration: none; }
+    .guest-note a { color: #F28C00; font-weight: 600; text-decoration: none; }
     .guest-note a:hover { text-decoration: underline; }
 
     @media (max-width: 480px) {

@@ -1,6 +1,7 @@
 import { Component, Input, signal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
+import { SettingsService } from '../../../core/services/settings.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -9,52 +10,51 @@ import { environment } from '../../../../environments/environment';
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="pcard" [class.added]="justAdded()">
+    <div class="pcard" [class.pcard-added]="justAdded()">
       <!-- Badges -->
-      @if (product.sale_price && product.sale_price < product.price) {
+      @if (product.sale_price && +product.sale_price < +product.price) {
         <div class="badge-sale">{{ getDiscount() }}% OFF</div>
       }
       @if (product.is_new) { <div class="badge-new">NEW</div> }
-      @if (product.stock <= 0) { <div class="badge-oos">Out of Stock</div> }
+      @if (+product.stock <= 0) { <div class="badge-oos">Out of Stock</div> }
 
       <!-- Image -->
       <a [routerLink]="['/product', product.slug]" class="pcard-img-wrap">
         <img [src]="getImageUrl()"
              [alt]="product.name" class="pcard-img" loading="lazy" decoding="async"
              (error)="onImgError($event)">
-        <div class="pcard-hover-panel">
-          <button class="quick-add-btn" (click)="addToCart($event)" [disabled]="product.stock <= 0">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
-            </svg>
-            {{ product.stock <= 0 ? 'Out of Stock' : 'Add to Cart' }}
-          </button>
-          <a [routerLink]="['/product', product.slug]" class="quick-view-btn" (click)="$event.stopPropagation()">
-            View Details
-          </a>
-        </div>
       </a>
 
-      <!-- Info -->
+      <!-- Body -->
       <div class="pcard-body">
         @if (product.category_names || product.categories?.[0]?.name) {
           <span class="pcard-cat">{{ product.category_names || product.categories?.[0]?.name }}</span>
         }
         <a [routerLink]="['/product', product.slug]" class="pcard-name">{{ product.name }}</a>
-        @if (product.sku) { <span class="pcard-sku">SKU: {{ product.sku }}</span> }
+        @if (product.unit) {
+          <span class="pcard-unit">{{ product.unit }}</span>
+        }
+
         <div class="pcard-footer">
           <div class="pcard-price">
-            @if (product.sale_price && product.sale_price < product.price) {
-              <span class="price-on-sale">€{{ product.sale_price }}</span>
-              <span class="price-was">€{{ product.price }}</span>
+            @if (product.sale_price && +product.sale_price < +product.price) {
+              <span class="price-sale">{{ currSymbol }}{{ (+product.sale_price).toFixed(2) }}</span>
+              <span class="price-was">{{ currSymbol }}{{ (+product.price).toFixed(2) }}</span>
             } @else {
-              <span class="price-normal">€{{ product.price }}</span>
+              <span class="price-normal">{{ currSymbol }}{{ (+product.price).toFixed(2) }}</span>
             }
           </div>
-          <button class="add-circle" (click)="addToCart($event)" [disabled]="product.stock <= 0"
-                  [title]="product.stock <= 0 ? 'Out of stock' : 'Add to cart'">
-            @if (justAdded()) { ✓ } @else { + }
-          </button>
+          @if (+product.stock > 0) {
+            <button class="add-btn" (click)="addToCart($event)" [class.add-btn-done]="justAdded()" id="add-to-cart-{{ product.id }}" title="Add to cart">
+              @if (justAdded()) {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              } @else {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+              }
+            </button>
+          } @else {
+            <span class="oos-tag">Out of Stock</span>
+          }
         </div>
       </div>
     </div>
@@ -63,161 +63,109 @@ import { environment } from '../../../../environments/environment';
     /* ── BASE CARD ── */
     .pcard {
       background: white;
-      border-radius: 16px;
+      border-radius: 12px;
       overflow: hidden;
       position: relative;
-      border: 1.5px solid #EBEBF0;
-      transition: transform 0.32s cubic-bezier(0.22,1,0.36,1),
-                  box-shadow 0.32s cubic-bezier(0.22,1,0.36,1),
-                  border-color 0.28s;
+      border: 1px solid #F3F4F6;
+      transition: box-shadow 0.25s ease, border-color 0.25s ease;
       display: flex; flex-direction: column;
     }
     .pcard:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 14px 40px rgba(75,46,131,0.13);
-      border-color: rgba(46,159,92,0.3);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+      border-color: #E5E7EB;
     }
-    .pcard.added { border-color: var(--primary); }
+    .pcard.pcard-added { border-color: #F28C00; }
 
     /* ── BADGES ── */
     .badge-sale {
       position: absolute; top: 8px; left: 8px; z-index: 3;
-      background: var(--orange); color: white;
-      padding: 3px 9px; border-radius: 999px;
-      font-size: 10px; font-weight: 800; letter-spacing: 0.3px;
+      background: #C41E3A; color: white;
+      padding: 3px 8px; border-radius: 999px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.2px;
     }
     .badge-new {
       position: absolute; top: 8px; right: 8px; z-index: 3;
-      background: var(--purple); color: white;
-      padding: 3px 9px; border-radius: 999px;
-      font-size: 10px; font-weight: 800;
+      background: #2E7D32; color: white;
+      padding: 3px 8px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
     }
     .badge-oos {
       position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 3;
-      background: rgba(0,0,0,0.55); color: white;
+      background: rgba(0,0,0,0.6); color: white;
       padding: 3px 10px; border-radius: 999px;
-      font-size: 10px; font-weight: 700;
-      backdrop-filter: blur(6px); white-space: nowrap;
+      font-size: 10px; font-weight: 600;
+      white-space: nowrap;
     }
 
     /* ── IMAGE ── */
     .pcard-img-wrap {
       display: block; position: relative;
       overflow: hidden; aspect-ratio: 1 / 1;
-      background: #ffffff;
-      border-bottom: 1px solid #F0F0F5;
+      background: #F9FAFB;
     }
     .pcard-img {
       width: 100%; height: 100%;
-      object-fit: contain; padding: 10px;
-      transition: transform 0.5s cubic-bezier(0.22,1,0.36,1);
+      object-fit: contain; padding: 12px;
+      transition: transform 0.4s ease;
     }
-    .pcard:hover .pcard-img { transform: scale(1.05); }
-
-    /* ── HOVER PANEL (desktop only) ── */
-    .pcard-hover-panel {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: flex-end;
-      padding: 12px; gap: 6px;
-      background: linear-gradient(to top, rgba(14,14,26,0.82) 0%, rgba(14,14,26,0.2) 50%, transparent 100%);
-      opacity: 0; transform: translateY(8px);
-      transition: opacity 0.3s, transform 0.3s cubic-bezier(0.22,1,0.36,1);
-    }
-    .pcard:hover .pcard-hover-panel { opacity: 1; transform: translateY(0); }
-
-    .quick-add-btn {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--primary); color: white;
-      border: none; border-radius: 8px;
-      padding: 8px 16px; font-size: 12px; font-weight: 700;
-      cursor: pointer; width: 100%; justify-content: center;
-      transition: background 0.2s, transform 0.2s;
-      font-family: 'Inter', sans-serif;
-    }
-    .quick-add-btn:hover:not(:disabled) { background: var(--primary-dark); transform: scale(1.02); }
-    .quick-add-btn:disabled { background: rgba(255,255,255,0.2); cursor: not-allowed; }
-
-    .quick-view-btn {
-      display: block; text-align: center; width: 100%;
-      color: rgba(255,255,255,0.8); font-size: 11px; font-weight: 600;
-      padding: 5px; border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.25);
-      transition: all 0.2s; backdrop-filter: blur(4px);
-    }
-    .quick-view-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+    .pcard:hover .pcard-img { transform: scale(1.04); }
 
     /* ── BODY ── */
-    .pcard-body { padding: 12px 14px 14px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+    .pcard-body { padding: 12px 12px 14px; flex: 1; display: flex; flex-direction: column; gap: 3px; }
     .pcard-cat {
-      font-size: 9px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.8px; color: var(--primary);
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.6px; color: #2E7D32;
     }
     .pcard-name {
-      display: -webkit-box; font-size: 13px; font-weight: 600;
-      color: #1A1A2E; line-height: 1.4; margin: 2px 0 3px;
+      display: -webkit-box; font-size: 13.5px; font-weight: 600;
+      color: #111; line-height: 1.4; margin: 2px 0 2px;
       -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-      transition: color 0.2s;
+      transition: color 0.2s; text-decoration: none;
     }
-    .pcard-name:hover { color: var(--primary); }
-    .pcard-sku { font-size: 10px; color: #9CA3AF; }
+    .pcard-name:hover { color: #F28C00; }
+    .pcard-unit { font-size: 11px; color: #9CA3AF; }
 
+    /* Footer */
     .pcard-footer {
       display: flex; align-items: center; justify-content: space-between;
-      margin-top: auto; padding-top: 8px;
+      margin-top: auto; padding-top: 10px;
     }
-    .pcard-price { display: flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
-    .price-on-sale { font-size: 16px; font-weight: 800; color: var(--primary); font-family: 'Poppins', sans-serif; }
-    .price-normal  { font-size: 16px; font-weight: 800; color: #2D1B69; font-family: 'Poppins', sans-serif; }
-    .price-was     { font-size: 11px; color: #B0B3BE; text-decoration: line-through; }
+    .pcard-price { display: flex; align-items: baseline; gap: 5px; flex-wrap: wrap; }
+    .price-sale   { font-size: 15px; font-weight: 800; color: #F28C00; font-family: 'Poppins', sans-serif; }
+    .price-normal { font-size: 15px; font-weight: 800; color: #111; font-family: 'Poppins', sans-serif; }
+    .price-was    { font-size: 11px; color: #B0B3BE; text-decoration: line-through; }
 
-    .add-circle {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: var(--primary-bg); color: var(--primary);
-      font-size: 18px; font-weight: 700; border: 1.5px solid rgba(46,159,92,0.3);
+    .add-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: #F28C00; color: white;
       display: flex; align-items: center; justify-content: center;
-      transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-      flex-shrink: 0; cursor: pointer;
+      border: none; cursor: pointer; flex-shrink: 0;
+      transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
     }
-    .add-circle:hover:not(:disabled) {
-      background: var(--primary); color: white;
-      transform: scale(1.15); box-shadow: 0 4px 14px rgba(46,159,92,0.4);
-    }
-    .add-circle:disabled { opacity: 0.4; cursor: not-allowed; }
-    .pcard.added .add-circle { background: var(--primary); color: white; }
+    .add-btn:hover { background: #070A05; transform: scale(1.1); }
+    .add-btn.add-btn-done { background: #2E7D32; }
 
-    /* ── MOBILE: 2-column compact cards ── */
+    .oos-tag {
+      font-size: 10px; font-weight: 600; color: #9CA3AF;
+      border: 1px solid #E5E7EB; padding: 4px 8px; border-radius: 6px;
+    }
+
+    /* ── MOBILE ── */
     @media (max-width: 640px) {
-      .pcard { border-radius: 10px; border-width: 1px; }
-      /* Disable lift effect on touch */
-      .pcard:hover { transform: none !important; box-shadow: none !important; }
-
-      /* Shorter image on mobile */
-      .pcard-img-wrap { aspect-ratio: 4 / 3; }
-      .pcard-img { padding: 6px; }
-
-      /* Hide the overlay on mobile (no hover on touch) */
-      .pcard-hover-panel { display: none !important; }
-
-      /* Compact info */
-      .pcard-body  { padding: 8px 9px 10px; gap: 1px; }
-      .pcard-cat   { display: none; }
-      .pcard-sku   { display: none; }
-      .pcard-name  { font-size: 12px; line-height: 1.3; margin: 0 0 4px; }
-
-      /* Price row */
-      .pcard-footer    { padding-top: 4px; }
-      .price-on-sale,
-      .price-normal    { font-size: 13px; }
-      .price-was       { font-size: 10px; }
-
-      /* Smaller add button */
-      .add-circle { width: 26px; height: 26px; font-size: 15px; border-width: 1px; }
-
-      /* Smaller badges */
-      .badge-sale        { top: 5px; left: 5px; padding: 2px 6px; font-size: 9px; }
-      .badge-new         { top: 5px; right: 5px; padding: 2px 6px; font-size: 9px; }
-      .badge-oos         { top: 5px; padding: 2px 7px; font-size: 9px; }
+      .pcard { border-radius: 10px; }
+      .pcard:hover { box-shadow: none; }
+      .pcard-img-wrap { aspect-ratio: 1 / 1; }
+      .pcard-img { padding: 8px; }
+      .pcard-body { padding: 8px 8px 10px; gap: 1px; }
+      .pcard-cat  { display: none; }
+      .pcard-name { font-size: 12.5px; }
+      .pcard-unit { font-size: 10px; }
+      .pcard-footer { padding-top: 6px; }
+      .price-sale, .price-normal { font-size: 13px; }
+      .price-was  { font-size: 10px; }
+      .add-btn    { width: 28px; height: 28px; border-radius: 6px; }
+      .badge-sale { top: 5px; left: 5px; padding: 2px 6px; font-size: 9px; }
+      .badge-new  { top: 5px; right: 5px; padding: 2px 6px; font-size: 9px; }
     }
   `]
 })
@@ -226,10 +174,16 @@ export class ProductCardComponent {
   justAdded = signal(false);
   private mediaUrl = environment.mediaUrl;
 
-  constructor(private cart: CartService) {}
+  constructor(
+    private cart: CartService,
+    private settingsService: SettingsService
+  ) {}
+
+  get currSymbol(): string {
+    return this.settingsService.get('currency_symbol', '€');
+  }
 
   getImageUrl(): string {
-    // Check all possible image fields returned by different API endpoints
     const img = this.product.primary_image
              || this.product.image
              || this.product.images?.[0]?.image_path;
@@ -243,13 +197,13 @@ export class ProductCardComponent {
 
   getDiscount(): number {
     if (!this.product.sale_price || !this.product.price) return 0;
-    return Math.round(((this.product.price - this.product.sale_price) / this.product.price) * 100);
+    return Math.round(((+this.product.price - +this.product.sale_price) / +this.product.price) * 100);
   }
 
   addToCart(event: Event) {
     event.preventDefault();
     event.stopPropagation();
-    if (this.product.stock > 0) {
+    if (+this.product.stock > 0) {
       this.cart.addItem(this.product);
       this.justAdded.set(true);
       setTimeout(() => this.justAdded.set(false), 1800);
