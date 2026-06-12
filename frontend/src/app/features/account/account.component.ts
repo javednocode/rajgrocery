@@ -1,254 +1,88 @@
-import { Component, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { ApiService } from '../../core/services/api.service';
+import { WishlistService } from '../../core/services/wishlist.service';
+import { CartService } from '../../core/services/cart.service';
 import { SettingsService } from '../../core/services/settings.service';
+import { SeoService } from '../../core/services/seo.service';
 
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [RouterLink],
   template: `
-    <div class="account-page">
-      <div class="account-card">
-
-        <!-- Logo -->
-        <div class="account-logo">
-          <img [src]="settings.assetUrl('site_logo', '/logo.png')" [alt]="settings.get('site_name', 'Your Store')" style="height:52px;object-fit:contain;">
+  <section class="ac">
+    <div class="td-container">
+      <h1>Your Space</h1>
+      <div class="ac-grid">
+        <div class="ac-main">
+          <h3>Saved items <span class="ac-count">{{ wishlist.count() }}</span></h3>
+          @if (wishlist.items().length === 0) {
+            <div class="ac-empty"><p>Nothing saved yet. Tap the heart on any product to keep it here.</p><a routerLink="/categories" class="td-btn td-btn-dark">Browse products</a></div>
+          } @else {
+            <div class="ac-wgrid">
+              @for (w of wishlist.items(); track w.id) {
+                <div class="ac-wcard">
+                  <a [routerLink]="['/product', w.slug]" class="ac-wimg">@if (w.image) { <img [src]="w.image" [alt]="w.name" loading="lazy" /> }</a>
+                  <div class="ac-winfo">
+                    <a [routerLink]="['/product', w.slug]" class="ac-wname">{{ w.name }}</a>
+                    <strong>{{ cur }}{{ (w.salePrice ?? w.price).toFixed(2) }}</strong>
+                    <div class="ac-wactions">
+                      <a [routerLink]="['/product', w.slug]" class="ac-view">View</a>
+                      <button (click)="wishlist.remove(w.id)" class="ac-del">Remove</button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
         </div>
-
-        <!-- Tabs -->
-        <div class="account-tabs">
-          <button class="tab-btn" [class.active]="activeTab() === 'login'" (click)="activeTab.set('login')">Login</button>
-          <button class="tab-btn" [class.active]="activeTab() === 'register'" (click)="activeTab.set('register')">Create Account</button>
-        </div>
-
-        <!-- Message -->
-        @if (message()) {
-          <div class="account-msg" [class.error]="isError()">{{ message() }}</div>
-        }
-
-        <!-- LOGIN FORM -->
-        @if (activeTab() === 'login') {
-          <form class="account-form" (ngSubmit)="doLogin()">
-            <div class="form-group">
-              <label>Email Address</label>
-              <input type="email" [(ngModel)]="loginEmail" name="loginEmail" required placeholder="you@example.com" class="form-control">
-            </div>
-            <div class="form-group">
-              <label>Password</label>
-              <input type="password" [(ngModel)]="loginPassword" name="loginPassword" required placeholder="••••••••" class="form-control">
-            </div>
-            <button type="submit" class="btn-submit" [disabled]="loading()">
-              {{ loading() ? 'Signing in...' : 'Sign In' }}
-            </button>
-            <p class="switch-text">Don't have an account?
-              <button type="button" class="link-btn" (click)="activeTab.set('register')">Create one</button>
-            </p>
-          </form>
-        }
-
-        <!-- REGISTER FORM -->
-        @if (activeTab() === 'register') {
-          <form class="account-form" (ngSubmit)="doRegister()">
-            <div class="form-group">
-              <label>Full Name</label>
-              <input type="text" [(ngModel)]="regName" name="regName" required placeholder="John Smith" class="form-control">
-            </div>
-            <div class="form-group">
-              <label>Email Address</label>
-              <input type="email" [(ngModel)]="regEmail" name="regEmail" required placeholder="you@example.com" class="form-control">
-            </div>
-            <div class="form-group">
-              <label>Phone Number</label>
-              <input type="tel" [(ngModel)]="regPhone" name="regPhone" placeholder="+1 555 123 4567" class="form-control">
-            </div>
-            <div class="form-group">
-              <label>Password</label>
-              <input type="password" [(ngModel)]="regPassword" name="regPassword" required placeholder="Min 6 characters" class="form-control">
-            </div>
-            <button type="submit" class="btn-submit" [disabled]="loading()">
-              {{ loading() ? 'Creating account...' : 'Create Account' }}
-            </button>
-            <p class="switch-text">Already have an account?
-              <button type="button" class="link-btn" (click)="activeTab.set('login')">Sign in</button>
-            </p>
-          </form>
-        }
-
-        <!-- Guest note -->
-        <div class="guest-note">
-          <p>Or continue as guest — <a routerLink="/categories">Browse products</a></p>
-        </div>
-
+        <aside class="ac-side">
+          <div class="ac-card">
+            <h4>Basket</h4>
+            <p>{{ cart.itemCount() }} item{{ cart.itemCount() === 1 ? '' : 's' }} · {{ cur }}{{ cart.subtotal().toFixed(2) }}</p>
+            <a routerLink="/cart" class="td-btn td-btn-light" style="width:100%;justify-content:center">View basket</a>
+          </div>
+          <div class="ac-card">
+            <h4>Need help with an order?</h4>
+            <p>Our team responds within hours — reach out any time.</p>
+            <a routerLink="/contact" class="td-btn td-btn-dark" style="width:100%;justify-content:center">Contact us</a>
+          </div>
+        </aside>
       </div>
     </div>
+  </section>
   `,
   styles: [`
-    .account-page {
-      min-height: calc(100vh - var(--header-height, 116px));
-      display: flex; align-items: center; justify-content: center;
-      background: #F9FAFB; padding: 40px 16px;
-    }
-    .account-card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 4px 32px rgba(0,0,0,0.08);
-      padding: 40px 36px;
-      width: 100%; max-width: 420px;
-      border: 1px solid #F3F4F6;
-      animation: fadeUp 0.4s ease both;
-    }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-
-    .account-logo { text-align: center; margin-bottom: 28px; }
-
-    .account-tabs {
-      display: flex; gap: 0;
-      background: #F3F4F6; border-radius: 10px; padding: 4px;
-      margin-bottom: 24px;
-    }
-    .tab-btn {
-      flex: 1; padding: 10px; border: none; background: transparent;
-      border-radius: 8px; font-size: 14px; font-weight: 600;
-      color: #6B7280; cursor: pointer; transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
-    }
-    .tab-btn.active {
-      background: white; color: #F28C00;
-      box-shadow: 0 2px 8px rgba(242,140,0,0.12);
-    }
-
-    .account-msg {
-      background: #F0FDF4; color: #15803D;
-      border: 1px solid rgba(22,163,74,0.25);
-      padding: 10px 14px; border-radius: 8px;
-      font-size: 13.5px; font-weight: 500;
-      margin-bottom: 16px; text-align: center;
-    }
-    .account-msg.error {
-      background: #FEF2F2; color: #DC2626;
-      border-color: rgba(220,38,38,0.25);
-    }
-
-    .account-form { display: flex; flex-direction: column; gap: 16px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label {
-      font-size: 13px; font-weight: 600;
-      color: #374151; letter-spacing: 0.01em;
-    }
-    .form-control {
-      padding: 11px 14px; border: 1.5px solid #E5E7EB;
-      border-radius: 9px; font-size: 14px; color: #111;
-      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
-      font-family: 'Inter', sans-serif; background: white;
-    }
-    .form-control:focus {
-      border-color: #F28C00;
-      box-shadow: 0 0 0 3px rgba(242,140,0,0.12);
-    }
-
-    .btn-submit {
-      background: #F28C00;
-      color: white; border: none;
-      padding: 13px; border-radius: 10px;
-      font-size: 15px; font-weight: 700;
-      cursor: pointer; transition: background 0.2s, transform 0.15s;
-      font-family: 'Inter', sans-serif;
-      margin-top: 4px;
-    }
-    .btn-submit:hover { background: #070A05; transform: translateY(-1px); }
-    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-    .switch-text {
-      text-align: center; font-size: 13px; color: #6B7280;
-      margin-top: 4px;
-    }
-    .link-btn {
-      background: none; border: none; color: #F28C00;
-      font-weight: 700; cursor: pointer; font-size: 13px;
-      text-decoration: underline; font-family: 'Inter', sans-serif;
-    }
-
-    .guest-note {
-      margin-top: 24px; padding-top: 20px;
-      border-top: 1px solid #F3F4F6;
-      text-align: center; font-size: 13px; color: #9CA3AF;
-    }
-    .guest-note a { color: #F28C00; font-weight: 600; text-decoration: none; }
-    .guest-note a:hover { text-decoration: underline; }
-
-    @media (max-width: 480px) {
-      .account-card { padding: 28px 20px; }
-    }
+  .ac{padding:56px 0 40px}
+  .ac h1{font-size:clamp(1.9rem,3.4vw,2.7rem);font-weight:800;margin-bottom:40px}
+  .ac-grid{display:grid;grid-template-columns:1fr 340px;gap:48px;align-items:start}
+  .ac-main h3{font-size:18px;font-weight:800;margin-bottom:24px}
+  .ac-count{display:inline-grid;place-items:center;min-width:24px;height:24px;border-radius:999px;background:var(--td-accent);color:#111;font-size:12px;font-weight:800;margin-left:8px;padding:0 7px}
+  .ac-empty{background:var(--td-secondary);border-radius:var(--td-radius);padding:48px 32px;text-align:center;color:var(--td-muted)}
+  .ac-empty .td-btn{margin-top:20px}
+  .ac-wgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .ac-wcard{display:flex;gap:16px;border:1px solid var(--td-line);border-radius:var(--td-radius);padding:14px;transition:box-shadow .3s,transform .3s var(--td-ease)}
+  .ac-wcard:hover{box-shadow:var(--td-shadow);transform:translateY(-3px)}
+  .ac-wimg{width:84px;height:84px;border-radius:var(--td-radius-sm);background:var(--td-secondary);overflow:hidden;flex-shrink:0}
+  .ac-wimg img{width:100%;height:100%;object-fit:cover}
+  .ac-winfo{min-width:0;display:flex;flex-direction:column}
+  .ac-wname{font-size:14px;font-weight:600;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:4px}
+  .ac-winfo strong{font-family:'Sora',sans-serif;font-size:15px;font-weight:800}
+  .ac-wactions{display:flex;gap:14px;margin-top:auto;padding-top:8px}
+  .ac-view{font-size:12.5px;font-weight:700}
+  .ac-view:hover{color:var(--td-accent)}
+  .ac-del{border:none;background:none;font-size:12.5px;font-weight:600;color:var(--td-muted);padding:0}
+  .ac-del:hover{color:#DC2626}
+  .ac-side{display:flex;flex-direction:column;gap:18px}
+  .ac-card{background:var(--td-secondary);border-radius:var(--td-radius);padding:28px}
+  .ac-card h4{font-size:15.5px;font-weight:800;margin-bottom:10px}
+  .ac-card p{font-size:14px;color:var(--td-muted);line-height:1.7;margin:0 0 18px}
+  @media (max-width:900px){.ac-grid{grid-template-columns:1fr}.ac-wgrid{grid-template-columns:1fr}}
   `]
 })
 export class AccountComponent {
-  activeTab = signal<'login' | 'register'>('login');
-  loading = signal(false);
-  message = signal('');
-  isError = signal(false);
-
-  loginEmail = '';
-  loginPassword = '';
-  regName = '';
-  regEmail = '';
-  regPhone = '';
-  regPassword = '';
-
-  constructor(
-    private api: ApiService,
-    public settings: SettingsService
-  ) {}
-
-  doLogin() {
-    if (!this.loginEmail || !this.loginPassword) {
-      this.showMsg('Please fill in all fields.', true); return;
-    }
-    this.loading.set(true);
-    // Basic guest login — show a friendly message since full auth isn't set up
-    setTimeout(() => {
-      this.loading.set(false);
-      this.showMsg('Login feature coming soon! You can still browse and place orders as a guest.', false);
-    }, 800);
+  constructor(public wishlist: WishlistService, public cart: CartService, private settings: SettingsService, seo: SeoService) {
+    seo.setMeta({ title: 'Your Account', description: 'Your saved items and basket at The Desi.' });
   }
-
-  doRegister() {
-    if (!this.regName || !this.regEmail || !this.regPassword) {
-      this.showMsg('Please fill in Name, Email and Password.', true); return;
-    }
-    if (this.regPassword.length < 6) {
-      this.showMsg('Password must be at least 6 characters.', true); return;
-    }
-    this.loading.set(true);
-    // Save as customer via API
-    this.api.registerCustomer({
-      name: this.regName,
-      email: this.regEmail,
-      phone: this.regPhone,
-      password: this.regPassword
-    }).subscribe({
-      next: (res: any) => {
-        this.loading.set(false);
-        if (res?.success) {
-          this.showMsg(`Account created! Welcome to ${this.settings.get('site_name', 'Your Store')}.`, false);
-          this.activeTab.set('login');
-          this.loginEmail = this.regEmail;
-          this.regName = this.regEmail = this.regPhone = this.regPassword = '';
-        } else {
-          this.showMsg(res?.message || 'Registration failed. Please try again.', true);
-        }
-      },
-      error: () => {
-        this.loading.set(false);
-        this.showMsg('Account created! You can now browse and place orders.', false);
-        this.activeTab.set('login');
-      }
-    });
-  }
-
-  private showMsg(msg: string, err: boolean) {
-    this.message.set(msg); this.isError.set(err);
-    setTimeout(() => this.message.set(''), 5000);
-  }
+  get cur() { return this.settings.get('currency_symbol', '£'); }
 }
