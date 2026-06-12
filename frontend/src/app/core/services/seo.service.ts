@@ -1,59 +1,47 @@
 import { Injectable } from '@angular/core';
 import { Title, Meta } from '@angular/platform-browser';
-import { SettingsService } from './settings.service';
+
+const BRAND = 'The Desi';
+const DEFAULT_TITLE = 'The Desi — Premium Desi Groceries Delivered Across The UK';
+const DEFAULT_DESC = 'Authentic groceries, spices, snacks, frozen foods and daily essentials from trusted South Asian brands. Premium quality, delivered across the UK.';
 
 @Injectable({ providedIn: 'root' })
 export class SeoService {
-  constructor(
-    private title: Title,
-    private meta: Meta,
-    private settings: SettingsService
-  ) {}
+  constructor(private title: Title, private meta: Meta) {}
 
-  setMeta(config: { title?: string; description?: string; keywords?: string; image?: string; url?: string }) {
-    const siteName = this.settings.get('site_name', 'Your Store');
-    if (config.title) {
-      this.title.setTitle(`${config.title} | ${siteName}`);
-      this.meta.updateTag({ property: 'og:title', content: config.title });
+  setMeta(data: { title?: string; description?: string; keywords?: string; image?: string; url?: string }) {
+    if (data.title) {
+      this.title.setTitle(`${data.title} | ${BRAND}`);
+      this.meta.updateTag({ property: 'og:title', content: data.title });
     }
-    if (config.description) {
-      this.meta.updateTag({ name: 'description', content: config.description });
-      this.meta.updateTag({ property: 'og:description', content: config.description });
+    if (data.description) {
+      this.meta.updateTag({ name: 'description', content: data.description });
+      this.meta.updateTag({ property: 'og:description', content: data.description });
     }
-    if (config.keywords) {
-      this.meta.updateTag({ name: 'keywords', content: config.keywords });
-    }
-    if (config.image) {
-      this.meta.updateTag({ property: 'og:image', content: config.image });
-    }
-    if (config.url) {
-      this.meta.updateTag({ property: 'og:url', content: config.url });
-    }
+    if (data.keywords) this.meta.updateTag({ name: 'keywords', content: data.keywords });
+    if (data.image) this.meta.updateTag({ property: 'og:image', content: data.image });
+    if (data.url) this.meta.updateTag({ property: 'og:url', content: data.url });
     this.meta.updateTag({ property: 'og:type', content: 'website' });
   }
 
-  setProductMeta(product: any) {
+  setProductMeta(p: any) {
     this.setMeta({
-      title: product.meta_title || product.name,
-      description: product.meta_description || product.short_description || '',
-      keywords: product.focus_keyword || product.name,
+      title: p.meta_title || p.name,
+      description: p.meta_description || p.short_description || '',
+      keywords: p.focus_keyword || p.name
     });
   }
 
-  setCategoryMeta(category: any) {
-    const siteName = this.settings.get('site_name', 'Your Store');
+  setCategoryMeta(c: any) {
     this.setMeta({
-      title: category.meta_title || category.name,
-      description: category.meta_description || `Shop ${category.name} at ${siteName}.`,
-      keywords: category.focus_keyword || category.name,
+      title: c.meta_title || c.name,
+      description: c.meta_description || `Shop ${c.name} at ${BRAND} — premium South Asian groceries delivered across the UK`,
+      keywords: c.focus_keyword || c.name
     });
   }
 
   resetMeta() {
-    this.title.setTitle(this.settings.get('meta_title', 'Your Store - Online Store'));
-    this.meta.updateTag({
-      name: 'description',
-      content: this.settings.get('meta_description', 'Shop products online.')
-    });
+    this.title.setTitle(DEFAULT_TITLE);
+    this.meta.updateTag({ name: 'description', content: DEFAULT_DESC });
   }
 }
