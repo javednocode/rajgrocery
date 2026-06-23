@@ -11,64 +11,88 @@ import { environment } from '../../../../environments/environment';
   imports: [RouterLink],
   template: `
   <article class="pc" [class.oos]="product.stock <= 0">
-    <a [routerLink]="['/product', product.slug]" class="pc-media">
-      <img class="pc-img a" [src]="img(0)" [alt]="product.name" loading="lazy" />
-      @if (img(1) !== img(0)) { <img class="pc-img b" [src]="img(1)" alt="" aria-hidden="true" loading="lazy" /> }
-      @if (discount() > 0) { <span class="pc-tag">−{{ discount() }}%</span> }
-      @if (product.stock <= 0) { <span class="pc-soldout">Sold out</span> }
+    <div class="pc-badges">
+      @if (discount() > 0) { <span class="pc-disc">-{{ discount() }}%</span> }
+      @if (product.stock <= 0) { <span class="pc-sold">Sold out</span> }
+    </div>
+    <div class="pc-wish-wrap">
       <button class="pc-wish" [class.on]="wishlist.has(product.id)" (click)="toggleWish($event)" [attr.aria-label]="wishlist.has(product.id) ? 'Remove from wishlist' : 'Add to wishlist'">
-        <svg width="16" height="16" viewBox="0 0 24 24" [attr.fill]="wishlist.has(product.id) ? 'currentColor' : 'none'"><path d="M12 20s-7-4.3-9.3-8.6C1 8 2.6 4.7 6 4.3c2-.2 3.6.8 4.5 2.3h3c.9-1.5 2.5-2.5 4.5-2.3 3.4.4 5 3.7 3.3 7.1C19 15.7 12 20 12 20z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" [attr.fill]="wishlist.has(product.id) ? 'currentColor' : 'none'"><path d="M12 20s-7-4.3-9.3-8.6C1 8 2.6 4.7 6 4.3c2-.2 3.6.8 4.5 2.3h3c.9-1.5 2.5-2.5 4.5-2.3 3.4.4 5 3.7 3.3 7.1C19 15.7 12 20 12 20z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
       </button>
-      <button class="pc-quick" (click)="quickAdd($event)" [disabled]="product.stock <= 0">
-        {{ added() ? '✓ Added' : (product.stock <= 0 ? 'Sold out' : 'Quick add') }}
-      </button>
+    </div>
+
+    <a [routerLink]="['/product', product.slug]" class="pc-media">
+      <div class="pc-img-wrap">
+        <img class="pc-img"
+             [src]="img(0) || 'placeholder.png'"
+             [alt]="product.name"
+             loading="lazy"
+             (error)="onImgErr($event)" />
+      </div>
     </a>
+
     <div class="pc-body">
       @if (product.category_names || product.categories?.[0]?.name) {
         <span class="pc-cat">{{ product.category_names || product.categories[0].name }}</span>
       }
       <a [routerLink]="['/product', product.slug]" class="pc-name">{{ product.name }}</a>
-      <div class="pc-foot">
-        <div class="pc-price">
-          @if (onSale()) {
-            <strong>{{ cur }}{{ product.sale_price }}</strong><s>{{ cur }}{{ product.price }}</s>
-          } @else {
-            <strong>{{ cur }}{{ product.price }}</strong>
-          }
-        </div>
-        @if (product.stock > 0) { <span class="pc-stock">In stock</span> }
+
+      <div class="pc-stars">
+        <span>★★★★★</span>
+        <span class="pc-reviews">(0)</span>
       </div>
+
+      <div class="pc-price-row">
+        @if (onSale()) {
+          <span class="pc-price">{{ cur }}{{ product.sale_price }}</span>
+          <span class="pc-original">{{ cur }}{{ product.price }}</span>
+        } @else {
+          <span class="pc-price">{{ cur }}{{ product.price }}</span>
+        }
+      </div>
+
+      <button class="pc-add" (click)="quickAdd($event)" [disabled]="product.stock <= 0">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 7h14l-1.5 9.5a2 2 0 0 1-2 1.5H9a2 2 0 0 1-2-1.7L5.3 4.6A2 2 0 0 0 3.3 3H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="21" r="1.4" fill="currentColor"/><circle cx="17" cy="21" r="1.4" fill="currentColor"/></svg>
+        {{ added() ? '✓ Added!' : (product.stock <= 0 ? 'Out of stock' : 'Add to cart') }}
+      </button>
     </div>
   </article>
   `,
   styles: [`
-  .pc{background:#fff;border:1px solid var(--td-line);border-radius:var(--td-radius);overflow:hidden;transition:transform .4s var(--td-ease),box-shadow .4s var(--td-ease),border-color .3s;display:flex;flex-direction:column}
-  .pc:hover{transform:translateY(-6px);box-shadow:var(--td-shadow);border-color:transparent}
-  .pc.oos{opacity:.78}
-  .pc-media{position:relative;display:block;aspect-ratio:1;background:var(--td-secondary);overflow:hidden}
-  .pc-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .45s,transform .6s var(--td-ease)}
-  .pc:hover .pc-img.a{transform:scale(1.06)}
-  .pc-img.b{opacity:0}
-  .pc:hover .pc-img.b{opacity:1}
-  .pc-tag{position:absolute;top:14px;left:14px;background:var(--td-accent);color:#111;font-size:11.5px;font-weight:800;padding:5px 11px;border-radius:999px;letter-spacing:.02em}
-  .pc-soldout{position:absolute;top:14px;left:14px;background:rgba(15,23,42,.82);color:#fff;font-size:11px;font-weight:700;padding:5px 11px;border-radius:999px;backdrop-filter:blur(6px)}
-  .pc-wish{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:999px;border:none;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);color:var(--td-text);display:grid;place-items:center;transition:transform .25s var(--td-ease),color .2s}
-  .pc-wish:hover{transform:scale(1.12)}
-  .pc-wish.on{color:#E11D48}
-  .pc-quick{position:absolute;left:12px;right:12px;bottom:12px;border:none;border-radius:999px;padding:12px;background:rgba(17,17,17,.92);backdrop-filter:blur(8px);color:#fff;font-size:13px;font-weight:700;opacity:0;transform:translateY(10px);transition:opacity .3s,transform .35s var(--td-ease)}
-  .pc:hover .pc-quick{opacity:1;transform:none}
-  .pc-quick:disabled{background:rgba(100,116,139,.85)}
-  @media (hover:none){.pc-quick{opacity:1;transform:none}}
-  .pc-body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:5px;flex:1}
-  .pc-cat{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--td-muted)}
-  .pc-name{font-size:14.5px;font-weight:600;line-height:1.45;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;transition:color .2s}
-  .pc-name:hover{color:var(--td-accent)}
-  .pc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:8px}
-  .pc-price{display:flex;align-items:baseline;gap:8px}
-  .pc-price strong{font-family:'Sora',sans-serif;font-size:17px;font-weight:800}
-  .pc-price s{font-size:12.5px;color:var(--td-muted)}
-  .pc-stock{font-size:11px;font-weight:700;color:var(--td-success);display:flex;align-items:center;gap:5px}
-  .pc-stock::before{content:'';width:6px;height:6px;border-radius:999px;background:var(--td-success)}
+  .pc{background:#fff;border:1px solid #ECECEC;border-radius:12px;overflow:hidden;transition:transform .3s ease,box-shadow .3s ease;display:flex;flex-direction:column;position:relative}
+  .pc:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.1);border-color:rgba(59,183,126,.3)}
+  .pc.oos{opacity:.76}
+
+  .pc-badges{position:absolute;top:12px;left:12px;z-index:3;display:flex;flex-direction:column;gap:5px}
+  .pc-disc{background:#3BB77E;color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:6px;letter-spacing:.02em}
+  .pc-sold{background:#E02020;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px}
+
+  .pc-wish-wrap{position:absolute;top:12px;right:12px;z-index:3}
+  .pc-wish{width:34px;height:34px;border-radius:50%;border:1px solid #ECECEC;background:#fff;color:#aaa;display:grid;place-items:center;transition:all .22s;cursor:pointer}
+  .pc-wish:hover{border-color:#3BB77E;color:#3BB77E}
+  .pc-wish.on{color:#E02020;border-color:#E02020}
+
+  .pc-media{display:block;padding:16px;text-align:center}
+  .pc-img-wrap{display:flex;align-items:center;justify-content:center;height:180px;overflow:hidden;background:#F8FBF9;border-radius:8px}
+  .pc-img{max-height:180px;width:auto;max-width:100%;object-fit:contain;transition:transform .4s ease}
+  .pc:hover .pc-img{transform:scale(1.06)}
+
+  .pc-body{padding:0 14px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .pc-cat{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#7E8D97}
+  .pc-name{font-size:14px;font-weight:700;line-height:1.4;color:#253D4E;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;transition:color .2s;text-decoration:none}
+  .pc-name:hover{color:#3BB77E}
+
+  .pc-stars{display:flex;align-items:center;gap:5px}
+  .pc-stars span:first-child{color:#FFC107;font-size:12px;letter-spacing:1px}
+  .pc-reviews{font-size:11.5px;color:#7E8D97;font-weight:500}
+
+  .pc-price-row{display:flex;align-items:baseline;gap:8px;margin-top:2px}
+  .pc-price{font-family:'Quicksand','Poppins',sans-serif;font-size:18px;font-weight:800;color:#3BB77E}
+  .pc-original{font-size:12.5px;color:#adb5bd;text-decoration:line-through}
+
+  .pc-add{display:flex;align-items:center;justify-content:center;gap:7px;background:#fff;border:1.5px solid #3BB77E;color:#3BB77E;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;transition:all .22s;margin-top:6px;width:100%}
+  .pc-add:hover:not(:disabled){background:#3BB77E;color:#fff}
+  .pc-add:disabled{opacity:.55;cursor:not-allowed;border-color:#ccc;color:#aaa}
   `]
 })
 export class ProductCardComponent {
@@ -89,8 +113,14 @@ export class ProductCardComponent {
     const path = i === 0
       ? (this.product.primary_image || imgs[0]?.image_path)
       : (imgs[1]?.image_path || this.product.primary_image || imgs[0]?.image_path);
-    if (!path) return 'placeholder.png';
+    if (!path) return '';
     return path.startsWith('http') ? path : this.mediaUrl + path;
+  }
+  /** Fallback to placeholder when image URL returns 404 or fails */
+  onImgErr(e: Event) {
+    const el = e.target as HTMLImageElement;
+    if (el.src.includes('placeholder.png')) return; // avoid infinite loop
+    el.src = 'placeholder.png';
   }
   quickAdd(e: Event) {
     e.preventDefault(); e.stopPropagation();

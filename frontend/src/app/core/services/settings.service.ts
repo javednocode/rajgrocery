@@ -48,6 +48,8 @@ export class SettingsService {
       contact_email: 'hello@example.com',
       contact_address: 'Configure store address in Admin Settings',
       contact_hours: 'Mon-Fri: 9am-6pm',
+      contact_phone: '',
+      contact_map_embed: '',
       business_city: '',
       business_region: '',
       business_country: 'US',

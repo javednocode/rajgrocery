@@ -34,21 +34,27 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
   </section>
   `,
   styles: [`
-  .sr-hero{padding:64px 0 44px;background:var(--td-secondary)}
-  .sr-hero h1{font-size:clamp(1.9rem,3.4vw,2.7rem);font-weight:800;margin-bottom:22px}
-  .sr-box{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid var(--td-line);border-radius:999px;padding:8px 8px 8px 22px;max-width:640px;transition:border-color .2s}
-  .sr-box:focus-within{border-color:var(--td-accent)}
-  .sr-box svg{color:var(--td-muted);flex-shrink:0}
-  .sr-box input{flex:1;border:none;outline:none;font:inherit;font-size:15.5px;min-width:0}
-  .sr-box .td-btn{padding:13px 26px}
-  .sr-note{margin:18px 0 0;color:var(--td-muted);font-size:14.5px}
-  .sr-body{padding:52px 0}
-  .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-  .sr-empty{text-align:center;padding:80px 20px;color:var(--td-muted)}
-  .sr-empty h3{margin-bottom:8px}
-  .sr-empty .td-btn{margin-top:22px}
-  @media (max-width:1000px){.pgrid{grid-template-columns:repeat(3,1fr)}}
-  @media (max-width:680px){.pgrid{grid-template-columns:1fr 1fr;gap:12px}}
+  .sr-hero{padding:52px 0 40px;background:#F4FCF7;border-bottom:1px solid #ECECEC}
+  .td-container{max-width:1280px;margin:0 auto;padding:0 24px;width:100%}
+  .sr-hero h1{font-size:clamp(1.8rem,3.2vw,2.6rem);font-weight:800;color:#253D4E;margin-bottom:20px}
+  .sr-box{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #ECECEC;border-radius:10px;overflow:hidden;max-width:640px;transition:border-color .2s}
+  .sr-box:focus-within{border-color:#3BB77E}
+  .sr-box svg{color:#7E8D97;flex-shrink:0;margin-left:16px}
+  .sr-box input{flex:1;border:none;outline:none;font:inherit;font-size:15px;padding:12px 0;min-width:0;color:#253D4E}
+  .sr-box input::placeholder{color:#adb5bd}
+  .sr-box .td-btn{background:#3BB77E;color:#fff;border:none;padding:13px 24px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s;flex-shrink:0}
+  .sr-box .td-btn:hover{background:#2A9062}
+  .sr-note{margin:16px 0 0;color:#7E8D97;font-size:14px}
+  .sr-note strong{color:#253D4E}
+  .sr-body{padding:40px 0}
+  /* 4-col desktop → 3-col → 2-col mobile */
+  .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .sr-empty{text-align:center;padding:80px 20px;color:#7E8D97}
+  .sr-empty h3{margin-bottom:8px;color:#253D4E}
+  .sr-empty a{display:inline-flex;align-items:center;gap:8px;background:#3BB77E;color:#fff;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:700;text-decoration:none;margin-top:20px;transition:background .2s}
+  .sr-empty a:hover{background:#2A9062}
+  @media (max-width:1100px){.pgrid{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:680px){.pgrid{grid-template-columns:1fr 1fr;gap:10px}}
   `]
 })
 export class SearchComponent implements OnInit {

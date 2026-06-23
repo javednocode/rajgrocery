@@ -30,7 +30,8 @@ import { SplashComponent } from './shared/components/splash/splash.component';
       opacity: 1;
     }
     .main-content {
-      padding-top: var(--header-height, var(--header-h, 148px));
+      /* body already has padding-top:var(--td-header-h) from header global CSS */
+      /* do NOT add extra padding here — it was creating a 148px+ blank gap */
     }
   `]
 })

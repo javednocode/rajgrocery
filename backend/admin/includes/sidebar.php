@@ -1,9 +1,26 @@
 <?php
 $currentPage = basename($_SERVER['PHP_SELF']);
+
+// Load site name & logo from DB for the sidebar header
+$_sidebarName = 'Store Admin';
+$_sidebarLogo = '';
+try {
+    require_once __DIR__ . '/../../config/database.php';
+    require_once __DIR__ . '/../../helpers/branding.php';
+    $_sidebarDb   = (new Database())->getConnection();
+    $_sidebarData = loadSiteSettings($_sidebarDb);
+    $_sidebarName = !empty($_sidebarData['site_name']) ? $_sidebarData['site_name'] : 'Store Admin';
+    $_sidebarLogo = !empty($_sidebarData['site_logo']) ? $_sidebarData['site_logo'] : '';
+} catch (\Throwable $_e) {}
 ?>
 <aside class="admin-sidebar" id="adminSidebar">
     <div class="sidebar-logo">
-        <h2>Ecommerce Admin</h2>
+        <?php if ($_sidebarLogo): ?>
+            <img src="../<?= htmlspecialchars(ltrim($_sidebarLogo, '/')) ?>" alt="<?= htmlspecialchars($_sidebarName) ?>" style="max-height:44px;max-width:160px;object-fit:contain;display:block;margin-bottom:4px;">
+        <?php else: ?>
+            <h2><?= htmlspecialchars($_sidebarName) ?></h2>
+        <?php endif; ?>
+        <span style="font-size:11px;opacity:.5;font-weight:500;letter-spacing:.06em;">ADMIN</span>
     </div>
     <nav class="sidebar-nav">
         <div class="nav-section">Main</div>

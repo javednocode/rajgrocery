@@ -1,29 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, shareReplay } from 'rxjs';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 /**
- * API Service with in-memory caching for frequently-accessed endpoints.
+ * API Service
  * 
- * Cached endpoints (shareReplay):
- * - getCategories()         — called by header + home + category pages
- * - getFeaturedCategories()  — called by home page
- * - getSettings()           — called by SettingsService on app boot
- * - getBanners()            — called by home page
- * 
- * These create a SINGLE HTTP request that is shared across all subscribers.
- * Navigation between pages no longer fires duplicate requests.
+ * Note: The PHP backend has its own file-based cache (10 min TTL).
+ * Angular-level caching has been removed to prevent stale data issues.
+ * Each component call goes to the PHP cache — fast AND always fresh.
  */
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private baseUrl = environment.apiUrl;
-
-  // ── In-memory cache (shared observables) ──
-  private _categoriesCache$: Observable<any> | null = null;
-  private _featuredCategoriesCache$: Observable<any> | null = null;
-  private _settingsCache$: Observable<any> | null = null;
-  private _bannersCache$: Observable<any> | null = null;
 
   constructor(private http: HttpClient) {}
 
@@ -58,47 +47,27 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/products/search?q=${encodeURIComponent(query)}`);
   }
 
-  // ── Categories (CACHED — called by header on every page) ──
+  // ── Categories ──
   getCategories(): Observable<any> {
-    if (!this._categoriesCache$) {
-      this._categoriesCache$ = this.http.get(`${this.baseUrl}/categories`).pipe(
-        shareReplay({ bufferSize: 1, refCount: false })
-      );
-    }
-    return this._categoriesCache$;
+    return this.http.get(`${this.baseUrl}/categories`);
   }
 
   getFeaturedCategories(): Observable<any> {
-    if (!this._featuredCategoriesCache$) {
-      this._featuredCategoriesCache$ = this.http.get(`${this.baseUrl}/categories/featured`).pipe(
-        shareReplay({ bufferSize: 1, refCount: false })
-      );
-    }
-    return this._featuredCategoriesCache$;
+    return this.http.get(`${this.baseUrl}/categories/featured`);
   }
 
   getCategoryBySlug(slug: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/categories/slug/${slug}`);
   }
 
-  // ── Banners (CACHED — only used on homepage) ──
+  // ── Banners ──
   getBanners(): Observable<any> {
-    if (!this._bannersCache$) {
-      this._bannersCache$ = this.http.get(`${this.baseUrl}/banners`).pipe(
-        shareReplay({ bufferSize: 1, refCount: false })
-      );
-    }
-    return this._bannersCache$;
+    return this.http.get(`${this.baseUrl}/banners`);
   }
 
-  // ── Settings (CACHED — loaded once at app boot) ──
+  // ── Settings ──
   getSettings(): Observable<any> {
-    if (!this._settingsCache$) {
-      this._settingsCache$ = this.http.get(`${this.baseUrl}/settings`).pipe(
-        shareReplay({ bufferSize: 1, refCount: false })
-      );
-    }
-    return this._settingsCache$;
+    return this.http.get(`${this.baseUrl}/settings`);
   }
 
   // ── Blogs ──
@@ -144,13 +113,7 @@ export class ApiService {
   }
 
   /**
-   * Clear all in-memory caches.
-   * Call this after admin updates categories/settings/banners.
+   * No-op: kept for API compatibility. The PHP backend cache is cleared via admin panel.
    */
-  clearCache(): void {
-    this._categoriesCache$ = null;
-    this._featuredCategoriesCache$ = null;
-    this._settingsCache$ = null;
-    this._bannersCache$ = null;
-  }
+  clearCache(): void {}
 }

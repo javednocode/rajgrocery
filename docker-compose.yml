@@ -1,0 +1,62 @@
+version: '3.9'
+
+services:
+  # ── App (Angular + PHP + Nginx) ──────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: thedesi_app
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-webcraftstech_the_desi}
+      DB_USER: ${DB_USER:-wct_thedesi}
+      DB_PASS: ${DB_PASS}
+      APP_URL: ${APP_URL:-http://localhost}
+      APP_ENV: ${APP_ENV:-production}
+      MEDIA_URL: ${MEDIA_URL:-/uploads/}
+    volumes:
+      - uploads_data:/var/www/html/backend/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - thedesi_net
+
+  # ── MySQL Database ────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: thedesi_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      MYSQL_DATABASE: ${DB_NAME:-webcraftstech_the_desi}
+      MYSQL_USER: ${DB_USER:-wct_thedesi}
+      MYSQL_PASSWORD: ${DB_PASS}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/thedesi_database.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASS}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - thedesi_net
+    # Don't expose DB port in production
+    # ports:
+    #   - "3306:3306"
+
+volumes:
+  db_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  thedesi_net:
+    driver: bridge

@@ -1,6 +1,23 @@
+# Environment
+.env
+
+# Node
+frontend/node_modules/
+frontend/.angular/
+
+# Logs
+*.log
+php_server.log
+frontend/angular_server.pid
+php_server.pid
+
+# macOS
 .DS_Store
-node_modules/
-dist/
-.angular/cache/
-npm-debug.log*
-yarn-error.log*
+__MACOSX/
+
+# IDE
+.vscode/
+.idea/
+
+# Local PHP server
+router.php.bak

@@ -128,8 +128,8 @@
         <div class="card">
             <div class="card-header"><h3>Shipping & Tax</h3></div>
             <div class="card-body">
-                <div class="form-group"><label>Free Shipping Above (₹)</label><input type="number" id="shipping_free_above" class="form-control"></div>
-                <div class="form-group"><label>Shipping Charge (₹)</label><input type="number" id="shipping_charge" class="form-control"></div>
+                <div class="form-group"><label>Free Shipping Above (£)</label><input type="number" id="shipping_free_above" class="form-control"></div>
+                <div class="form-group"><label>Shipping Charge (£)</label><input type="number" id="shipping_charge" class="form-control"></div>
                 <div class="form-group"><label>Tax Percentage (%)</label><input type="number" id="tax_percentage" class="form-control" step="0.1"></div>
             </div>
         </div>
@@ -173,6 +173,11 @@
                     <label>Contact Email</label>
                     <input type="email" id="contact_email" class="form-control" placeholder="hello@example.com">
                     <small style="color:#6B7280">Displayed on contact page & used in email links</small>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" id="contact_phone" class="form-control" placeholder="+44 20 0000 0000">
+                    <small style="color:#6B7280">Shown on contact page with a tap-to-call link</small>
                 </div>
                 <div class="form-group">
                     <label>Store Address</label>
@@ -253,7 +258,7 @@ const settingFields = [
   'site_logo','site_favicon'
 ];
 
-const contactFields = ['contact_email','contact_address','contact_hours','contact_map_embed','business_city','business_region','business_country'];
+const contactFields = ['contact_email','contact_phone','contact_address','contact_hours','contact_map_embed','business_city','business_region','business_country'];
 
 async function loadSettings() {
     try {

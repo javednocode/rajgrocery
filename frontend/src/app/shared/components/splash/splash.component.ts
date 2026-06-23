@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, output } from '@angular/core';
 
 @Component({
   selector: 'app-splash',
@@ -24,8 +24,13 @@ import { Component, OnInit, signal } from '@angular/core';
 export class SplashComponent implements OnInit {
   show = signal(true);
   leaving = signal(false);
+  done = output<void>();
+
   ngOnInit() {
     setTimeout(() => this.leaving.set(true), 900);
-    setTimeout(() => this.show.set(false), 1450);
+    setTimeout(() => {
+      this.show.set(false);
+      this.done.emit();
+    }, 1450);
   }
 }

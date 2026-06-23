@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $pageTitle ?? 'Admin' ?> - Ecommerce Admin</title>
+    <title><?= $pageTitle ?? 'Admin' ?> — <?= htmlspecialchars($_sidebarName ?? 'Store') ?> Admin</title>
     <link rel="stylesheet" href="assets/admin.css?v=3">
     <script src="assets/admin.js?v=3"></script>
     <?php if (($pageTitle ?? '') === 'Dashboard'): ?>
