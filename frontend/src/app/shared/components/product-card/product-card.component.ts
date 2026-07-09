@@ -125,7 +125,7 @@ import { environment } from '../../../../environments/environment';
   }
   .pc:hover {
     transform: translateY(-5px);
-    box-shadow: 0 24px 54px rgba(33,29,22,.12);
+    box-shadow: 0 24px 54px rgba(17,24,39,.12);
     border-color: var(--kg-line-warm);
   }
   .pc.oos { opacity: .68; }
@@ -163,18 +163,18 @@ import { environment } from '../../../../environments/environment';
     letter-spacing: .08em; text-transform: uppercase; line-height: 1.4;
     animation: scaleIn .5s var(--ease2) both;
   }
-  .pc-tag-disc { background: var(--kg-terra); color: #FFFDF8; }
-  .pc-tag-new  { background: var(--kg-forest); color: #FFFDF8; }
-  .pc-tag-oos  { background: rgba(33,29,22,.75); color: #FFFDF8; }
+  .pc-tag-disc { background: var(--kg-terra); color: #FFFFFF; }
+  .pc-tag-new  { background: var(--kg-forest); color: #FFFFFF; }
+  .pc-tag-oos  { background: rgba(17,24,39,.75); color: #FFFFFF; }
 
   /* Origin flag chip */
   .pc-origin {
     position: absolute; left: 12px; bottom: 12px; z-index: 3;
     display: inline-flex; align-items: center; gap: 0;
     height: 26px; border-radius: 999px;
-    background: rgba(255,253,248,.82);
+    background: rgba(255,255,255,.82);
     -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-    border: 1px solid rgba(232,225,210,.9);
+    border: 1px solid rgba(229,231,235,.9);
     padding: 0 9px;
     overflow: hidden; max-width: 30px;
     transition: max-width .45s var(--ease), padding .3s;
@@ -194,14 +194,14 @@ import { environment } from '../../../../environments/environment';
   .pc-wish {
     position: absolute; top: 12px; right: 12px; z-index: 3;
     width: 34px; height: 34px; border-radius: 999px;
-    border: 1px solid rgba(232,225,210,.9);
-    background: rgba(255,253,248,.82);
+    border: 1px solid rgba(229,231,235,.9);
+    background: rgba(255,255,255,.82);
     -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
     color: var(--kg-faint); display: grid; place-items: center;
     transition: all .25s; cursor: pointer;
   }
   .pc-wish:hover { color: var(--kg-clay); border-color: var(--kg-clay); transform: scale(1.08); }
-  .pc-wish.on { color: var(--kg-clay); border-color: rgba(166,59,42,.4); background: var(--kg-clay-bg); }
+  .pc-wish.on { color: var(--kg-clay); border-color: rgba(220,38,38,.4); background: var(--kg-clay-bg); }
   .pc-wish.burst { animation: pcBurst .5s var(--ease2); }
   @keyframes pcBurst {
     0% { transform: scale(1); }
@@ -221,9 +221,9 @@ import { environment } from '../../../../environments/environment';
   .pc:hover .pc-quick { transform: translateY(0); pointer-events: auto; }
   .pc-quick-btn {
     display: inline-flex; align-items: center; gap: 7px;
-    background: rgba(33,29,22,.78); color: #FFFDF8;
+    background: rgba(17,24,39,.78); color: #FFFFFF;
     -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,253,248,.16);
+    border: 1px solid rgba(255,255,255,.16);
     border-radius: 999px; padding: 9px 18px;
     font-family: var(--font-sans);
     font-size: 12.5px; font-weight: 800; letter-spacing: .02em;
@@ -291,8 +291,8 @@ import { environment } from '../../../../environments/environment';
     color: var(--kg-ink); border-radius: 999px;
     cursor: pointer; transition: all .25s;
   }
-  .pc-add:hover:not(:disabled) { background: var(--kg-forest); color: #FFFDF8; border-color: var(--kg-forest); transform: scale(1.07); box-shadow: 0 8px 18px rgba(31,77,58,.24); }
-  .pc-add.added { background: var(--kg-forest); color: #FFFDF8; border-color: var(--kg-forest); }
+  .pc-add:hover:not(:disabled) { background: var(--kg-forest); color: #FFFFFF; border-color: var(--kg-forest); transform: scale(1.07); box-shadow: 0 8px 18px rgba(41,184,213,.24); }
+  .pc-add.added { background: var(--kg-forest); color: #FFFFFF; border-color: var(--kg-forest); }
   .pc-add:disabled { opacity: .4; cursor: not-allowed; }
 
   @media (max-width: 640px) {

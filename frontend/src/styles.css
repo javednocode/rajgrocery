@@ -8,55 +8,55 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* ── Ink (warm charcoal) ── */
-  --kg-ink:        #211D16;
-  --kg-ink-2:      #37322A;
-  --kg-muted:      #7C7466;
-  --kg-faint:      #ABA394;
+  /* ── Ink (cool charcoal — from the castle mark) ── */
+  --kg-ink:        #111827;
+  --kg-ink-2:      #1F2937;
+  --kg-muted:      #6B7280;
+  --kg-faint:      #9CA3AF;
 
-  /* ── Surfaces (cream / paper / sand) ── */
-  --kg-cream:      #FAF6EF;
-  --kg-paper:      #FFFDF8;
-  --kg-warm:       #F5EFE4;
-  --kg-sand:       #F1EADD;
-  --kg-sand-2:     #E7DECB;
-  --kg-dark:       #14120E;
-  --kg-dark-2:     #1D1A14;
+  /* ── Surfaces (white / cool light) ── */
+  --kg-cream:      #FFFFFF;
+  --kg-paper:      #FFFFFF;
+  --kg-warm:       #F7FAFC;
+  --kg-sand:       #F7FAFC;
+  --kg-sand-2:     #EEF2F6;
+  --kg-dark:       #1F2937;
+  --kg-dark-2:     #111827;
 
-  /* ── Forest green (primary) ── */
-  --kg-forest:     #1F4D3A;
-  --kg-forest-dk:  #16382B;
-  --kg-forest-lt:  #5F8F76;
-  --kg-forest-bg:  #EAF0E9;
-  --kg-forest-bg2: #DCE7DB;
+  /* ── Brand blue (primary — from the wordmark) ── */
+  --kg-forest:     #29B8D5;
+  --kg-forest-dk:  #1E88A8;
+  --kg-forest-lt:  #6FD3E7;
+  --kg-forest-bg:  #E9F7FB;
+  --kg-forest-bg2: #D5F0F7;
 
-  /* ── Terracotta (accent, muted orange) ── */
-  --kg-terra:      #C4622D;
-  --kg-terra-dk:   #A94E20;
-  --kg-terra-lt:   #D98D5F;
-  --kg-terra-bg:   #F7E8DC;
-  --kg-terra-bg2:  #F0DCC8;
+  /* ── Deep blue (secondary accent) ── */
+  --kg-terra:      #1E88A8;
+  --kg-terra-dk:   #16708C;
+  --kg-terra-lt:   #6FD3E7;
+  --kg-terra-bg:   #E6F3F8;
+  --kg-terra-bg2:  #D5EDF6;
 
-  /* ── Brass gold ── */
-  --kg-brass:      #C9A24B;
-  --kg-brass-bg:   #F7F0DE;
+  /* ── Rating amber (stars only) ── */
+  --kg-brass:      #F0B429;
+  --kg-brass-bg:   #FEF6E6;
 
-  /* ── Clay red ── */
-  --kg-clay:       #A63B2A;
-  --kg-clay-bg:    #F6E4DF;
+  /* ── Functional red (errors / wishlist) ── */
+  --kg-clay:       #DC2626;
+  --kg-clay-bg:    #FEE9E7;
 
   /* ── Lines ── */
-  --kg-line:       #E8E1D2;
-  --kg-line-lt:    #F0EAE0;
-  --kg-line-warm:  #E5D9C6;
+  --kg-line:       #E5E7EB;
+  --kg-line-lt:    #F1F3F6;
+  --kg-line-warm:  #D8DDE3;
 
-  /* ── Shadows (warm, soft) ── */
-  --shadow-xs:  0 1px 3px rgba(33,29,22,0.05);
-  --shadow-sm:  0 2px 12px rgba(33,29,22,0.06);
-  --shadow:     0 10px 32px rgba(33,29,22,0.09);
-  --shadow-lg:  0 24px 64px rgba(33,29,22,0.13);
-  --shadow-terra:  0 12px 32px rgba(196,98,45,0.28);
-  --shadow-forest: 0 12px 32px rgba(31,77,58,0.26);
+  /* ── Shadows (cool, soft) ── */
+  --shadow-xs:  0 1px 3px rgba(17,24,39,0.05);
+  --shadow-sm:  0 2px 12px rgba(17,24,39,0.06);
+  --shadow:     0 10px 32px rgba(17,24,39,0.08);
+  --shadow-lg:  0 24px 64px rgba(17,24,39,0.12);
+  --shadow-terra:  0 12px 32px rgba(30,136,168,0.24);
+  --shadow-forest: 0 12px 32px rgba(41,184,213,0.26);
 
   /* ── Radius ── */
   --r-xs:   6px;
@@ -389,19 +389,8 @@ select.form-control { cursor: pointer; appearance: none; background-image: url("
   background: var(--kg-dark); color: var(--kg-cream);
   position: relative; overflow: hidden;
 }
-.page-hero::before {
-  content: '';
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(620px 300px at 12% 0%, rgba(196,98,45,0.16), transparent 65%),
-    radial-gradient(520px 320px at 88% 110%, rgba(31,77,58,0.35), transparent 65%);
-}
-.page-hero::after {
-  content: '';
-  position: absolute; inset: 0; opacity: .35;
-  background-image: radial-gradient(rgba(250,246,239,0.06) 1px, transparent 1px);
-  background-size: 22px 22px;
-}
+.page-hero::before,
+.page-hero::after { content: none; }
 .page-hero h1 { color: var(--kg-cream); margin-bottom: 12px; position: relative; z-index: 1; }
 .page-hero p  { color: rgba(250,246,239,0.62); font-size: 16px; position: relative; z-index: 1; }
 .breadcrumb {
@@ -550,13 +539,8 @@ select.form-control { cursor: pointer; appearance: none; background-image: url("
     linear-gradient(90deg, var(--kg-line) 1px, transparent 1px);
   background-size: 34px 34px;
 }
-/* Grain texture — layer inside dark/hero sections for handcrafted feel */
-.kg-grain::after {
-  content: '';
-  position: absolute; inset: 0; pointer-events: none; z-index: 0;
-  opacity: .5;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
+/* Texture layer retired for the clean brand-blue system — flat surfaces only */
+.kg-grain::after { content: none; }
 
 /* ─── Mobile ─── */
 @media (max-width: 900px) {

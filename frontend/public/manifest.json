@@ -4,8 +4,8 @@
   "description": "Premium groceries from India, Finland and Germany — delivered fresh.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FAF6EF",
-  "theme_color": "#1F4D3A",
+  "background_color": "#FFFFFF",
+  "theme_color": "#29B8D5",
   "orientation": "portrait-primary",
   "icons": [
     { "src": "/favicon.ico", "sizes": "48x48", "type": "image/x-icon" },

@@ -109,7 +109,7 @@ import { CountryService } from './core/services/country.service';
       background: rgba(255, 253, 248, .78);
       -webkit-backdrop-filter: blur(18px) saturate(1.4);
       backdrop-filter: blur(18px) saturate(1.4);
-      border: 1px solid var(--kg-line, #E8E1D2);
+      border: 1px solid var(--kg-line, #E5E7EB);
       box-shadow: 0 18px 44px rgba(33, 29, 22, .14);
       pointer-events: none;
       animation: worldChip .9s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -124,7 +124,7 @@ import { CountryService } from './core/services/country.service';
     .world-chip-name {
       font-family: var(--font-serif, Georgia, serif);
       font-size: 16.5px; font-weight: 500;
-      color: var(--kg-ink, #211D16); letter-spacing: -0.01em;
+      color: var(--kg-ink, #111827); letter-spacing: -0.01em;
     }
 
     @media (prefers-reduced-motion: reduce) {

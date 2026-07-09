@@ -171,89 +171,89 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
   styles: [`
   .container { max-width: 1300px; margin: 0 auto; padding: 0 24px; width: 100%; }
   @media(min-width:1200px){.container{padding:0 48px}}
-  .cp { padding: 40px 0 60px; background: #FAF6EF; min-height: 60vh; }
+  .cp { padding: 40px 0 60px; background: #FFFFFF; min-height: 60vh; }
 
   /* HEAD */
   .cp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 12px; }
-  .cp-head h1 { font-family: 'Fraunces', Georgia, serif; font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 400; color: #211D16; display: flex; align-items: center; gap: 12px; }
-  .cp-count { font-family: 'Manrope', sans-serif; font-size: 15px; font-weight: 700; background: #F7E8DC; color: #C4622D; padding: 4px 12px; border-radius: 999px; }
-  .cp-back { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; color: #7C7466; font-family: 'Manrope', sans-serif; transition: color .2s; }
-  .cp-back:hover { color: #C4622D; }
+  .cp-head h1 { font-family: 'Fraunces', Georgia, serif; font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 400; color: #111827; display: flex; align-items: center; gap: 12px; }
+  .cp-count { font-family: 'Manrope', sans-serif; font-size: 15px; font-weight: 700; background: #E6F3F8; color: #1E88A8; padding: 4px 12px; border-radius: 999px; }
+  .cp-back { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; color: #6B7280; font-family: 'Manrope', sans-serif; transition: color .2s; }
+  .cp-back:hover { color: #1E88A8; }
 
   /* EMPTY */
   .cp-empty { text-align: center; padding: 80px 20px; max-width: 500px; margin: 0 auto; }
   .cp-empty-icon { font-size: 4rem; margin-bottom: 16px; }
-  .cp-empty h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.8rem; font-weight: 400; color: #211D16; margin-bottom: 10px; }
-  .cp-empty p { font-size: 15px; color: #7C7466; margin-bottom: 28px; line-height: 1.7; }
+  .cp-empty h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.8rem; font-weight: 400; color: #111827; margin-bottom: 10px; }
+  .cp-empty p { font-size: 15px; color: #6B7280; margin-bottom: 28px; line-height: 1.7; }
   .cp-empty-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 32px; }
   .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 999px; font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 700; transition: all .25s; cursor: pointer; border: 2px solid transparent; text-decoration: none; }
-  .btn-primary { background: #C4622D; color: #fff; border-color: #C4622D; box-shadow: 0 4px 14px rgba(196,98,45,.22); }
-  .btn-primary:hover { background: #A94E20; transform: translateY(-1px); }
-  .btn-outline-dark { background: transparent; color: #211D16; border-color: #E8E1D2; }
-  .btn-outline-dark:hover { border-color: #211D16; }
+  .btn-primary { background: #1E88A8; color: #fff; border-color: #1E88A8; box-shadow: 0 4px 14px rgba(30,136,168,.22); }
+  .btn-primary:hover { background: #16708C; transform: translateY(-1px); }
+  .btn-outline-dark { background: transparent; color: #111827; border-color: #E5E7EB; }
+  .btn-outline-dark:hover { border-color: #111827; }
   .cp-empty-trust { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
-  .cp-empty-trust span { font-size: 13px; font-weight: 700; color: #ABA394; font-family: 'Manrope', sans-serif; }
+  .cp-empty-trust span { font-size: 13px; font-weight: 700; color: #9CA3AF; font-family: 'Manrope', sans-serif; }
 
   /* GRID */
   .cp-grid { display: grid; grid-template-columns: 1fr 380px; gap: 28px; align-items: start; }
 
   /* ITEMS */
-  .cp-items { background: #fff; border: 1.5px solid #E8E1D2; border-radius: 20px; overflow: hidden; }
-  .cp-items-head { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; padding: 14px 20px; background: #F1EADD; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #ABA394; font-family: 'Manrope', sans-serif; }
-  .cp-item { display: grid; grid-template-columns: 80px 1fr auto 80px 36px; gap: 14px; align-items: center; padding: 16px 20px; border-bottom: 1px solid #F0EAE0; }
+  .cp-items { background: #fff; border: 1.5px solid #E5E7EB; border-radius: 20px; overflow: hidden; }
+  .cp-items-head { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; padding: 14px 20px; background: #F7FAFC; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #9CA3AF; font-family: 'Manrope', sans-serif; }
+  .cp-item { display: grid; grid-template-columns: 80px 1fr auto 80px 36px; gap: 14px; align-items: center; padding: 16px 20px; border-bottom: 1px solid #F1F3F6; }
   .cp-item:last-child { border-bottom: none; }
-  .cp-item-img { width: 80px; height: 80px; border-radius: 10px; background: #F1EADD; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cp-item-img { width: 80px; height: 80px; border-radius: 10px; background: #F7FAFC; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .cp-item-img img { width: 100%; height: 100%; object-fit: contain; }
   .cp-item-ph { font-size: 2rem; }
   .cp-item-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-  .cp-item-name { font-size: 14.5px; font-weight: 700; color: #211D16; font-family: 'Manrope', sans-serif; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-  .cp-item-name:hover { color: #C4622D; }
-  .cp-item-variant { font-size: 12px; color: #ABA394; }
-  .cp-item-unit-price { font-size: 12.5px; color: #7C7466; }
-  .cp-remove-mob { display: none; font-size: 12px; color: #A63B2A; font-weight: 700; cursor: pointer; background: none; border: none; text-align: left; padding: 0; font-family: 'Manrope', sans-serif; }
-  .cp-qty { display: flex; align-items: center; gap: 0; border: 1.5px solid #E8E1D2; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
-  .cp-qty button { width: 34px; height: 38px; display: grid; place-items: center; font-size: 16px; font-weight: 700; color: #211D16; cursor: pointer; background: #fff; border: none; transition: background .2s; }
-  .cp-qty button:hover { background: #F7E8DC; color: #C4622D; }
-  .cp-qty span { width: 38px; text-align: center; font-size: 14px; font-weight: 800; color: #211D16; font-family: 'Manrope', sans-serif; }
-  .cp-item-total { font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 800; color: #C4622D; text-align: right; }
-  .cp-remove { width: 32px; height: 32px; border-radius: 8px; background: #F7E8DC; border: none; color: #C4622D; display: grid; place-items: center; cursor: pointer; transition: all .2s; flex-shrink: 0; }
-  .cp-remove:hover { background: #F6E4DF; color: #A63B2A; }
+  .cp-item-name { font-size: 14.5px; font-weight: 700; color: #111827; font-family: 'Manrope', sans-serif; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .cp-item-name:hover { color: #1E88A8; }
+  .cp-item-variant { font-size: 12px; color: #9CA3AF; }
+  .cp-item-unit-price { font-size: 12.5px; color: #6B7280; }
+  .cp-remove-mob { display: none; font-size: 12px; color: #DC2626; font-weight: 700; cursor: pointer; background: none; border: none; text-align: left; padding: 0; font-family: 'Manrope', sans-serif; }
+  .cp-qty { display: flex; align-items: center; gap: 0; border: 1.5px solid #E5E7EB; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+  .cp-qty button { width: 34px; height: 38px; display: grid; place-items: center; font-size: 16px; font-weight: 700; color: #111827; cursor: pointer; background: #fff; border: none; transition: background .2s; }
+  .cp-qty button:hover { background: #E6F3F8; color: #1E88A8; }
+  .cp-qty span { width: 38px; text-align: center; font-size: 14px; font-weight: 800; color: #111827; font-family: 'Manrope', sans-serif; }
+  .cp-item-total { font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 800; color: #1E88A8; text-align: right; }
+  .cp-remove { width: 32px; height: 32px; border-radius: 8px; background: #E6F3F8; border: none; color: #1E88A8; display: grid; place-items: center; cursor: pointer; transition: all .2s; flex-shrink: 0; }
+  .cp-remove:hover { background: #FEE9E7; color: #DC2626; }
   .cp-actions-row { padding: 14px 20px; display: flex; justify-content: flex-end; }
-  .cp-clear { font-size: 13px; font-weight: 700; color: #ABA394; cursor: pointer; background: none; border: none; font-family: 'Manrope', sans-serif; transition: color .2s; }
-  .cp-clear:hover { color: #A63B2A; }
+  .cp-clear { font-size: 13px; font-weight: 700; color: #9CA3AF; cursor: pointer; background: none; border: none; font-family: 'Manrope', sans-serif; transition: color .2s; }
+  .cp-clear:hover { color: #DC2626; }
 
   /* SUMMARY */
   .cp-summary { position: sticky; top: calc(var(--header-height,156px) + 20px); }
-  .cp-summary-card { background: #fff; border: 1.5px solid #E8E1D2; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
-  .cp-summary-card h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.3rem; font-weight: 400; color: #211D16; margin-bottom: 4px; }
-  .cp-summary-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #7C7466; font-family: 'Manrope', sans-serif; }
-  .cp-summary-disc { color: #1F4D3A; }
+  .cp-summary-card { background: #fff; border: 1.5px solid #E5E7EB; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+  .cp-summary-card h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.3rem; font-weight: 400; color: #111827; margin-bottom: 4px; }
+  .cp-summary-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #6B7280; font-family: 'Manrope', sans-serif; }
+  .cp-summary-disc { color: #29B8D5; }
   .cp-shipping-val { font-weight: 700; }
-  .cp-free-badge { background: #EAF0E9; color: #1F4D3A; font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; }
-  .cp-free-hint { font-size: 12.5px; color: #C4622D; background: #F7E8DC; padding: 8px 12px; border-radius: 8px; margin: 0; font-family: 'Manrope', sans-serif; }
-  .cp-divider { height: 1px; background: #F0EAE0; }
+  .cp-free-badge { background: #E9F7FB; color: #29B8D5; font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; }
+  .cp-free-hint { font-size: 12.5px; color: #1E88A8; background: #E6F3F8; padding: 8px 12px; border-radius: 8px; margin: 0; font-family: 'Manrope', sans-serif; }
+  .cp-divider { height: 1px; background: #F1F3F6; }
   .cp-total-row { font-size: 17px; }
 
   /* Coupon */
-  .cp-coupon { display: flex; border: 1.5px solid #E8E1D2; border-radius: 10px; overflow: hidden; }
-  .cp-coupon-input { flex: 1; border: none; outline: none; padding: 10px 14px; font-size: 13.5px; color: #211D16; font-family: 'Manrope', sans-serif; }
-  .cp-coupon-btn { background: #C4622D; color: #fff; border: none; padding: 10px 16px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: 'Manrope', sans-serif; transition: background .2s; flex-shrink: 0; }
-  .cp-coupon-btn:hover:not(:disabled) { background: #A94E20; }
+  .cp-coupon { display: flex; border: 1.5px solid #E5E7EB; border-radius: 10px; overflow: hidden; }
+  .cp-coupon-input { flex: 1; border: none; outline: none; padding: 10px 14px; font-size: 13.5px; color: #111827; font-family: 'Manrope', sans-serif; }
+  .cp-coupon-btn { background: #1E88A8; color: #fff; border: none; padding: 10px 16px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: 'Manrope', sans-serif; transition: background .2s; flex-shrink: 0; }
+  .cp-coupon-btn:hover:not(:disabled) { background: #16708C; }
   .cp-coupon-btn:disabled { opacity: .5; cursor: not-allowed; }
-  .cp-coupon-err { font-size: 12.5px; color: #A63B2A; margin: 0; }
-  .cp-coupon-applied { display: flex; align-items: center; justify-content: space-between; background: #EAF0E9; padding: 10px 14px; border-radius: 10px; font-size: 13px; color: #1F4D3A; font-weight: 700; font-family: 'Manrope', sans-serif; }
-  .cp-coupon-remove { background: none; border: none; font-size: 18px; color: #1F4D3A; cursor: pointer; line-height: 1; }
+  .cp-coupon-err { font-size: 12.5px; color: #DC2626; margin: 0; }
+  .cp-coupon-applied { display: flex; align-items: center; justify-content: space-between; background: #E9F7FB; padding: 10px 14px; border-radius: 10px; font-size: 13px; color: #29B8D5; font-weight: 700; font-family: 'Manrope', sans-serif; }
+  .cp-coupon-remove { background: none; border: none; font-size: 18px; color: #29B8D5; cursor: pointer; line-height: 1; }
 
   .cp-checkout-btn {
     display: flex; align-items: center; justify-content: center; gap: 10px;
-    background: #C4622D; color: #fff;
+    background: #1E88A8; color: #fff;
     border-radius: 14px; padding: 15px; text-decoration: none;
     font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 800;
-    box-shadow: 0 6px 20px rgba(196,98,45,.3); transition: all .25s;
+    box-shadow: 0 6px 20px rgba(30,136,168,.3); transition: all .25s;
   }
-  .cp-checkout-btn:hover { background: #A94E20; transform: translateY(-1px); box-shadow: 0 10px 28px rgba(196,98,45,.4); }
+  .cp-checkout-btn:hover { background: #16708C; transform: translateY(-1px); box-shadow: 0 10px 28px rgba(30,136,168,.4); }
   .cp-trust-row { display: flex; justify-content: center; gap: 16px; }
-  .cp-trust-row span { font-size: 12px; color: #ABA394; font-family: 'Manrope', sans-serif; font-weight: 700; }
+  .cp-trust-row span { font-size: 12px; color: #9CA3AF; font-family: 'Manrope', sans-serif; font-weight: 700; }
 
   @media (max-width: 900px) {
     .cp-grid { grid-template-columns: 1fr; }

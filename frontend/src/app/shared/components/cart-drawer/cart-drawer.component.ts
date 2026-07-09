@@ -76,7 +76,7 @@ import { SettingsService } from '../../../core/services/settings.service';
   styles: [`
   .cd-overlay {
     position: fixed; inset: 0; z-index: 1200;
-    background: rgba(20,18,14,.4);
+    background: rgba(17,24,39,.4);
     -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
     opacity: 0; visibility: hidden;
     transition: opacity .4s, visibility .4s;
@@ -89,7 +89,7 @@ import { SettingsService } from '../../../core/services/settings.service';
     display: flex; flex-direction: column;
     transform: translateX(calc(100% + 40px));
     transition: transform .55s var(--ease);
-    box-shadow: -30px 0 80px rgba(20,18,14,.25);
+    box-shadow: -30px 0 80px rgba(17,24,39,.25);
     border-radius: 24px 0 0 24px;
   }
   .cd.open { transform: none; }
@@ -184,7 +184,7 @@ import { SettingsService } from '../../../core/services/settings.service';
   .cd-bar { height: 5px; border-radius: 99px; background: var(--kg-sand-2); margin-top: 9px; overflow: hidden; }
   .cd-bar span {
     display: block; height: 100%; border-radius: 99px;
-    background: linear-gradient(90deg, var(--kg-forest), var(--kg-terra));
+    background: var(--kg-forest);
     transition: width .5s var(--ease);
   }
   .cd-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 14.5px; color: var(--kg-muted); margin-bottom: 16px; }
@@ -196,7 +196,7 @@ import { SettingsService } from '../../../core/services/settings.service';
     font-family: var(--font-sans); font-size: 14.5px; font-weight: 800;
     transition: background .25s, transform .25s, box-shadow .25s; cursor: pointer;
   }
-  .cd-go:hover { background: var(--kg-forest-dk); transform: translateY(-2px); box-shadow: 0 14px 30px rgba(31,77,58,.3); }
+  .cd-go:hover { background: var(--kg-forest-dk); transform: translateY(-2px); box-shadow: 0 14px 30px rgba(41,184,213,.3); }
   .cd-view {
     display: block; text-align: center; margin-top: 13px;
     font-size: 13px; font-weight: 700; color: var(--kg-muted);

@@ -91,58 +91,58 @@ import { environment } from '../../../environments/environment';
   styles: [`
   .container { max-width: 1300px; margin: 0 auto; padding: 0 24px; width: 100%; }
   @media(min-width:1200px){.container{padding:0 48px}}
-  .skeleton { background: linear-gradient(90deg,#EFE8DA 25%,#F7F2E7 50%,#EFE8DA 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+  .skeleton { background: linear-gradient(90deg,#EEF2F6 25%,#F7FAFC 50%,#EEF2F6 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
   @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
   /* HERO */
   .bl-hero {
-    background: linear-gradient(135deg, #211D16 0%, #37322A 100%);
+    background: #1F2937;
     padding: 52px 0 56px;
   }
-  .bl-eyebrow { display: inline-block; font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #C4622D; margin-bottom: 12px; }
+  .bl-eyebrow { display: inline-block; font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #1E88A8; margin-bottom: 12px; }
   .bl-hero h1 { font-family: 'Fraunces', Georgia, serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 400; color: #fff; margin-bottom: 10px; }
   .bl-hero p { font-size: 16px; color: rgba(255,255,255,.65); max-width: 540px; margin: 0; line-height: 1.7; }
 
   /* BODY */
-  .bl-body { padding: 48px 0 64px; background: #FAF6EF; }
+  .bl-body { padding: 48px 0 64px; background: #FFFFFF; }
 
   /* TAGS */
-  .bl-tag { display: inline-block; font-family: 'Manrope', sans-serif; font-size: 10.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #C4622D; margin-bottom: 10px; }
+  .bl-tag { display: inline-block; font-family: 'Manrope', sans-serif; font-size: 10.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #1E88A8; margin-bottom: 10px; }
 
   /* FEATURED */
   .bl-featured {
     display: grid; grid-template-columns: 1fr 1fr; gap: 0;
-    background: #fff; border: 1.5px solid #E8E1D2;
+    background: #fff; border: 1.5px solid #E5E7EB;
     border-radius: 24px; overflow: hidden;
     text-decoration: none; margin-bottom: 40px;
     transition: all .3s; min-height: 360px;
   }
-  .bl-featured:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(28,25,19,.12); border-color: rgba(196,98,45,.25); }
-  .bl-feat-img { position: relative; overflow: hidden; background: #F1EADD; display: flex; align-items: center; justify-content: center; min-height: 360px; }
+  .bl-featured:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(17,24,39,.12); border-color: rgba(30,136,168,.25); }
+  .bl-feat-img { position: relative; overflow: hidden; background: #F7FAFC; display: flex; align-items: center; justify-content: center; min-height: 360px; }
   .bl-feat-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; transition: transform .5s; }
   .bl-featured:hover .bl-feat-img img { transform: scale(1.05); }
   .bl-feat-ph { font-size: 4rem; }
   .bl-feat-body { padding: 40px; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
-  .bl-feat-title { font-family: 'Fraunces', Georgia, serif; font-size: clamp(1.3rem, 2.5vw, 2rem); font-weight: 400; color: #211D16; line-height: 1.25; }
-  .bl-feat-exc { font-size: 15px; color: #7C7466; line-height: 1.7; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; margin: 0; }
-  .bl-meta { display: flex; gap: 14px; font-size: 12.5px; color: #ABA394; font-family: 'Manrope', sans-serif; }
-  .bl-read-link { font-size: 14px; font-weight: 800; color: #C4622D; font-family: 'Manrope', sans-serif; margin-top: 4px; }
+  .bl-feat-title { font-family: 'Fraunces', Georgia, serif; font-size: clamp(1.3rem, 2.5vw, 2rem); font-weight: 400; color: #111827; line-height: 1.25; }
+  .bl-feat-exc { font-size: 15px; color: #6B7280; line-height: 1.7; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; margin: 0; }
+  .bl-meta { display: flex; gap: 14px; font-size: 12.5px; color: #9CA3AF; font-family: 'Manrope', sans-serif; }
+  .bl-read-link { font-size: 14px; font-weight: 800; color: #1E88A8; font-family: 'Manrope', sans-serif; margin-top: 4px; }
 
   /* GRID */
   .bl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
   .bl-card {
-    background: #fff; border: 1.5px solid #E8E1D2; border-radius: 20px;
+    background: #fff; border: 1.5px solid #E5E7EB; border-radius: 20px;
     overflow: hidden; text-decoration: none; display: flex; flex-direction: column;
     transition: all .3s;
   }
-  .bl-card:hover { transform: translateY(-5px); box-shadow: 0 14px 40px rgba(28,25,19,.1); border-color: rgba(196,98,45,.25); }
-  .bl-card-img { height: 220px; overflow: hidden; background: #F1EADD; display: flex; align-items: center; justify-content: center; }
+  .bl-card:hover { transform: translateY(-5px); box-shadow: 0 14px 40px rgba(17,24,39,.1); border-color: rgba(30,136,168,.25); }
+  .bl-card-img { height: 220px; overflow: hidden; background: #F7FAFC; display: flex; align-items: center; justify-content: center; }
   .bl-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
   .bl-card:hover .bl-card-img img { transform: scale(1.05); }
   .bl-card-ph { font-size: 3rem; }
   .bl-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
-  .bl-card-title { font-family: 'Fraunces', Georgia, serif; font-size: 1.15rem; font-weight: 400; color: #211D16; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-  .bl-card-exc { font-size: 13.5px; color: #7C7466; line-height: 1.6; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; flex: 1; }
+  .bl-card-title { font-family: 'Fraunces', Georgia, serif; font-size: 1.15rem; font-weight: 400; color: #111827; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .bl-card-exc { font-size: 13.5px; color: #6B7280; line-height: 1.6; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; flex: 1; }
 
   @media (max-width: 900px) {
     .bl-featured { grid-template-columns: 1fr; }

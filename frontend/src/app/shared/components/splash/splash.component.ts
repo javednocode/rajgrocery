@@ -18,7 +18,7 @@ import { SettingsService } from '../../../core/services/settings.service';
     position: fixed;
     inset: 0;
     z-index: 8000;
-    background: var(--kg-cream, #FAF6EF);
+    background: var(--kg-cream, #FFFFFF);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -33,7 +33,7 @@ import { SettingsService } from '../../../core/services/settings.service';
     font-family: var(--font-serif, Georgia, serif);
     font-size: 36px;
     font-weight: 400;
-    color: var(--kg-ink, #211D16);
+    color: var(--kg-ink, #111827);
     letter-spacing: -0.02em;
     animation: spUp .7s cubic-bezier(0.22,1,0.36,1) .05s both;
   }
@@ -49,14 +49,14 @@ import { SettingsService } from '../../../core/services/settings.service';
   .sp-bar {
     width: 56px; height: 2px;
     border-radius: 99px;
-    background: var(--kg-line, #E8E1D2);
+    background: var(--kg-line, #E5E7EB);
     overflow: hidden;
     animation: spUp .5s ease .24s both;
   }
   .sp-bar-fill {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, #1F4D3A, #C4622D);
+    background: #29B8D5;
     border-radius: 99px;
     animation: spProg .85s ease .15s forwards;
   }

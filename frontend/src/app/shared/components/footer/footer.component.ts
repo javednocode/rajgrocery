@@ -105,7 +105,7 @@ import { ScrollProgressDirective } from '../../directives/motion.directives';
               }
               @if (settings.get('social_youtube')) {
                 <a [href]="settings.get('social_youtube')" target="_blank" rel="noopener" aria-label="YouTube">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#14120E"/></svg>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#1F2937"/></svg>
                 </a>
               }
               @if (settings.get('social_whatsapp')) {
@@ -178,11 +178,8 @@ import { ScrollProgressDirective } from '../../directives/motion.directives';
   styles: [`
   .ft {
     position: relative; overflow: hidden;
-    background:
-      radial-gradient(900px 420px at 88% 0%, rgba(196,98,45,.1), transparent 60%),
-      radial-gradient(760px 480px at 4% 110%, rgba(31,77,58,.35), transparent 65%),
-      var(--kg-dark);
-    color: rgba(250,246,239,.62);
+    background: var(--kg-dark);
+    color: rgba(255,255,255,.62);
   }
   .ft-wrap { max-width: 1360px; margin: 0 auto; padding: 0 24px; width: 100%; position: relative; z-index: 1; }
   @media (min-width: 768px)  { .ft-wrap { padding: 0 40px; } }
@@ -195,7 +192,7 @@ import { ScrollProgressDirective } from '../../directives/motion.directives';
   }
 
   /* ── Newsletter ── */
-  .ft-nl { border-bottom: 1px solid rgba(250,246,239,.09); padding: 68px 0; }
+  .ft-nl { border-bottom: 1px solid rgba(255,255,255,.09); padding: 68px 0; }
   .ft-nl-in { display: flex; align-items: center; justify-content: space-between; gap: 48px; flex-wrap: wrap; }
   .ft-nl-copy { flex: 1; min-width: 280px; }
   .ft-nl-copy h3 {
@@ -203,12 +200,12 @@ import { ScrollProgressDirective } from '../../directives/motion.directives';
     font-weight: 380; color: var(--kg-cream); margin-bottom: 10px;
     line-height: 1.15; letter-spacing: -0.015em;
   }
-  .ft-nl-copy p { font-size: 14.5px; color: rgba(250,246,239,.55); margin: 0; max-width: 440px; }
+  .ft-nl-copy p { font-size: 14.5px; color: rgba(255,255,255,.55); margin: 0; max-width: 440px; }
   .ft-nl-form {
     display: flex; flex-shrink: 0; min-width: 400px;
     border-radius: 999px; overflow: hidden;
-    background: rgba(255,253,248,.07);
-    border: 1px solid rgba(255,253,248,.16);
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.16);
     -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
     padding: 5px;
   }
@@ -217,10 +214,10 @@ import { ScrollProgressDirective } from '../../directives/motion.directives';
     padding: 12px 20px; font-size: 14.5px; color: var(--kg-cream); min-width: 0;
     font-family: var(--font-sans);
   }
-  .ft-nl-form input::placeholder { color: rgba(250,246,239,.4); }
+  .ft-nl-form input::placeholder { color: rgba(255,255,255,.4); }
   .ft-nl-form button {
     display: inline-flex; align-items: center; gap: 8px;
-    background: var(--kg-terra); color: #FFFDF8;
+    background: var(--kg-terra); color: #FFFFFF;
     padding: 12px 26px; border-radius: 999px;
     font-family: var(--font-sans); font-size: 13.5px; font-weight: 800;
     cursor: pointer; transition: background .25s, transform .25s; white-space: nowrap;
@@ -250,40 +247,40 @@ import { ScrollProgressDirective } from '../../directives/motion.directives';
     font-size: 10px; font-weight: 800; letter-spacing: .26em; text-transform: uppercase;
     color: var(--kg-terra-lt); margin-bottom: 18px;
   }
-  .ft-about { font-size: 14px; color: rgba(250,246,239,.5); line-height: 1.8; margin-bottom: 22px; max-width: 380px; }
+  .ft-about { font-size: 14px; color: rgba(255,255,255,.5); line-height: 1.8; margin-bottom: 22px; max-width: 380px; }
 
   .ft-worlds { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
   .ft-world {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 8px 16px; border-radius: 999px;
-    background: rgba(255,253,248,.05);
-    border: 1px solid rgba(255,253,248,.12);
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.12);
     font-family: var(--font-sans); font-size: 12px; font-weight: 700;
-    color: rgba(250,246,239,.7); transition: all .3s;
+    color: rgba(255,255,255,.7); transition: all .3s;
   }
-  .ft-world.on { border-color: rgba(217,141,95,.55); color: var(--kg-cream); background: rgba(196,98,45,.14); }
+  .ft-world.on { border-color: rgba(111,211,231,.55); color: var(--kg-cream); background: rgba(30,136,168,.14); }
   .ft-world em { font-style: normal; font-size: 14px; }
   .ft-world { cursor: pointer; }
-  .ft-world:hover { border-color: rgba(217,141,95,.4); color: var(--kg-cream); }
+  .ft-world:hover { border-color: rgba(111,211,231,.4); color: var(--kg-cream); }
   .ft-delivery {
     display: flex; align-items: center; gap: 9px;
-    font-size: 13px; color: rgba(250,246,239,.55);
+    font-size: 13px; color: rgba(255,255,255,.55);
     margin: -8px 0 22px;
   }
   .ft-delivery svg { opacity: .55; flex-shrink: 0; }
 
   .ft-contact { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
-  .ft-contact span { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: rgba(250,246,239,.55); }
+  .ft-contact span { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: rgba(255,255,255,.55); }
   .ft-contact svg { opacity: .55; flex-shrink: 0; }
 
   .ft-socials { display: flex; gap: 9px; }
   .ft-socials a {
     width: 38px; height: 38px; border-radius: 12px;
-    background: rgba(255,253,248,.06); border: 1px solid rgba(255,253,248,.1);
-    display: grid; place-items: center; color: rgba(250,246,239,.55);
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+    display: grid; place-items: center; color: rgba(255,255,255,.55);
     transition: all .28s var(--ease);
   }
-  .ft-socials a:hover { background: var(--kg-terra); border-color: var(--kg-terra); color: #FFFDF8; transform: translateY(-4px); box-shadow: 0 10px 22px rgba(196,98,45,.35); }
+  .ft-socials a:hover { background: var(--kg-terra); border-color: var(--kg-terra); color: #FFFFFF; transform: translateY(-4px); box-shadow: 0 10px 22px rgba(30,136,168,.35); }
 
   .ft-col h5 {
     font-family: var(--font-sans); color: var(--kg-cream);
@@ -291,7 +288,7 @@ import { ScrollProgressDirective } from '../../directives/motion.directives';
     margin-bottom: 20px;
   }
   .ft-col a {
-    display: block; color: rgba(250,246,239,.52); font-size: 14px;
+    display: block; color: rgba(255,255,255,.52); font-size: 14px;
     padding: 6px 0; transition: color .22s, transform .22s;
   }
   .ft-col a:hover { color: var(--kg-terra-lt); transform: translateX(4px); }
@@ -299,24 +296,24 @@ import { ScrollProgressDirective } from '../../directives/motion.directives';
   /* Payment */
   .ft-pay {
     display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
-    padding: 22px 0; border-top: 1px solid rgba(250,246,239,.08);
+    padding: 22px 0; border-top: 1px solid rgba(255,255,255,.08);
   }
-  .ft-pay-note { display: flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 700; color: rgba(250,246,239,.42); letter-spacing: .04em; }
+  .ft-pay-note { display: flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 700; color: rgba(255,255,255,.42); letter-spacing: .04em; }
   .ft-pay-icons { display: flex; gap: 9px; flex-wrap: wrap; }
   .ft-pay-icons span {
     font-size: 11.5px; font-weight: 700; letter-spacing: .04em;
-    color: rgba(250,246,239,.5);
-    background: rgba(255,253,248,.05); border: 1px solid rgba(255,253,248,.1);
+    color: rgba(255,255,255,.5);
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
     padding: 6px 14px; border-radius: 8px;
   }
 
   /* Bottom */
-  .ft-bottom { border-top: 1px solid rgba(250,246,239,.08); padding: 18px 0; position: relative; z-index: 1; }
-  .ft-bottom-in { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: rgba(250,246,239,.4); }
+  .ft-bottom { border-top: 1px solid rgba(255,255,255,.08); padding: 18px 0; position: relative; z-index: 1; }
+  .ft-bottom-in { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: rgba(255,255,255,.4); }
   .ft-bottom-links { display: flex; gap: 20px; }
-  .ft-bottom-links a { color: rgba(250,246,239,.48); font-size: 12.5px; transition: color .2s; }
+  .ft-bottom-links a { color: rgba(255,255,255,.48); font-size: 12.5px; transition: color .2s; }
   .ft-bottom-links a:hover { color: var(--kg-terra-lt); }
-  .ft-credit a { color: rgba(250,246,239,.75); font-weight: 700; transition: color .2s; }
+  .ft-credit a { color: rgba(255,255,255,.75); font-weight: 700; transition: color .2s; }
   .ft-credit a:hover { color: var(--kg-terra-lt); }
 
   /* Watermark */
@@ -324,7 +321,7 @@ import { ScrollProgressDirective } from '../../directives/motion.directives';
     font-family: var(--font-serif);
     font-size: clamp(90px, 17vw, 260px); font-weight: 500;
     letter-spacing: -0.03em; line-height: .78;
-    color: rgba(250,246,239,.028);
+    color: rgba(255,255,255,.028);
     text-align: center; white-space: nowrap;
     user-select: none; pointer-events: none;
     margin-top: -10px;
