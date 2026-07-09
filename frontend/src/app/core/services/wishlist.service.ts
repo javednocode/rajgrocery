@@ -2,7 +2,7 @@ import { Injectable, signal, computed, effect } from '@angular/core';
 
 export interface WishItem { id: number; name: string; slug: string; price: number; salePrice: number | null; image: string; }
 
-const KEY = 'thedesi_wishlist';
+const KEY = 'store_wishlist';
 
 @Injectable({ providedIn: 'root' })
 export class WishlistService {

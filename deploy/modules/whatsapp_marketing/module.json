@@ -1,0 +1,11 @@
+{
+  "key": "whatsapp_marketing",
+  "name": "whatsapp marketing",
+  "version": "1.0",
+  "description": "Plug-in module — enable in Admin Panel → Modules",
+  "requires": [],
+  "settings_prefix": "whatsapp_marketing_",
+  "api_prefix": "/api/modules/whatsapp_marketing",
+  "db_schema": "schema.sql",
+  "status": "planned"
+}

@@ -1,0 +1,82 @@
+{
+    "timestamp": "2026-06-27T19:26:22+00:00",
+    "passed": 15,
+    "failed": 0,
+    "results": [
+        [
+            "PASS",
+            "cacheSet() + cacheGet() round-trip",
+            "string value stored and retrieved"
+        ],
+        [
+            "PASS",
+            "Integer cached correctly",
+            ""
+        ],
+        [
+            "PASS",
+            "Nested array cached correctly",
+            ""
+        ],
+        [
+            "PASS",
+            "Cache miss returns null (correct)",
+            ""
+        ],
+        [
+            "PASS",
+            "Cache entry expired after TTL (1s TTL, checked after 2s)",
+            ""
+        ],
+        [
+            "PASS",
+            "cacheClear() removes single key correctly",
+            ""
+        ],
+        [
+            "PASS",
+            "Non-expired entry survives purge",
+            "purged=2 entries"
+        ],
+        [
+            "PASS",
+            "Site 1 and Site 2 have different cache prefixes",
+            ""
+        ],
+        [
+            "PASS",
+            "Cache key isolation: Keys are different",
+            "key1\u2260key2 (5c0d54e7cdc40ab651626e4f4b372cd8 \u2260 78535287d116767bcbf0b055b942428c)"
+        ],
+        [
+            "PASS",
+            "Same site_id, different domains \u2192 different prefixes",
+            ""
+        ],
+        [
+            "PASS",
+            "getCacheStats() returns data",
+            "files=6"
+        ],
+        [
+            "PASS",
+            "Stats include filesystem.file_count",
+            "count=6"
+        ],
+        [
+            "PASS",
+            "Stats include request.hits",
+            ""
+        ],
+        [
+            "PASS",
+            "Stats include cache prefix (site scoped)",
+            ""
+        ],
+        [
+            "PASS",
+            "Rapid concurrent writes do not corrupt cache",
+            "final=value_9"
+        ]
+    ]
+}

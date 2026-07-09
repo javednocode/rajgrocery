@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-beasties-container>
+<head>
+  <meta charset="utf-8">
+  <title>Indian Market Grocery Store | Authentic Indian & Asian Groceries Delivered Across Finland</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Shop authentic Indian and Asian groceries online in Finland. Fast delivery, premium brands, fresh inventory, and secure checkout.">
+  <meta name="keywords" content="Indian grocery Finland, Asian grocery Finland, Indian spices, basmati rice, atta, lentils, snacks, frozen foods">
+  <meta name="author" content="Indian Market Grocery Store">
+  <meta name="robots" content="index, follow">
+
+  <!-- PWA / App branding — will be overridden by SettingsService at runtime -->
+  <meta name="theme-color" content="#E8720C">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Indian Market Grocery Store">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/logo.svg">
+
+  <!-- Open Graph — overridden dynamically by SettingsService -->
+  <meta property="og:title" content="Indian Market Grocery Store">
+  <meta property="og:description" content="Authentic Indian and Asian groceries delivered across Finland.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content>
+  <meta property="og:image" content="/logo.svg">
+  <meta property="og:locale" content="en_FI">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Indian Market Grocery Store">
+  <meta name="twitter:description" content="Authentic Indian and Asian groceries delivered across Finland.">
+
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="canonical" href>
+
+  <!-- DNS prefetch & preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+
+  <!-- Preload critical assets -->
+  <link rel="preload" href="/logo.svg" as="image" fetchpriority="high">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&amp;family=Poppins:wght@600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap"></noscript>
+
+  <!-- Inline splash CSS — renders BEFORE any JS loads -->
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',system-ui,-apple-system,sans-serif;overflow-x:hidden}
+
+    /* Inline splash — shown instantly before Angular boots */
+    #app-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      opacity: 1;
+      transition: opacity 0.45s ease;
+    }
+    #app-splash.splash-out { opacity: 0; pointer-events: none; }
+
+    #app-splash-logo {
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      border-radius: 20px;
+      animation: splash_pop 0.55s cubic-bezier(0.34,1.56,0.64,1) both;
+      box-shadow: 0 8px 32px rgba(232,114,12,0.25);
+    }
+    #app-splash-name {
+      font-family: 'Quicksand','Poppins',system-ui,sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #1A2332;
+      letter-spacing: -0.02em;
+      animation: splash_up 0.5s cubic-bezier(0.22,1,0.36,1) 0.12s both;
+    }
+    #app-splash-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #E8720C;
+      display: inline-block;
+      margin-left: 3px;
+      vertical-align: middle;
+    }
+    #app-splash-bar {
+      width: 48px;
+      height: 3px;
+      border-radius: 99px;
+      background: #ECECEC;
+      overflow: hidden;
+      animation: splash_up 0.5s ease 0.2s both;
+    }
+    #app-splash-bar::after {
+      content: '';
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #E8720C, #2D6A4F);
+      border-radius: 99px;
+      animation: splash_prog 0.85s ease 0.15s forwards;
+    }
+    @keyframes splash_pop  { from { transform: scale(0.65); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes splash_up   { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    @keyframes splash_prog { from { width: 0%; } to { width: 100%; } }
+
+    /* Reserve space so content doesn't shift when Angular renders */
+    app-root { display: block; min-height: 100vh; }
+  </style>
+<style>@font-face{font-family:DM Sans;font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu6-K6h9Q.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:DM Sans;font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:DM Sans;font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu6-K6h9Q.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:DM Sans;font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:DM Sans;font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu6-K6h9Q.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:DM Sans;font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:DM Sans;font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu6-K6h9Q.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:DM Sans;font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/dmsans/v17/rP2Yp2ywxg089UriI5-g4vlH9VoD8Cmcqbu0-K4.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format("woff2");unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format("woff2");unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:400;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format("woff2");unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format("woff2");unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:500;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format("woff2");unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format("woff2");unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:600;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format("woff2");unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format("woff2");unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:700;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:800;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format("woff2");unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:800;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format("woff2");unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:800;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}@font-face{font-family:Plus Jakarta Sans;font-style:normal;font-weight:800;font-display:swap;src:url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko20yw.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}:root{--saffron:#E8720C;--saffron-dk:#C55E05;--saffron-lt:#F5956A;--saffron-bg:#FFF3E8;--saffron-bg2:#FFE5C8;--forest:#2D6A4F;--forest-dk:#1E4D38;--forest-lt:#52B788;--forest-bg:#EEF6EF;--forest-bg2:#D8EDDF;--gold:#F0A500;--gold-bg:#FFF8E1;--chili:#C0392B;--chili-bg:#FDECEA;--slate:#1A2332;--slate-md:#2D3E50;--slate-muted:#718096;--slate-light:#A0ADB8;--bg:#FAFAF9;--bg-white:#FFFFFF;--bg-warm:#FDF8F3;--bg-grey:#F5F6F7;--bg-dark:#1A2332;--border:#E8EBE6;--border-lt:#F0F2EF;--border-warm:#EDE0D4;--shadow-xs:0 1px 4px rgba(26,35,50,.06);--shadow-sm:0 2px 12px rgba(26,35,50,.08);--shadow:0 6px 24px rgba(26,35,50,.1);--shadow-lg:0 16px 48px rgba(26,35,50,.14);--shadow-saf:0 8px 28px rgba(232,114,12,.3);--shadow-grn:0 8px 28px rgba(45,106,79,.28);--r-xs:4px;--r-sm:8px;--r:12px;--r-lg:16px;--r-xl:24px;--r-2xl:32px;--r-full:9999px;--ease:cubic-bezier(.22,1,.36,1);--ease2:cubic-bezier(.34,1.56,.64,1);--t:all .22s cubic-bezier(.22,1,.36,1);--t-md:all .35s cubic-bezier(.22,1,.36,1);--max-w:1300px;--header-height:140px;--header-h:140px;--green:var(--forest);--green-dk:var(--forest-dk);--green-lt:var(--forest-lt);--green-bg:var(--forest-bg);--green-bg2:var(--forest-bg2);--orange:var(--saffron);--orange-bg:var(--saffron-bg);--red:var(--chili);--red-bg:var(--chili-bg);--text:var(--slate);--text-md:var(--slate-md);--text-muted:var(--slate-muted);--text-light:var(--slate-light);--bg-light:var(--forest-bg);--border-light:var(--border-lt);--shadow-green:var(--shadow-grn);--primary:var(--saffron);--primary-dark:var(--saffron-dk);--primary-bg:var(--saffron-bg);--td-primary:var(--slate);--td-accent:var(--saffron);--td-success:var(--forest);--td-line:var(--border);--td-muted:var(--slate-muted);--td-secondary:var(--bg-grey);--td-text:var(--slate);--td-bg:#fff;--td-radius:var(--r-lg);--td-radius-sm:var(--r);--td-ease:var(--ease);--td-shadow:var(--shadow);--td-shadow-lg:var(--shadow-lg);--td-header-h:var(--header-height)}*,*:before,*:after{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth;scroll-padding-top:var(--header-height);-webkit-text-size-adjust:100%;overflow-x:hidden}body{font-family:Plus Jakarta Sans,DM Sans,system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.65;color:var(--slate);background:var(--bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-x:hidden;padding-top:0}img{max-width:100%;height:auto;display:block}@media(max-width:900px){:root{--header-height:140px;--header-h:140px}}</style><link rel="stylesheet" href="styles-VYTTEB3E.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles-VYTTEB3E.css"></noscript></head>
+<body>
+
+  <!-- Inline splash screen — visible IMMEDIATELY, before any JS executes -->
+  <div id="app-splash" role="status" aria-label="Loading store">
+    <img id="app-splash-logo" src="/logo.svg" alt="Indian Market Grocery Store logo">
+    <div id="app-splash-name">Indian Market Grocery Store<span id="app-splash-dot"></span></div>
+    <div id="app-splash-bar"></div>
+  </div>
+
+  <app-root></app-root>
+
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').catch(function() {});
+      });
+    }
+
+    // Expose function for Angular to call when it's ready
+    window.__appHideSplash = function() {
+      var el = document.getElementById('app-splash');
+      if (!el) return;
+      el.classList.add('splash-out');
+      setTimeout(function() {
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+      }, 500);
+    };
+
+    // Compatibility alias for any existing code referencing the old function name
+    window.__tdHideSplash = window.__appHideSplash;
+
+    // Hard failsafe — remove after 4 seconds no matter what
+    setTimeout(function() {
+      if (window.__appHideSplash) window.__appHideSplash();
+    }, 4000);
+  </script>
+<link rel="modulepreload" href="chunk-3XTIBQ35.js"><link rel="modulepreload" href="chunk-EXCY35KI.js"><link rel="modulepreload" href="chunk-3PSJEWY3.js"><link rel="modulepreload" href="chunk-UZ6IBXSD.js"><script src="polyfills-DOYHMSTV.js" type="module"></script><script src="main-MVPCWYGA.js" type="module"></script></body>
+</html>

@@ -4,6 +4,7 @@
 # Node
 frontend/node_modules/
 frontend/.angular/
+frontend/dist/
 
 # Logs
 *.log
@@ -21,3 +22,32 @@ __MACOSX/
 
 # Local PHP server
 router.php.bak
+
+# Build archives — never commit zip bundles
+*.zip
+*.tar.gz
+*.tar.bz2
+
+# Uploaded media files — use remote storage or local volume
+backend/uploads/banners/*
+backend/uploads/blogs/*
+backend/uploads/branding/*
+backend/uploads/categories/*
+backend/uploads/general/*
+backend/uploads/invoices/*
+backend/uploads/products/*
+backend/uploads/variations/*
+!backend/uploads/**/.gitkeep
+
+# Installer lock — remove after install completes
+backend/install/install.lock
+
+# Cache files
+/tmp/ecommerce_cache/
+
+# Client-specific artifacts (removed during white-label conversion)
+database/*_database.sql
+database/thedesi_*.sql
+*.zip
+backend/database/hostinger_*.sql
+backend/database/halal_*.sql

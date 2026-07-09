@@ -1,0 +1,16 @@
+{
+  "name": "Indian Market Grocery Store",
+  "short_name": "Indian Market",
+  "description": "Authentic Indian and Asian groceries delivered across Finland.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fffaf2",
+  "theme_color": "#F28C00",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "48x48", "type": "image/x-icon" },
+    { "src": "/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "categories": ["shopping", "food"],
+  "lang": "en-FI"
+}

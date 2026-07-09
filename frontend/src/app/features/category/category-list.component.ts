@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, effect, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { SeoService } from '../../core/services/seo.service';
 import { ScrollAnimateDirective } from '../../shared/directives/scroll-animate.directive';
+import { CountryService } from '../../core/services/country.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -10,31 +11,60 @@ import { environment } from '../../../environments/environment';
   standalone: true,
   imports: [RouterLink, ScrollAnimateDirective],
   template: `
+  <!-- Page Hero -->
   <section class="cl-hero">
-    <div class="td-container">
-      <span class="td-eyebrow">The Collection</span>
-      <h1>Every aisle.<br/>One basket.</h1>
-      <p class="td-sub">Browse our full range of premium South Asian groceries — curated, authentic, delivered UK-wide.</p>
+    <div class="container">
+      <nav class="cl-crumbs" aria-label="Breadcrumb">
+        <a routerLink="/">Home</a>
+        <i>/</i>
+        <span>All Categories</span>
+      </nav>
+      <h1 class="cl-hero-title">Shop by Category</h1>
+      <p class="cl-hero-sub">{{ country.current().flag }} Every aisle of the {{ country.current().name }} marketplace</p>
     </div>
+    <div class="cl-hero-wave"></div>
   </section>
-  <section class="cl-body">
-    <div class="td-container">
+
+  <!-- Categories Grid -->
+  <section class="section cl-body">
+    <div class="container">
+
       @if (loading()) {
-        <div class="cl-grid">@for (s of [1,2,3,4,5,6]; track s) { <div class="td-skel" style="aspect-ratio:4/3"></div> }</div>
+        <div class="cl-grid">
+          @for (s of [1,2,3,4,5,6,7,8,9,10,11,12]; track s) {
+            <div class="cl-card cl-skel skeleton"></div>
+          }
+        </div>
+      } @else if (categories().length === 0) {
+        <div class="empty-state">
+          
+          <h3>No categories yet</h3>
+          <p>Categories will appear here once added from the admin panel.</p>
+        </div>
       } @else {
+        <!-- Filter chips -->
+        <div class="cl-filter-row">
+          <span class="cl-total">{{ categories().length }} categories</span>
+        </div>
         <div class="cl-grid">
           @for (c of categories(); track c.id; let i = $index) {
-            <a class="cl-card" [routerLink]="['/category', c.slug]" appScrollAnimate [animationDelay]="(i % 6 * 0.05) + 's'">
+            <a class="cl-card" [class.cl-card-noimg]="!c.image" [routerLink]="['/category', c.slug]"
+               appScrollAnimate animationType="fade-up" [animationDelay]="((i % 4) * 0.07) + 's'">
               @if (c.image) {
-                <img [src]="media(c.image)" [alt]="c.name" loading="lazy" (error)="onCatImgErr($event, c.name)" />
-              } @else {
-                <div class="cl-emoji-bg"><span>{{ catIcon(c.name) }}</span></div>
+                <img class="cl-img" [src]="media(c.image)" [alt]="c.name" loading="lazy" (error)="hideImg($event)" />
               }
-              <div class="cl-veil"></div>
-              <div class="cl-label">
-                <div><h3>{{ c.name }}</h3>@if (c.description) { <p>{{ c.description }}</p> }</div>
-                <span class="cl-arrow"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-              </div>
+              <span class="cl-veil" aria-hidden="true"></span>
+              <span class="cl-info">
+                <strong class="cl-name">{{ c.name }}</strong>
+                @if (c.product_count > 0) {
+                  <em class="cl-count">{{ c.product_count }} {{ c.product_count === 1 ? 'product' : 'products' }}</em>
+                } @else if (c.description) {
+                  <em class="cl-count">{{ c.description }}</em>
+                }
+              </span>
+              <span class="cl-arrow" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
             </a>
           }
         </div>
@@ -43,28 +73,103 @@ import { environment } from '../../../environments/environment';
   </section>
   `,
   styles: [`
-  .cl-hero{padding:60px 0 44px;background:#F4FCF7;border-bottom:1px solid #ECECEC}
-  .td-container{max-width:1280px;margin:0 auto;padding:0 24px;width:100%}
-  .td-eyebrow{display:inline-block;background:#fff;border:1px solid rgba(59,183,126,.3);color:#3BB77E;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 18px;border-radius:999px;margin-bottom:12px}
-  .cl-hero h1{font-size:clamp(1.8rem,3.8vw,3rem);font-weight:800;color:#253D4E;margin:6px 0 14px;line-height:1.2}
-  .td-sub{font-size:15px;color:#7E8D97;max-width:580px;line-height:1.7;margin:0}
-  .cl-body{padding:48px 0 32px}
-  .cl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-  .cl-card{position:relative;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:#F4FCF7;transition:box-shadow .3s,transform .3s}
-  .cl-card:hover{box-shadow:0 12px 36px rgba(0,0,0,.12);transform:translateY(-3px)}
-  .cl-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s ease}
-  .cl-card:hover img{transform:scale(1.05)}
-  .cl-veil{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,10,12,.62),transparent 55%)}
-  .cl-label{position:absolute;left:20px;right:20px;bottom:18px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;color:#fff}
-  .cl-label h3{color:#fff;font-size:18px;font-weight:700}
-  .cl-label p{color:rgba(255,255,255,.75);font-size:12px;margin:4px 0 0;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
-  .cl-arrow{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.2);backdrop-filter:blur(8px);display:grid;place-items:center;flex-shrink:0;transition:background .22s,transform .25s ease}
-  .cl-card:hover .cl-arrow{background:#3BB77E;transform:translateX(3px)}
-  .td-skel{background:linear-gradient(90deg,#EEF3F0 25%,#F8FAF9 50%,#EEF3F0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:12px}
-  .cl-emoji-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#E8F9F0,#C7EFDB);font-size:72px;line-height:1}
-  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-  @media (max-width:1000px){.cl-grid{grid-template-columns:1fr 1fr}}
-  @media (max-width:620px){.cl-grid{grid-template-columns:1fr 1fr;gap:12px}.cl-hero{padding:40px 0 32px}}
+  .cl-hero {
+    background: linear-gradient(135deg, #211D16 0%, #37322A 100%);
+    padding: 52px 0 70px; position: relative; overflow: hidden;
+  }
+  .cl-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(196,98,45,.15) 0%, transparent 70%);
+  }
+  .container { max-width: 1300px; margin: 0 auto; padding: 0 24px; width: 100%; }
+  @media(min-width:1200px){.container{padding:0 48px}}
+  .cl-crumbs { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,.45); margin-bottom: 16px; position: relative; }
+  .cl-crumbs a { color: rgba(255,255,255,.65); transition: color .2s; }
+  .cl-crumbs a:hover { color: #C4622D; }
+  .cl-crumbs i { font-style: normal; opacity: .4; }
+  .cl-hero-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 400;
+    color: #fff; margin-bottom: 10px; position: relative;
+  }
+  .cl-hero-sub { font-size: 16px; color: rgba(255,255,255,.6); margin: 0; position: relative; }
+  .cl-hero-wave {
+    position: absolute; bottom: -2px; left: 0; right: 0; height: 40px;
+    background: linear-gradient(180deg, transparent 0%, var(--bg,#FAF6EF) 100%);
+  }
+
+  .cl-body { background: var(--bg,#FAF6EF); }
+  .cl-filter-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .cl-total { font-size: 14px; color: #7C7466; font-family: 'Manrope', sans-serif; }
+
+  .cl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+  }
+
+  .cl-card {
+    position: relative; display: block;
+    aspect-ratio: 1 / 1.18;
+    border-radius: 20px; overflow: hidden;
+    background: var(--kg-sand, #F1EADD);
+    box-shadow: 0 1px 3px rgba(33,29,22,.05);
+    text-decoration: none;
+    transition: transform .5s cubic-bezier(0.22,1,0.36,1), box-shadow .5s cubic-bezier(0.22,1,0.36,1);
+  }
+  .cl-card:hover { transform: translateY(-6px); box-shadow: 0 22px 48px rgba(33,29,22,.14); }
+  .cl-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .9s cubic-bezier(0.22,1,0.36,1);
+  }
+  .cl-card:hover .cl-img { transform: scale(1.06); }
+  .cl-veil {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(20,18,14,.62) 0%, rgba(20,18,14,.14) 38%, transparent 60%);
+  }
+  .cl-info {
+    position: absolute; left: 20px; right: 58px; bottom: 18px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .cl-name {
+    font-family: 'Fraunces', Georgia, serif; font-size: 19px; font-weight: 450;
+    color: #FFFDF8; letter-spacing: -0.01em; line-height: 1.22;
+  }
+  .cl-count {
+    font-style: normal; font-family: 'Manrope', sans-serif;
+    font-size: 12px; font-weight: 600; color: rgba(255,253,248,.75);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cl-arrow {
+    position: absolute; right: 16px; bottom: 16px;
+    width: 36px; height: 36px; border-radius: 999px;
+    display: grid; place-items: center;
+    background: #FAF6EF; color: #211D16;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .35s, transform .35s, background .25s, color .25s;
+  }
+  .cl-card:hover .cl-arrow { opacity: 1; transform: translateY(0); }
+  .cl-arrow:hover { background: #1F4D3A; color: #FAF6EF; }
+  .cl-card-noimg { border: 1px solid #E8E1D2; background: #F5EFE4; }
+  .cl-card-noimg .cl-veil { display: none; }
+  .cl-card-noimg .cl-name { color: #211D16; }
+  .cl-card-noimg .cl-count { color: #7C7466; }
+  .cl-card-noimg .cl-arrow { background: #E7DECB; }
+  .cl-skel { aspect-ratio: 1 / 1.18; border-radius: 20px; }
+  @media (max-width: 640px) {
+    .cl-grid { grid-template-columns: repeat(2,1fr); gap: 11px; }
+    .cl-card { border-radius: 16px; aspect-ratio: 1 / 1.1; }
+    .cl-info { left: 14px; right: 46px; bottom: 13px; }
+    .cl-name { font-size: 15.5px; }
+    .cl-count { font-size: 11px; }
+    .cl-arrow { width: 30px; height: 30px; right: 11px; bottom: 11px; opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 640px) {
+    .cl-hero { padding: 26px 0 40px; }
+  }
   `]
 })
 export class CategoryListComponent implements OnInit {
@@ -72,61 +177,27 @@ export class CategoryListComponent implements OnInit {
   loading = signal(true);
   mediaUrl = (environment as any).mediaUrl || '';
 
-  constructor(private api: ApiService, private seo: SeoService) {}
+  constructor(private api: ApiService, private seo: SeoService, public country: CountryService) {
+    effect(() => {
+      const code = this.country.code();
+      this.country.ready();
+      untracked(() => this.fetch(code));
+    });
+  }
 
   ngOnInit() {
-    this.seo.setMeta({ title: 'Shop All Categories', description: 'Browse premium South Asian groceries by category — spices, snacks, frozen, rice, lentils and more. Delivered across the UK.' });
-    const anyApi = this.api as any;
-    const src = anyApi.getCategories ? anyApi.getCategories() : anyApi.getFeaturedCategories();
-    src.subscribe({
-      next: (r: any) => { if (r.success) this.categories.set((r.data || []).filter((c: any) => c.is_active == 1)); this.loading.set(false); },
+    this.seo.setMeta({ title: 'Shop All Categories', description: 'Browse every category across our international marketplace.' });
+  }
+
+  fetch(code: string) {
+    this.loading.set(true);
+    this.api.getCategories(code).subscribe({
+      next: (r: any) => { if (r.success) this.categories.set(r.data || []); this.loading.set(false); },
       error: () => this.loading.set(false)
     });
   }
-  media(p: string) { return !p ? '' : (p.startsWith('http') ? p : this.mediaUrl + p); }
 
-  catIcon(name: string): string {
-    const n = (name || '').toLowerCase();
-    if (n.includes('meat') || n.includes('chicken') || n.includes('poultry') || n.includes('lamb') || n.includes('mutton')) return '🍗';
-    if (n.includes('spice') || n.includes('masala') || n.includes('chilli') || n.includes('pepper')) return '🌶️';
-    if (n.includes('rice') || n.includes('basmati') || n.includes('grain')) return '🍚';
-    if (n.includes('lentil') || n.includes('dal') || n.includes('dhal') || n.includes('daal')) return '🫘';
-    if (n.includes('pulse') || n.includes('pea') || n.includes('chick')) return '🫛';
-    if (n.includes('bean')) return '🫘';
-    if (n.includes('bread') || n.includes('chapati') || n.includes('roti') || n.includes('naan')) return '🫓';
-    if (n.includes('flour') || n.includes('atta') || n.includes('maida')) return '🌾';
-    if (n.includes('vegetable') || n.includes('veggie') || n.includes('sabzi')) return '🥦';
-    if (n.includes('fruit') || n.includes('dried')) return '🍎';
-    if (n.includes('dairy') || n.includes('milk') || n.includes('cheese') || n.includes('paneer')) return '🧀';
-    if (n.includes('sweet') || n.includes('mithai') || n.includes('dessert') || n.includes('halwa')) return '🍮';
-    if (n.includes('chocolate') || n.includes('candy')) return '🍫';
-    if (n.includes('oil') || n.includes('ghee') || n.includes('butter')) return '🫙';
-    if (n.includes('snack') || n.includes('crisps') || n.includes('namkeen') || n.includes('papad')) return '🍿';
-    if (n.includes('pickle') || n.includes('chutney') || n.includes('achar') || n.includes('sauce')) return '🫙';
-    if (n.includes('drink') || n.includes('juice') || n.includes('beverage')) return '🥤';
-    if (n.includes('tea') || n.includes('chai') || n.includes('coffee')) return '☕';
-    if (n.includes('fish') || n.includes('seafood') || n.includes('prawn')) return '🐟';
-    if (n.includes('egg')) return '🥚';
-    if (n.includes('frozen')) return '🧊';
-    if (n.includes('health') || n.includes('wellness') || n.includes('herbal')) return '🌿';
-    if (n.includes('household') || n.includes('cleaning') || n.includes('disposal')) return '🧹';
-    if (n.includes('baby') || n.includes('infant')) return '👶';
-    if (n.includes('biscuit') || n.includes('cookie') || n.includes('cake')) return '🍪';
-    if (n.includes('nut') || n.includes('cashew') || n.includes('almond')) return '🥜';
-    if (n.includes('pasta') || n.includes('noodle') || n.includes('vermicelli')) return '🍝';
-    if (n.includes('jam') || n.includes('honey')) return '🍯';
-    return '🛍️';
-  }
+  media(p: string) { if (!p) return ''; return p.startsWith('http') ? p : this.mediaUrl + p; }
 
-  onCatImgErr(e: Event, name: string) {
-    const img = e.target as HTMLImageElement;
-    img.style.display = 'none';
-    const card = img.closest('.cl-card') as HTMLElement;
-    if (card && !card.querySelector('.cl-emoji-bg')) {
-      const div = document.createElement('div');
-      div.className = 'cl-emoji-bg';
-      div.innerHTML = `<span>${this.catIcon(name)}</span>`;
-      card.insertBefore(div, card.firstChild);
-    }
-  }
+  hideImg(e: Event) { (e.target as HTMLImageElement).style.display = 'none'; }
 }

@@ -1,0 +1,67 @@
+{
+  "name": "Grocery",
+  "version": "1.0",
+  "description": "Fresh, vibrant green theme optimised for grocery and food stores.",
+  "preview": "preview.png",
+  "colors": {
+    "primary": "#3BB77E",
+    "primary-dark": "#2A9062",
+    "primary-light": "#F4FCF7",
+    "secondary": "#FDC040",
+    "accent": "#FF6B35",
+    "surface": "#FFFFFF",
+    "background": "#F4FCF7",
+    "text-dark": "#253D4E",
+    "text-muted": "#7E8D97",
+    "text-light": "#AEBCC6",
+    "border": "#DEF9EC",
+    "success": "#3BB77E",
+    "warning": "#FDC040",
+    "danger": "#E11D48",
+    "header-bg": "#FFFFFF",
+    "header-text": "#253D4E",
+    "footer-bg": "#17324A",
+    "footer-text": "#DBE6EF",
+    "badge-sale": "#E11D48",
+    "badge-new": "#3BB77E"
+  },
+  "fonts": {
+    "heading": "Quicksand",
+    "body": "Inter",
+    "mono": "monospace",
+    "heading_weights": "600;700",
+    "body_weights": "400;500;600;700",
+    "google_fonts_url": "https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+  },
+  "spacing": {
+    "section_padding": "64px 0",
+    "card_radius": "16px",
+    "button_radius": "50px",
+    "input_radius": "50px",
+    "container_max_width": "1280px"
+  },
+  "header": {
+    "style": "standard",
+    "sticky": true,
+    "show_topbar": true,
+    "topbar_bg": "#3BB77E",
+    "topbar_text": "#FFFFFF"
+  },
+  "footer": {
+    "style": "columns",
+    "columns": 4
+  },
+  "product_card": {
+    "style": "rounded",
+    "show_wishlist": true,
+    "show_rating": true,
+    "show_add_to_cart": true,
+    "image_aspect_ratio": "1/1"
+  },
+  "homepage_sections": {
+    "hero": { "style": "fullwidth", "height": "600px" },
+    "categories": { "style": "pills", "columns": 6 },
+    "featured": { "style": "grid", "columns": 4 },
+    "testimonials": { "style": "grid" }
+  }
+}

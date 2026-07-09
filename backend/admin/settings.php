@@ -63,6 +63,20 @@
                     <div class="form-group"><label>Featured Link Text</label><input type="text" id="home_featured_link_text" class="form-control"></div>
                 </div>
                 <div class="form-row-3">
+                    <div class="form-group"><label>Best Sellers Label</label><input type="text" id="home_trending_label" class="form-control"></div>
+                    <div class="form-group"><label>Best Sellers Title</label><input type="text" id="home_trending_title" class="form-control"></div>
+                    <div class="form-group"><label>Best Sellers Link Text</label><input type="text" id="home_trending_link_text" class="form-control"></div>
+                </div>
+                <div class="form-row-3">
+                    <div class="form-group"><label>Brand Section Label</label><input type="text" id="featured_brands_label" class="form-control"></div>
+                    <div class="form-group"><label>Brand Section Title</label><input type="text" id="featured_brands_title" class="form-control"></div>
+                    <div class="form-group"><label>Brand Link Text</label><input type="text" id="featured_brands_link_text" class="form-control"></div>
+                </div>
+                <div class="form-group">
+                    <label>Featured Brands List</label>
+                    <textarea id="featured_brands_list" class="form-control" rows="3" placeholder="One brand per line, or comma separated"></textarea>
+                </div>
+                <div class="form-row-3">
                     <div class="form-group"><label>New Arrivals Label</label><input type="text" id="home_new_label" class="form-control"></div>
                     <div class="form-group"><label>New Arrivals Title</label><input type="text" id="home_new_title" class="form-control"></div>
                     <div class="form-group"><label>New Arrivals Link Text</label><input type="text" id="home_new_link_text" class="form-control"></div>
@@ -81,6 +95,11 @@
                             <div class="form-group"><label>Button Text</label><input type="text" id="promo_<?= $i ?>_button" class="form-control"></div>
                             <div class="form-group"><label>Button Link</label><input type="text" id="promo_<?= $i ?>_link" class="form-control" placeholder="/categories"></div>
                         </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Offer Badge (optional)</label><input type="text" id="promo_<?= $i ?>_badge" class="form-control" placeholder="e.g. Up to 30% off"></div>
+                            <div class="form-group"><label>Banner Image</label><input type="file" id="promo_<?= $i ?>_image_file" class="form-control" accept="image/*"></div>
+                        </div>
+                        <div id="promo_<?= $i ?>_image_preview" style="margin-top:4px;"></div>
                     </div>
                 <?php endfor; ?>
 
@@ -239,10 +258,12 @@ const settingFields = [
   'trust_item_1_text','trust_item_2_text','trust_item_3_text','trust_item_4_text',
   'home_categories_label','home_categories_title','home_categories_link_text',
   'home_featured_label','home_featured_title','home_featured_link_text',
+  'home_trending_label','home_trending_title','home_trending_link_text',
+  'featured_brands_label','featured_brands_title','featured_brands_link_text','featured_brands_list',
   'home_new_label','home_new_title','home_new_link_text',
-  'promo_1_label','promo_1_title','promo_1_text','promo_1_button','promo_1_link',
-  'promo_2_label','promo_2_title','promo_2_text','promo_2_button','promo_2_link',
-  'promo_3_label','promo_3_title','promo_3_text','promo_3_button','promo_3_link',
+  'promo_1_label','promo_1_title','promo_1_text','promo_1_button','promo_1_link','promo_1_badge',
+  'promo_2_label','promo_2_title','promo_2_text','promo_2_button','promo_2_link','promo_2_badge',
+  'promo_3_label','promo_3_title','promo_3_text','promo_3_button','promo_3_link','promo_3_badge',
   'promise_label','promise_title','promise_text',
   'why_1_title','why_1_text','why_2_title','why_2_text','why_3_title','why_3_text','why_4_title','why_4_text',
   'reviews_label','reviews_title',
@@ -280,6 +301,12 @@ async function loadSettings() {
         if (s.site_favicon) {
             document.getElementById('currentFavicon').innerHTML = `<img src="../${s.site_favicon}" style="max-height:32px;border-radius:6px;">`;
         }
+        [1,2,3].forEach(i => {
+            const wrap = document.getElementById(`promo_${i}_image_preview`);
+            if (wrap) wrap.innerHTML = s[`promo_${i}_image`]
+                ? `<img src="..${s[`promo_${i}_image`]}" style="max-height:64px;border-radius:8px;object-fit:cover;">`
+                : '';
+        });
         // Auto-preview map if already set
         if (s.contact_map_embed) previewMap(s.contact_map_embed);
     } catch(e) {}
@@ -295,6 +322,10 @@ async function saveSettings() {
     const faviconFile = document.getElementById('faviconFile').files[0];
     if (logoFile) fd.append('site_logo', logoFile);
     if (faviconFile) fd.append('site_favicon', faviconFile);
+    [1,2,3].forEach(i => {
+        const f = document.getElementById(`promo_${i}_image_file`)?.files[0];
+        if (f) fd.append(`promo_${i}_image`, f);
+    });
 
     try {
         await api('/settings', 'POST', fd, true);

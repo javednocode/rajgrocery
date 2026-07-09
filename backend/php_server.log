@@ -1,300 +1,1097 @@
-[Fri Jun 12 21:22:15 2026] PHP 8.5.4 Development Server (http://0.0.0.0:8000) started
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58935 Accepted
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58937 Accepted
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58935 Closing
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58938 Accepted
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58937 Closing
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58940 Accepted
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58938 Closing
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58942 Accepted
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58940 Closing
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58945 Accepted
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58942 [200]: GET /uploads/banners/videos/1781034846_c13481f7.mp4
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58947 Accepted
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58945 Closing
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58948 Accepted
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58947 Closing
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58950 Accepted
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58948 Closing
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58952 Accepted
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58950 Closing
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58954 Accepted
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58952 Closing
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58954 [200]: GET /uploads/categories/1781041095_69482ba7.png
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58954 Closing
-[Fri Jun 12 21:22:37 2026] 127.0.0.1:58942 Closing
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:58995 Accepted
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:58996 Accepted
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:58995 Closing
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:58996 [200]: GET /admin/assets/admin.css
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:58996 Closing
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:58999 Accepted
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59000 Accepted
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:58999 [200]: GET /admin/assets/admin.js
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59000 [200]: GET /logo.png
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:58999 Closing
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59000 Closing
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59002 Accepted
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59002 Closing
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59005 Accepted
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59006 Accepted
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59005 [200]: GET /admin/dashboard.php
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59005 Closing
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59006 Closing
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59009 Accepted
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59010 Accepted
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59009 [200]: GET /admin/assets/admin.css?v=3
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59010 [200]: GET /admin/assets/admin.js?v=3
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59009 Closing
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59010 Closing
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59013 Accepted
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59013 Closing
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59015 Accepted
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59015 Closing
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59017 Accepted
-[Fri Jun 12 21:23:48 2026] 127.0.0.1:59017 Closing
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59019 Accepted
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59019 [200]: GET /admin/settings.php
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59019 Closing
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59021 Accepted
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59021 [200]: GET /admin/assets/admin.css?v=3
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59023 Accepted
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59023 [200]: GET /admin/assets/admin.js?v=3
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59021 Closing
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59023 Closing
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59025 Accepted
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59025 Closing
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59027 Accepted
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59027 Closing
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59029 Accepted
-[Fri Jun 12 21:23:52 2026] 127.0.0.1:59029 Closing
-[Fri Jun 12 21:24:32 2026] 127.0.0.1:59031 Accepted
-[Fri Jun 12 21:24:32 2026] 127.0.0.1:59031 Closing
-[Fri Jun 12 21:24:32 2026] 127.0.0.1:59033 Accepted
-[Fri Jun 12 21:24:32 2026] 127.0.0.1:59033 Closing
-[Fri Jun 12 21:24:32 2026] 127.0.0.1:59036 Accepted
-[Fri Jun 12 21:24:32 2026] 127.0.0.1:59037 Accepted
-[Fri Jun 12 21:24:32 2026] 127.0.0.1:59036 Closing
-[Fri Jun 12 21:24:32 2026] 127.0.0.1:59037 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59056 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59056 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59058 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59058 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59060 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59060 [200]: GET /uploads/branding/1781036080_92eab141.png
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59060 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59064 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59065 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59064 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59066 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59065 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59069 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59066 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59070 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59069 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59072 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59070 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59074 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59072 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59076 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59074 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59076 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59078 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59078 [200]: GET /uploads/categories/1781041095_69482ba7.png
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59080 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59080 [200]: GET /uploads/banners/videos/1781034846_c13481f7.mp4
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59078 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59080 Closing
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59082 Accepted
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59082 [200]: GET /uploads/branding/1781036080_9b204277.png
-[Fri Jun 12 21:24:35 2026] 127.0.0.1:59082 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59086 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59086 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59088 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59088 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59090 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59090 [200]: GET /uploads/branding/1781036080_92eab141.png
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59090 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59094 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59095 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59096 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59094 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59095 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59096 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59098 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59098 [200]: GET /uploads/banners/videos/1781034846_c13481f7.mp4
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59104 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59105 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59104 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59106 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59105 [200]: GET /uploads/categories/1781041095_69482ba7.png
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59107 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59098 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59106 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59108 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59107 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59108 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59110 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59110 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59105 Closing
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59112 Accepted
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59112 [200]: GET /uploads/branding/1781036080_9b204277.png
-[Fri Jun 12 21:24:38 2026] 127.0.0.1:59112 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59140 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59140 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59142 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59142 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59144 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59144 [200]: GET /uploads/branding/1781036080_92eab141.png
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59144 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59148 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59149 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59148 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59150 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59149 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59150 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59152 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59152 [200]: GET /uploads/banners/videos/1781034846_c13481f7.mp4
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59152 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59156 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59157 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59158 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59160 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59156 [200]: GET /uploads/categories/1781041095_69482ba7.png
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59163 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59157 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59158 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59160 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59164 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59163 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59164 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59156 Closing
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59166 Accepted
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59166 [200]: GET /uploads/branding/1781036080_9b204277.png
-[Fri Jun 12 21:24:46 2026] 127.0.0.1:59166 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59210 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59210 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59212 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59212 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59214 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59214 [200]: GET /uploads/branding/1781036080_92eab141.png
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59214 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59218 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59219 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59218 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59220 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59219 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59223 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59220 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59224 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59223 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59226 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59224 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59228 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59226 [200]: GET /uploads/categories/1781041095_69482ba7.png
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59230 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59228 [200]: GET /uploads/branding/1781036080_9b204277.png
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59232 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59230 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59234 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59232 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59236 Accepted
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59234 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59236 [200]: GET /uploads/banners/videos/1781034846_c13481f7.mp4
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59228 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59226 Closing
-[Fri Jun 12 21:26:12 2026] 127.0.0.1:59236 Closing
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59332 Accepted
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59332 [200]: GET /uploads/branding/1781036080_92eab141.png
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59334 Accepted
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59334 [200]: GET /uploads/branding/1781036080_92eab141.png
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59332 Closing
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59334 Closing
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59336 Accepted
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59336 Closing
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59338 Accepted
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59338 Closing
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59340 Accepted
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59340 Closing
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59343 Accepted
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59344 Accepted
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59343 [200]: GET /uploads/branding/1781036080_9b204277.png
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59344 [200]: GET /uploads/banners/videos/1781034846_c13481f7.mp4
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59346 Accepted
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59346 [200]: GET /uploads/branding/1781036080_9b204277.png
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59343 Closing
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59346 Closing
-[Fri Jun 12 21:31:26 2026] 127.0.0.1:59344 Closing
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59380 Accepted
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59380 [200]: GET /uploads/branding/1781036080_92eab141.png
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59382 Accepted
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59382 [200]: GET /uploads/branding/1781036080_92eab141.png
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59380 Closing
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59382 Closing
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59384 Accepted
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59384 [200]: GET /uploads/branding/1781036080_9b204277.png
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59384 Closing
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59386 Accepted
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59386 [200]: GET /uploads/branding/1781036080_9b204277.png
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59386 Closing
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59388 Accepted
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59388 [200]: GET /uploads/banners/videos/1781034846_c13481f7.mp4
-[Fri Jun 12 21:32:03 2026] 127.0.0.1:59388 Closing
-[Fri Jun 12 21:34:19 2026] 127.0.0.1:59432 Accepted
-[Fri Jun 12 21:34:19 2026] 127.0.0.1:59434 Accepted
-[Fri Jun 12 21:34:19 2026] 127.0.0.1:59432 Closing
-[Fri Jun 12 21:34:19 2026] 127.0.0.1:59436 Accepted
-[Fri Jun 12 21:34:19 2026] 127.0.0.1:59434 Closing
-[Fri Jun 12 21:34:19 2026] 127.0.0.1:59438 Accepted
-[Fri Jun 12 21:34:19 2026] 127.0.0.1:59436 Closing
-[Fri Jun 12 21:34:19 2026] 127.0.0.1:59440 Accepted
-[Fri Jun 12 21:34:19 2026] 127.0.0.1:59438 Closing
-[Fri Jun 12 21:34:19 2026] 127.0.0.1:59441 Accepted
-[Fri Jun 12 21:34:19 2026] 127.0.0.1:59440 Closing
-[Fri Jun 12 21:34:19 2026] 127.0.0.1:59441 [200]: GET /uploads/categories/1781041095_69482ba7.png
-[Fri Jun 12 21:34:19 2026] 127.0.0.1:59441 Closing
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59459 Accepted
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59459 Closing
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59461 Accepted
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59461 Closing
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59463 Accepted
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59463 [200]: GET /uploads/branding/1781036080_92eab141.png
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59463 Closing
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59465 Accepted
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59465 Closing
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59468 Accepted
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59469 Accepted
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59468 Closing
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59469 Closing
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59471 Accepted
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59471 [200]: GET /uploads/branding/1781036080_9b204277.png
-[Fri Jun 12 21:34:24 2026] 127.0.0.1:59471 Closing
-[Fri Jun 12 21:34:38 2026] 127.0.0.1:59489 Accepted
-[Fri Jun 12 21:34:38 2026] 127.0.0.1:59489 Closing
-[Fri Jun 12 21:34:38 2026] 127.0.0.1:59491 Accepted
-[Fri Jun 12 21:34:38 2026] 127.0.0.1:59495 Accepted
-[Fri Jun 12 21:34:38 2026] 127.0.0.1:59491 Closing
-[Fri Jun 12 21:34:38 2026] 127.0.0.1:59496 Accepted
-[Fri Jun 12 21:34:38 2026] 127.0.0.1:59495 Closing
-[Fri Jun 12 21:34:38 2026] 127.0.0.1:59497 Accepted
-[Fri Jun 12 21:34:38 2026] 127.0.0.1:59496 Closing
-[Fri Jun 12 21:34:38 2026] 127.0.0.1:59497 Closing
-[Fri Jun 12 21:34:38 2026] 127.0.0.1:59499 Accepted
-[Fri Jun 12 21:34:38 2026] 127.0.0.1:59499 [200]: GET /uploads/branding/logo.png
-[Fri Jun 12 21:34:38 2026] 127.0.0.1:59499 Closing
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59729 Accepted
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59729 Closing
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59731 Accepted
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59731 Closing
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59733 Accepted
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59733 [200]: GET /uploads/branding/logo.png
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59735 Accepted
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59735 [200]: GET /uploads/branding/logo.png
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59733 Closing
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59735 Closing
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59737 Accepted
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59737 Closing
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59739 Accepted
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59741 Accepted
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59739 Closing
-[Fri Jun 12 21:52:38 2026] 127.0.0.1:59741 Closing
+[Sun Jun 21 01:02:19 2026] PHP 8.5.4 Development Server (http://localhost:8000) started
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59707 Accepted
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59707 Closing
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59712 Accepted
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59714 Accepted
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59712 Closing
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59715 Accepted
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59714 Closing
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59717 Accepted
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59715 Closing
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59718 Accepted
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59717 Closing
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59720 Accepted
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59718 Closing
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59722 Accepted
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59720 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59722 Closing
+[Sun Jun 21 01:05:59 2026] 127.0.0.1:59720 Closing
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59895 Accepted
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59895 Closing
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59897 Accepted
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59897 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59897 Closing
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59900 Accepted
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59901 Accepted
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59900 Closing
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59904 Accepted
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59901 Closing
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59905 Accepted
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59904 Closing
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59907 Accepted
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59905 Closing
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59907 Closing
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59909 Accepted
+[Sun Jun 21 01:10:00 2026] 127.0.0.1:59909 Closing
+[Sun Jun 21 01:10:13 2026] 127.0.0.1:59913 Accepted
+[Sun Jun 21 01:10:13 2026] 127.0.0.1:59913 Closing
+[Sun Jun 21 01:10:13 2026] 127.0.0.1:59916 Accepted
+[Sun Jun 21 01:10:13 2026] 127.0.0.1:59916 [200]: GET /admin/assets/admin.css
+[Sun Jun 21 01:10:13 2026] 127.0.0.1:59920 Accepted
+[Sun Jun 21 01:10:13 2026] 127.0.0.1:59921 Accepted
+[Sun Jun 21 01:10:13 2026] 127.0.0.1:59920 [200]: GET /admin/assets/admin.js
+[Sun Jun 21 01:10:13 2026] 127.0.0.1:59916 Closing
+[Sun Jun 21 01:10:13 2026] 127.0.0.1:59921 [200]: GET /logo.png
+[Sun Jun 21 01:10:13 2026] 127.0.0.1:59920 Closing
+[Sun Jun 21 01:10:13 2026] 127.0.0.1:59921 Closing
+[Sun Jun 21 01:10:13 2026] 127.0.0.1:59923 Accepted
+[Sun Jun 21 01:10:13 2026] 127.0.0.1:59923 Closing
+[Sun Jun 21 01:10:25 2026] 127.0.0.1:59925 Accepted
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59925 Closing
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59928 Accepted
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59929 Accepted
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59928 [200]: GET /admin/dashboard.php
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59928 Closing
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59929 [200]: GET /admin/assets/admin.css?v=3
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59929 Closing
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59931 Accepted
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59931 [200]: GET /admin/assets/admin.js?v=3
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59931 Closing
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59934 Accepted
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59934 Closing
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59936 Accepted
+[Sun Jun 21 01:10:26 2026] 127.0.0.1:59936 Closing
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59950 Accepted
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59950 [200]: GET /admin/settings.php
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59950 Closing
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59952 Accepted
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59952 [200]: GET /admin/assets/admin.css?v=3
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59952 Closing
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59954 Accepted
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59954 [200]: GET /admin/assets/admin.js?v=3
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59954 Closing
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59957 Accepted
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59958 Accepted
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59957 Closing
+[Sun Jun 21 01:10:31 2026] PHP Deprecated:  urldecode(): Passing null to parameter #1 ($string) of type string is deprecated in /Users/khushi/Desktop/bcup/reuseable_temp_ecommerce OG/backend/router.php on line 7
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59958 Closing
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59960 Accepted
+[Sun Jun 21 01:10:31 2026] 127.0.0.1:59960 Closing
+[Sun Jun 21 01:16:35 2026] 127.0.0.1:60112 Accepted
+[Sun Jun 21 01:16:35 2026] 127.0.0.1:60112 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:16:35 2026] 127.0.0.1:60112 Closing
+[Sun Jun 21 01:16:35 2026] 127.0.0.1:60114 Accepted
+[Sun Jun 21 01:16:35 2026] 127.0.0.1:60114 Closing
+[Sun Jun 21 01:16:35 2026] 127.0.0.1:60117 Accepted
+[Sun Jun 21 01:16:35 2026] 127.0.0.1:60118 Accepted
+[Sun Jun 21 01:16:35 2026] 127.0.0.1:60117 Closing
+[Sun Jun 21 01:16:35 2026] 127.0.0.1:60120 Accepted
+[Sun Jun 21 01:16:35 2026] 127.0.0.1:60118 Closing
+[Sun Jun 21 01:16:35 2026] 127.0.0.1:60120 Closing
+[Sun Jun 21 01:16:50 2026] 127.0.0.1:60147 Accepted
+[Sun Jun 21 01:16:50 2026] 127.0.0.1:60147 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:16:50 2026] 127.0.0.1:60147 Closing
+[Sun Jun 21 01:16:50 2026] 127.0.0.1:60149 Accepted
+[Sun Jun 21 01:16:50 2026] 127.0.0.1:60149 Closing
+[Sun Jun 21 01:18:41 2026] 127.0.0.1:60171 Accepted
+[Sun Jun 21 01:18:41 2026] 127.0.0.1:60171 Closing
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60189 Accepted
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60189 Closing
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60195 Accepted
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60196 Accepted
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60195 Closing
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60197 Accepted
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60196 Closing
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60198 Accepted
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60197 Closing
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60199 Accepted
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60198 Closing
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60201 Accepted
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60199 Closing
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60203 Accepted
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60201 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60203 Closing
+[Sun Jun 21 01:18:43 2026] 127.0.0.1:60201 Closing
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60242 Accepted
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60242 Closing
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60244 Accepted
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60244 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60244 Closing
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60246 Accepted
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60250 Accepted
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60251 Accepted
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60246 Closing
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60252 Accepted
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60250 Closing
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60251 Closing
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60254 Accepted
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60252 Closing
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60254 Closing
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60256 Accepted
+[Sun Jun 21 01:19:13 2026] 127.0.0.1:60256 Closing
+[Sun Jun 21 01:24:11 2026] 127.0.0.1:60381 Accepted
+[Sun Jun 21 01:24:11 2026] 127.0.0.1:60381 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:24:11 2026] 127.0.0.1:60381 Closing
+[Sun Jun 21 01:24:11 2026] 127.0.0.1:60383 Accepted
+[Sun Jun 21 01:24:11 2026] 127.0.0.1:60383 Closing
+[Sun Jun 21 01:24:53 2026] 127.0.0.1:60398 Accepted
+[Sun Jun 21 01:24:53 2026] 127.0.0.1:60398 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:24:53 2026] 127.0.0.1:60398 Closing
+[Sun Jun 21 01:24:53 2026] 127.0.0.1:60400 Accepted
+[Sun Jun 21 01:24:53 2026] 127.0.0.1:60400 Closing
+[Sun Jun 21 01:24:53 2026] 127.0.0.1:60402 Accepted
+[Sun Jun 21 01:24:53 2026] 127.0.0.1:60402 Closing
+[Sun Jun 21 01:24:53 2026] 127.0.0.1:60405 Accepted
+[Sun Jun 21 01:24:53 2026] 127.0.0.1:60406 Accepted
+[Sun Jun 21 01:24:53 2026] 127.0.0.1:60405 Closing
+[Sun Jun 21 01:24:53 2026] 127.0.0.1:60406 Closing
+[Sun Jun 21 01:26:57 2026] 127.0.0.1:60475 Accepted
+[Sun Jun 21 01:26:57 2026] 127.0.0.1:60475 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:26:57 2026] 127.0.0.1:60475 Closing
+[Sun Jun 21 01:26:57 2026] 127.0.0.1:60477 Accepted
+[Sun Jun 21 01:26:57 2026] 127.0.0.1:60477 Closing
+[Sun Jun 21 01:29:13 2026] 127.0.0.1:60532 Accepted
+[Sun Jun 21 01:29:13 2026] 127.0.0.1:60532 Closing
+[Sun Jun 21 01:29:13 2026] 127.0.0.1:60534 Accepted
+[Sun Jun 21 01:29:13 2026] 127.0.0.1:60534 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:29:13 2026] 127.0.0.1:60534 Closing
+[Sun Jun 21 01:29:13 2026] 127.0.0.1:60539 Accepted
+[Sun Jun 21 01:29:13 2026] 127.0.0.1:60540 Accepted
+[Sun Jun 21 01:29:13 2026] 127.0.0.1:60539 Closing
+[Sun Jun 21 01:29:13 2026] 127.0.0.1:60541 Accepted
+[Sun Jun 21 01:29:13 2026] 127.0.0.1:60540 Closing
+[Sun Jun 21 01:29:13 2026] 127.0.0.1:60542 Accepted
+[Sun Jun 21 01:29:13 2026] 127.0.0.1:60541 Closing
+[Sun Jun 21 01:29:13 2026] 127.0.0.1:60542 Closing
+[Sun Jun 21 01:30:00 2026] 127.0.0.1:60547 Accepted
+[Sun Jun 21 01:30:00 2026] 127.0.0.1:60547 Closing
+[Sun Jun 21 01:30:02 2026] 127.0.0.1:60549 Accepted
+[Sun Jun 21 01:30:02 2026] 127.0.0.1:60549 Closing
+[Sun Jun 21 01:32:30 2026] 127.0.0.1:60583 Accepted
+[Sun Jun 21 01:32:30 2026] 127.0.0.1:60583 Closing
+[Sun Jun 21 01:32:33 2026] 127.0.0.1:60585 Accepted
+[Sun Jun 21 01:32:33 2026] 127.0.0.1:60585 Closing
+[Sun Jun 21 01:35:17 2026] 127.0.0.1:60642 Accepted
+[Sun Jun 21 01:35:17 2026] 127.0.0.1:60642 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:35:17 2026] 127.0.0.1:60642 Closing
+[Sun Jun 21 01:35:17 2026] 127.0.0.1:60645 Accepted
+[Sun Jun 21 01:35:17 2026] 127.0.0.1:60646 Accepted
+[Sun Jun 21 01:35:17 2026] 127.0.0.1:60645 Closing
+[Sun Jun 21 01:35:17 2026] 127.0.0.1:60648 Accepted
+[Sun Jun 21 01:35:17 2026] 127.0.0.1:60646 Closing
+[Sun Jun 21 01:35:17 2026] 127.0.0.1:60648 Closing
+[Sun Jun 21 01:37:43 2026] 127.0.0.1:60679 Accepted
+[Sun Jun 21 01:37:43 2026] 127.0.0.1:60679 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:37:43 2026] 127.0.0.1:60679 Closing
+[Sun Jun 21 01:37:43 2026] 127.0.0.1:60683 Accepted
+[Sun Jun 21 01:37:43 2026] 127.0.0.1:60683 Closing
+[Sun Jun 21 01:37:43 2026] 127.0.0.1:60685 Accepted
+[Sun Jun 21 01:37:43 2026] 127.0.0.1:60685 Closing
+[Sun Jun 21 01:37:43 2026] 127.0.0.1:60687 Accepted
+[Sun Jun 21 01:37:43 2026] 127.0.0.1:60687 Closing
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61089 Accepted
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61089 Closing
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61095 Accepted
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61096 Accepted
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61095 Closing
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61097 Accepted
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61096 Closing
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61098 Accepted
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61097 Closing
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61099 Accepted
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61098 Closing
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61099 Closing
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61102 Accepted
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61103 Accepted
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61102 Closing
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61103 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:47:03 2026] 127.0.0.1:61103 Closing
+[Sun Jun 21 01:47:43 2026] 127.0.0.1:61122 Accepted
+[Sun Jun 21 01:47:43 2026] 127.0.0.1:61122 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:47:43 2026] 127.0.0.1:61122 Closing
+[Sun Jun 21 01:47:43 2026] 127.0.0.1:61124 Accepted
+[Sun Jun 21 01:47:43 2026] 127.0.0.1:61124 Closing
+[Sun Jun 21 01:47:47 2026] 127.0.0.1:61126 Accepted
+[Sun Jun 21 01:47:47 2026] 127.0.0.1:61126 Closing
+[Sun Jun 21 01:52:40 2026] 127.0.0.1:61425 Accepted
+[Sun Jun 21 01:52:40 2026] 127.0.0.1:61425 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:52:40 2026] 127.0.0.1:61425 Closing
+[Sun Jun 21 01:54:13 2026] 127.0.0.1:61476 Accepted
+[Sun Jun 21 01:54:13 2026] 127.0.0.1:61476 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:54:13 2026] 127.0.0.1:61476 Closing
+[Sun Jun 21 01:54:13 2026] 127.0.0.1:61481 Accepted
+[Sun Jun 21 01:54:13 2026] 127.0.0.1:61482 Accepted
+[Sun Jun 21 01:54:13 2026] 127.0.0.1:61481 Closing
+[Sun Jun 21 01:54:13 2026] 127.0.0.1:61483 Accepted
+[Sun Jun 21 01:54:13 2026] 127.0.0.1:61482 Closing
+[Sun Jun 21 01:54:13 2026] 127.0.0.1:61484 Accepted
+[Sun Jun 21 01:54:13 2026] 127.0.0.1:61483 Closing
+[Sun Jun 21 01:54:13 2026] 127.0.0.1:61484 Closing
+[Sun Jun 21 01:54:13 2026] 127.0.0.1:61486 Accepted
+[Sun Jun 21 01:54:13 2026] 127.0.0.1:61486 Closing
+[Sun Jun 21 01:54:51 2026] 127.0.0.1:61508 Accepted
+[Sun Jun 21 01:54:51 2026] 127.0.0.1:61508 Closing
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61543 Accepted
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61543 Closing
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61545 Accepted
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61545 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61545 Closing
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61551 Accepted
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61552 Accepted
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61551 Closing
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61553 Accepted
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61552 Closing
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61554 Accepted
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61553 Closing
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61555 Accepted
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61554 Closing
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61555 Closing
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61557 Accepted
+[Sun Jun 21 01:55:29 2026] 127.0.0.1:61557 Closing
+[Sun Jun 21 01:55:46 2026] 127.0.0.1:61561 Accepted
+[Sun Jun 21 01:55:46 2026] 127.0.0.1:61561 Closing
+[Sun Jun 21 01:56:01 2026] 127.0.0.1:61563 Accepted
+[Sun Jun 21 01:56:01 2026] 127.0.0.1:61563 Closing
+[Sun Jun 21 01:58:11 2026] 127.0.0.1:61597 Accepted
+[Sun Jun 21 01:58:11 2026] 127.0.0.1:61597 Closing
+[Sun Jun 21 01:58:36 2026] 127.0.0.1:61604 Accepted
+[Sun Jun 21 01:58:36 2026] 127.0.0.1:61604 Closing
+[Sun Jun 21 01:58:47 2026] 127.0.0.1:61627 Accepted
+[Sun Jun 21 01:58:47 2026] 127.0.0.1:61627 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 01:58:47 2026] 127.0.0.1:61627 Closing
+[Sun Jun 21 01:58:47 2026] 127.0.0.1:61629 Accepted
+[Sun Jun 21 01:58:47 2026] 127.0.0.1:61629 Closing
+[Sun Jun 21 01:58:47 2026] 127.0.0.1:61631 Accepted
+[Sun Jun 21 01:58:47 2026] 127.0.0.1:61631 Closing
+[Sun Jun 21 01:59:02 2026] 127.0.0.1:61641 Accepted
+[Sun Jun 21 01:59:02 2026] 127.0.0.1:61641 Closing
+[Sun Jun 21 01:59:07 2026] 127.0.0.1:61648 Accepted
+[Sun Jun 21 01:59:07 2026] 127.0.0.1:61648 Closing
+[Sun Jun 21 02:02:35 2026] 127.0.0.1:61767 Accepted
+[Sun Jun 21 02:02:35 2026] 127.0.0.1:61767 Closing
+[Sun Jun 21 02:02:35 2026] 127.0.0.1:61769 Accepted
+[Sun Jun 21 02:02:35 2026] 127.0.0.1:61769 Closing
+[Sun Jun 21 02:03:00 2026] 127.0.0.1:61791 Accepted
+[Sun Jun 21 02:03:00 2026] 127.0.0.1:61791 Closing
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61806 Accepted
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61807 Accepted
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61806 [200]: GET /admin/settings.php
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61806 Closing
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61807 [200]: GET /admin/assets/admin.js?v=3
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61810 Accepted
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61811 Accepted
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61810 [200]: GET /admin/assets/admin.css?v=3
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61807 Closing
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61811 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61810 Closing
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61811 Closing
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61813 Accepted
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61813 Closing
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61816 Accepted
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61817 Accepted
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61816 Closing
+[Sun Jun 21 02:03:12 2026] PHP Deprecated:  urldecode(): Passing null to parameter #1 ($string) of type string is deprecated in /Users/khushi/Desktop/bcup/reuseable_temp_ecommerce OG/backend/router.php on line 7
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61817 Closing
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61819 Accepted
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61819 Closing
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61821 Accepted
+[Sun Jun 21 02:03:12 2026] 127.0.0.1:61821 Closing
+[Sun Jun 21 03:05:30 2026] 127.0.0.1:63236 Accepted
+[Sun Jun 21 03:05:30 2026] 127.0.0.1:63236 Closing
+[Sun Jun 21 03:05:30 2026] 127.0.0.1:63246 Accepted
+[Sun Jun 21 03:05:30 2026] 127.0.0.1:63247 Accepted
+[Sun Jun 21 03:05:31 2026] 127.0.0.1:63246 Closing
+[Sun Jun 21 03:05:31 2026] 127.0.0.1:63248 Accepted
+[Sun Jun 21 03:05:31 2026] 127.0.0.1:63247 Closing
+[Sun Jun 21 03:05:31 2026] 127.0.0.1:63249 Accepted
+[Sun Jun 21 03:05:31 2026] 127.0.0.1:63248 Closing
+[Sun Jun 21 03:05:31 2026] 127.0.0.1:63250 Accepted
+[Sun Jun 21 03:05:31 2026] 127.0.0.1:63249 Closing
+[Sun Jun 21 03:05:31 2026] 127.0.0.1:63253 Accepted
+[Sun Jun 21 03:05:31 2026] 127.0.0.1:63250 Closing
+[Sun Jun 21 03:05:31 2026] 127.0.0.1:63255 Accepted
+[Sun Jun 21 03:05:31 2026] 127.0.0.1:63253 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 03:05:31 2026] 127.0.0.1:63255 Closing
+[Sun Jun 21 03:05:31 2026] 127.0.0.1:63253 Closing
+[Sun Jun 21 09:07:00 2026] 127.0.0.1:64254 Accepted
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64254 Closing
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64259 Accepted
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64260 Accepted
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64259 Closing
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64261 Accepted
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64260 Closing
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64262 Accepted
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64261 Closing
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64264 Accepted
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64262 Closing
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64266 Accepted
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64264 Closing
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64268 Accepted
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64266 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64268 Closing
+[Sun Jun 21 09:07:01 2026] 127.0.0.1:64266 Closing
+[Sun Jun 21 09:07:08 2026] 127.0.0.1:64289 Accepted
+[Sun Jun 21 09:07:08 2026] 127.0.0.1:64289 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 09:07:08 2026] 127.0.0.1:64289 Closing
+[Sun Jun 21 09:07:08 2026] 127.0.0.1:64291 Accepted
+[Sun Jun 21 09:07:08 2026] 127.0.0.1:64291 Closing
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64404 Accepted
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64404 Closing
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64406 Accepted
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64406 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64406 Closing
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64409 Accepted
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64410 Accepted
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64409 Closing
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64412 Accepted
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64410 Closing
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64415 Accepted
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64412 Closing
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64416 Accepted
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64415 Closing
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64418 Accepted
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64416 Closing
+[Sun Jun 21 09:21:30 2026] 127.0.0.1:64418 Closing
+[Sun Jun 21 09:21:38 2026] 127.0.0.1:64438 Accepted
+[Sun Jun 21 09:21:38 2026] 127.0.0.1:64438 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 09:21:38 2026] 127.0.0.1:64438 Closing
+[Sun Jun 21 09:21:38 2026] 127.0.0.1:64440 Accepted
+[Sun Jun 21 09:21:38 2026] 127.0.0.1:64440 Closing
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64584 Accepted
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64584 Closing
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64586 Accepted
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64586 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64586 Closing
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64589 Accepted
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64590 Accepted
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64589 Closing
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64593 Accepted
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64590 Closing
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64594 Accepted
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64593 Closing
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64596 Accepted
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64594 Closing
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64596 Closing
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64598 Accepted
+[Sun Jun 21 09:56:36 2026] 127.0.0.1:64598 Closing
+[Sun Jun 21 10:20:13 2026] 127.0.0.1:64820 Accepted
+[Sun Jun 21 10:20:13 2026] 127.0.0.1:64820 Closing
+[Sun Jun 21 10:20:13 2026] 127.0.0.1:64823 Accepted
+[Sun Jun 21 10:20:13 2026] 127.0.0.1:64824 Accepted
+[Sun Jun 21 10:20:13 2026] 127.0.0.1:64823 Closing
+[Sun Jun 21 10:20:13 2026] 127.0.0.1:64826 Accepted
+[Sun Jun 21 10:20:13 2026] 127.0.0.1:64824 Closing
+[Sun Jun 21 10:20:13 2026] 127.0.0.1:64829 Accepted
+[Sun Jun 21 10:20:13 2026] 127.0.0.1:64826 Closing
+[Sun Jun 21 10:20:13 2026] 127.0.0.1:64830 Accepted
+[Sun Jun 21 10:20:14 2026] 127.0.0.1:64829 Closing
+[Sun Jun 21 10:20:14 2026] 127.0.0.1:64832 Accepted
+[Sun Jun 21 10:20:14 2026] 127.0.0.1:64830 Closing
+[Sun Jun 21 10:20:14 2026] 127.0.0.1:64834 Accepted
+[Sun Jun 21 10:20:14 2026] 127.0.0.1:64832 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 10:20:14 2026] 127.0.0.1:64834 Closing
+[Sun Jun 21 10:20:14 2026] 127.0.0.1:64832 Closing
+[Sun Jun 21 10:24:51 2026] 127.0.0.1:64930 Accepted
+[Sun Jun 21 10:24:51 2026] 127.0.0.1:64930 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 10:24:51 2026] 127.0.0.1:64930 Closing
+[Sun Jun 21 10:24:51 2026] 127.0.0.1:64934 Accepted
+[Sun Jun 21 10:24:51 2026] 127.0.0.1:64934 Closing
+[Sun Jun 21 10:24:51 2026] 127.0.0.1:64936 Accepted
+[Sun Jun 21 10:24:51 2026] 127.0.0.1:64936 Closing
+[Sun Jun 21 10:29:03 2026] 127.0.0.1:65030 Accepted
+[Sun Jun 21 10:29:03 2026] 127.0.0.1:65030 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 10:29:03 2026] 127.0.0.1:65030 Closing
+[Sun Jun 21 10:29:03 2026] 127.0.0.1:65032 Accepted
+[Sun Jun 21 10:29:03 2026] 127.0.0.1:65032 Closing
+[Sun Jun 21 10:29:03 2026] 127.0.0.1:65034 Accepted
+[Sun Jun 21 10:29:03 2026] 127.0.0.1:65037 Accepted
+[Sun Jun 21 10:29:03 2026] 127.0.0.1:65034 Closing
+[Sun Jun 21 10:29:03 2026] 127.0.0.1:65038 Accepted
+[Sun Jun 21 10:29:03 2026] 127.0.0.1:65037 Closing
+[Sun Jun 21 10:29:03 2026] 127.0.0.1:65038 Closing
+[Sun Jun 21 10:29:03 2026] 127.0.0.1:65040 Accepted
+[Sun Jun 21 10:29:03 2026] 127.0.0.1:65040 Closing
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65429 Accepted
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65429 Closing
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65431 Accepted
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65435 Accepted
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65431 Closing
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65436 Accepted
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65435 Closing
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65437 Accepted
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65436 Closing
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65439 Accepted
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65437 Closing
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65441 Accepted
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65439 Closing
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65441 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65441 Closing
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65443 Accepted
+[Sun Jun 21 11:02:11 2026] 127.0.0.1:65443 Closing
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49214 Accepted
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49214 Closing
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49219 Accepted
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49220 Accepted
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49219 Closing
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49224 Accepted
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49220 Closing
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49225 Accepted
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49224 Closing
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49226 Accepted
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49225 Closing
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49228 Accepted
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49226 Closing
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49228 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49228 Closing
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49231 Accepted
+[Sun Jun 21 11:15:20 2026] 127.0.0.1:49231 Closing
+[Sun Jun 21 13:28:56 2026] 127.0.0.1:50733 Accepted
+[Sun Jun 21 13:28:56 2026] 127.0.0.1:50733 Closing
+[Sun Jun 21 13:34:22 2026] 127.0.0.1:50815 Accepted
+[Sun Jun 21 13:34:23 2026] 127.0.0.1:50815 Closing
+[Sun Jun 21 13:34:23 2026] 127.0.0.1:50817 Accepted
+[Sun Jun 21 13:34:23 2026] 127.0.0.1:50817 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 13:34:23 2026] 127.0.0.1:50817 Closing
+[Sun Jun 21 13:34:58 2026] 127.0.0.1:50861 Accepted
+[Sun Jun 21 13:34:58 2026] 127.0.0.1:50861 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 13:34:58 2026] 127.0.0.1:50861 Closing
+[Sun Jun 21 14:44:44 2026] 127.0.0.1:51241 Accepted
+[Sun Jun 21 14:44:44 2026] PHP Warning:  Unknown: Failed to open stream: Operation not permitted in Unknown on line 0
+[Sun Jun 21 14:44:44 2026] PHP Fatal error:  Failed opening required 'router.php' (include_path='.:/opt/homebrew/Cellar/php/8.5.4/share/php/pear') in Unknown on line 0
+Stack trace:
+#0 {main}
+[Sun Jun 21 14:44:44 2026] 127.0.0.1:51241 Closing
+[Sun Jun 21 14:44:44 2026] 127.0.0.1:51243 Accepted
+[Sun Jun 21 14:44:44 2026] PHP Warning:  Unknown: Failed to open stream: Operation not permitted in Unknown on line 0
+[Sun Jun 21 14:44:44 2026] PHP Fatal error:  Failed opening required 'router.php' (include_path='.:/opt/homebrew/Cellar/php/8.5.4/share/php/pear') in Unknown on line 0
+Stack trace:
+#0 {main}
+[Sun Jun 21 14:44:44 2026] 127.0.0.1:51243 Closing
+[Sun Jun 21 15:00:02 2026] 127.0.0.1:51357 Accepted
+[Sun Jun 21 15:00:02 2026] PHP Warning:  Unknown: Failed to open stream: Operation not permitted in Unknown on line 0
+[Sun Jun 21 15:00:02 2026] PHP Fatal error:  Failed opening required 'router.php' (include_path='.:/opt/homebrew/Cellar/php/8.5.4/share/php/pear') in Unknown on line 0
+Stack trace:
+#0 {main}
+[Sun Jun 21 15:00:02 2026] 127.0.0.1:51357 Closing
+[Sun Jun 21 15:00:02 2026] 127.0.0.1:51361 Accepted
+[Sun Jun 21 15:00:02 2026] PHP Warning:  Unknown: Failed to open stream: Operation not permitted in Unknown on line 0
+[Sun Jun 21 15:00:02 2026] PHP Fatal error:  Failed opening required 'router.php' (include_path='.:/opt/homebrew/Cellar/php/8.5.4/share/php/pear') in Unknown on line 0
+Stack trace:
+#0 {main}
+[Sun Jun 21 15:00:02 2026] 127.0.0.1:51361 Closing
+[Sun Jun 21 15:54:33 2026] 127.0.0.1:51752 Accepted
+[Sun Jun 21 15:54:33 2026] PHP Warning:  Unknown: Failed to open stream: Operation not permitted in Unknown on line 0
+[Sun Jun 21 15:54:33 2026] PHP Fatal error:  Failed opening required 'router.php' (include_path='.:/opt/homebrew/Cellar/php/8.5.4/share/php/pear') in Unknown on line 0
+Stack trace:
+#0 {main}
+[Sun Jun 21 15:54:33 2026] 127.0.0.1:51752 Closing
+[Sun Jun 21 15:54:33 2026] 127.0.0.1:51754 Accepted
+[Sun Jun 21 15:54:33 2026] PHP Warning:  Unknown: Failed to open stream: Operation not permitted in Unknown on line 0
+[Sun Jun 21 15:54:33 2026] PHP Fatal error:  Failed opening required 'router.php' (include_path='.:/opt/homebrew/Cellar/php/8.5.4/share/php/pear') in Unknown on line 0
+Stack trace:
+#0 {main}
+[Sun Jun 21 15:54:33 2026] 127.0.0.1:51754 Closing
+[Sun Jun 21 18:31:13 2026] 127.0.0.1:53932 Accepted
+[Sun Jun 21 18:31:13 2026] PHP Warning:  Unknown: Failed to open stream: Operation not permitted in Unknown on line 0
+[Sun Jun 21 18:31:13 2026] PHP Fatal error:  Failed opening required 'router.php' (include_path='.:/opt/homebrew/Cellar/php/8.5.4/share/php/pear') in Unknown on line 0
+Stack trace:
+#0 {main}
+[Sun Jun 21 18:31:13 2026] 127.0.0.1:53932 Closing
+[Sun Jun 21 18:31:13 2026] 127.0.0.1:53934 Accepted
+[Sun Jun 21 18:31:13 2026] PHP Warning:  Unknown: Failed to open stream: Operation not permitted in Unknown on line 0
+[Sun Jun 21 18:31:13 2026] PHP Fatal error:  Failed opening required 'router.php' (include_path='.:/opt/homebrew/Cellar/php/8.5.4/share/php/pear') in Unknown on line 0
+Stack trace:
+#0 {main}
+[Sun Jun 21 18:31:13 2026] 127.0.0.1:53934 Closing
+[Sun Jun 21 19:21:16 2026] 127.0.0.1:54796 Accepted
+[Sun Jun 21 19:21:16 2026] PHP Warning:  Unknown: Failed to open stream: Operation not permitted in Unknown on line 0
+[Sun Jun 21 19:21:16 2026] PHP Fatal error:  Failed opening required 'router.php' (include_path='.:/opt/homebrew/Cellar/php/8.5.4/share/php/pear') in Unknown on line 0
+Stack trace:
+#0 {main}
+[Sun Jun 21 19:21:16 2026] 127.0.0.1:54796 Closing
+[Sun Jun 21 19:21:16 2026] 127.0.0.1:54798 Accepted
+[Sun Jun 21 19:21:16 2026] PHP Warning:  Unknown: Failed to open stream: Operation not permitted in Unknown on line 0
+[Sun Jun 21 19:21:16 2026] PHP Fatal error:  Failed opening required 'router.php' (include_path='.:/opt/homebrew/Cellar/php/8.5.4/share/php/pear') in Unknown on line 0
+Stack trace:
+#0 {main}
+[Sun Jun 21 19:21:16 2026] 127.0.0.1:54798 Closing
+[Sun Jun 21 20:34:15 2026] 127.0.0.1:55296 Accepted
+[Sun Jun 21 20:34:15 2026] 127.0.0.1:55296 Closing
+[Sun Jun 21 20:34:15 2026] 127.0.0.1:55298 Accepted
+[Sun Jun 21 20:34:15 2026] 127.0.0.1:55298 Closing
+[Sun Jun 21 20:34:15 2026] 127.0.0.1:55300 Accepted
+[Sun Jun 21 20:34:15 2026] 127.0.0.1:55300 [200]: GET /uploads/branding/logo.png
+[Sun Jun 21 20:34:15 2026] 127.0.0.1:55300 Closing
+[Sun Jun 21 23:04:12 2026] 127.0.0.1:56895 Accepted
+[Sun Jun 21 23:05:27 2026] 127.0.0.1:56895 Closed without sending a request; it was probably just an unused speculative preconnection
+[Sun Jun 21 23:05:27 2026] 127.0.0.1:56895 Closing
+[Mon Jun 22 15:41:26 2026] 127.0.0.1:49846 Accepted
+[Mon Jun 22 15:41:29 2026] 127.0.0.1:49846 Closed without sending a request; it was probably just an unused speculative preconnection
+[Mon Jun 22 15:41:29 2026] 127.0.0.1:49846 Closing
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50806 Accepted
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50806 Closing
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50808 Accepted
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50810 Accepted
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50808 Closing
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50814 Accepted
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50810 Closing
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50815 Accepted
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50814 Closing
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50816 Accepted
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50815 Closing
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50818 Accepted
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50816 Closing
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50818 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50818 Closing
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50820 Accepted
+[Tue Jun 23 01:56:23 2026] 127.0.0.1:50820 Closing
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50826 Accepted
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50826 Closing
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50828 Accepted
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50828 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50828 Closing
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50834 Accepted
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50835 Accepted
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50834 Closing
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50836 Accepted
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50835 Closing
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50837 Accepted
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50836 Closing
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50838 Accepted
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50837 Closing
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50840 Accepted
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50838 Closing
+[Tue Jun 23 01:56:27 2026] 127.0.0.1:50840 Closing
+[Tue Jun 23 01:58:38 2026] 127.0.0.1:50848 Accepted
+[Tue Jun 23 01:58:38 2026] 127.0.0.1:50848 Closing
+[Tue Jun 23 02:01:21 2026] 127.0.0.1:50872 Accepted
+[Tue Jun 23 02:01:21 2026] 127.0.0.1:50872 Closing
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51338 Accepted
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51338 Closing
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51340 Accepted
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51340 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51340 Closing
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51345 Accepted
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51346 Accepted
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51345 Closing
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51347 Accepted
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51346 Closing
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51348 Accepted
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51347 Closing
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51350 Accepted
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51348 Closing
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51350 Closing
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51352 Accepted
+[Tue Jun 23 02:06:38 2026] 127.0.0.1:51352 Closing
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51356 Accepted
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51356 Closing
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51358 Accepted
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51358 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51358 Closing
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51364 Accepted
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51365 Accepted
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51364 Closing
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51366 Accepted
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51365 Closing
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51367 Accepted
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51366 Closing
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51368 Accepted
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51367 Closing
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51368 Closing
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51370 Accepted
+[Tue Jun 23 02:06:42 2026] 127.0.0.1:51370 Closing
+[Tue Jun 23 02:08:07 2026] 127.0.0.1:51380 Accepted
+[Tue Jun 23 02:08:07 2026] 127.0.0.1:51380 Closing
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51426 Accepted
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51426 Closing
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51428 Accepted
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51428 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51428 Closing
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51430 Accepted
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51430 Closing
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51435 Accepted
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51436 Accepted
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51435 Closing
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51437 Accepted
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51436 Closing
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51438 Accepted
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51437 Closing
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51438 Closing
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51440 Accepted
+[Tue Jun 23 02:10:02 2026] 127.0.0.1:51440 Closing
+[Tue Jun 23 02:31:26 2026] 127.0.0.1:51617 Accepted
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51617 Closing
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51619 Accepted
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51619 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51619 Closing
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51622 Accepted
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51623 Accepted
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51622 Closing
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51625 Accepted
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51623 Closing
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51627 Accepted
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51625 Closing
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51629 Accepted
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51627 Closing
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51629 Closing
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51631 Accepted
+[Tue Jun 23 02:31:27 2026] 127.0.0.1:51631 Closing
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51716 Accepted
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51716 Closing
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51718 Accepted
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51718 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51718 Closing
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51724 Accepted
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51725 Accepted
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51724 Closing
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51726 Accepted
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51725 Closing
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51727 Accepted
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51726 Closing
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51728 Accepted
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51727 Closing
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51728 Closing
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51730 Accepted
+[Tue Jun 23 02:37:53 2026] 127.0.0.1:51730 Closing
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51765 Accepted
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51765 Closing
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51767 Accepted
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51767 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51767 Closing
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51773 Accepted
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51774 Accepted
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51773 Closing
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51775 Accepted
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51774 Closing
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51776 Accepted
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51775 Closing
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51777 Accepted
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51776 Closing
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51777 Closing
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51779 Accepted
+[Tue Jun 23 02:42:56 2026] 127.0.0.1:51779 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51830 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51830 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51832 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51832 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51832 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51837 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51838 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51837 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51839 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51838 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51840 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51839 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51842 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51840 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51844 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51842 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51844 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51842 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51848 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51851 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51852 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51853 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51854 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51848 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51851 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51852 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51853 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51854 Closing
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51856 Accepted
+[Tue Jun 23 02:51:08 2026] 127.0.0.1:51856 Closing
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52062 Accepted
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52062 Closing
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52064 Accepted
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52064 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52064 Closing
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52066 Accepted
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52066 Closing
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52069 Accepted
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52070 Accepted
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52069 Closing
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52073 Accepted
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52070 Closing
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52074 Accepted
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52073 Closing
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52074 Closing
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52076 Accepted
+[Tue Jun 23 08:48:44 2026] 127.0.0.1:52076 Closing
+[Tue Jun 23 08:50:14 2026] 127.0.0.1:52105 Accepted
+[Tue Jun 23 08:50:14 2026] 127.0.0.1:52105 Closing
+[Tue Jun 23 08:50:15 2026] 127.0.0.1:52108 Accepted
+[Tue Jun 23 08:50:15 2026] 127.0.0.1:52108 Closing
+[Tue Jun 23 08:50:19 2026] 127.0.0.1:52110 Accepted
+[Tue Jun 23 08:50:19 2026] 127.0.0.1:52110 Closing
+[Tue Jun 23 09:04:15 2026] 127.0.0.1:52457 Accepted
+[Tue Jun 23 09:04:15 2026] 127.0.0.1:52457 Closing
+[Tue Jun 23 09:04:15 2026] 127.0.0.1:52459 Accepted
+[Tue Jun 23 09:04:15 2026] 127.0.0.1:52459 Closing
+[Tue Jun 23 09:04:15 2026] 127.0.0.1:52461 Accepted
+[Tue Jun 23 09:04:15 2026] 127.0.0.1:52461 Closing
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52477 Accepted
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52477 Closing
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52479 Accepted
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52482 Accepted
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52483 Accepted
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52479 Closing
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52486 Accepted
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52482 Closing
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52483 Closing
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52487 Accepted
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52486 Closing
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52489 Accepted
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52487 Closing
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52489 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52489 Closing
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52491 Accepted
+[Tue Jun 23 09:05:05 2026] 127.0.0.1:52491 Closing
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52499 Accepted
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52499 Closing
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52501 Accepted
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52501 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52501 Closing
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52503 Accepted
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52503 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52503 Closing
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52505 Accepted
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52505 Closing
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52511 Accepted
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52512 Accepted
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52511 Closing
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52513 Accepted
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52512 Closing
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52514 Accepted
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52513 Closing
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52515 Accepted
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52514 Closing
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52517 Accepted
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52515 Closing
+[Tue Jun 23 09:05:06 2026] 127.0.0.1:52517 Closing
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52538 Accepted
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52538 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52538 Closing
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52541 Accepted
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52541 Closing
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52543 Accepted
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52543 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52543 Closing
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52545 Accepted
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52545 Closing
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52547 Accepted
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52547 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52547 Closing
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52550 Accepted
+[Tue Jun 23 09:05:24 2026] 127.0.0.1:52550 Closing
+[Tue Jun 23 09:06:56 2026] 127.0.0.1:52577 Accepted
+[Tue Jun 23 09:06:56 2026] 127.0.0.1:52577 Closing
+[Tue Jun 23 09:09:03 2026] 127.0.0.1:52624 Accepted
+[Tue Jun 23 09:09:03 2026] 127.0.0.1:52624 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:09:03 2026] 127.0.0.1:52624 Closing
+[Tue Jun 23 09:09:03 2026] 127.0.0.1:52626 Accepted
+[Tue Jun 23 09:09:03 2026] 127.0.0.1:52626 Closing
+[Tue Jun 23 09:09:03 2026] 127.0.0.1:52628 Accepted
+[Tue Jun 23 09:09:03 2026] 127.0.0.1:52628 Closing
+[Tue Jun 23 09:09:20 2026] 127.0.0.1:52631 Accepted
+[Tue Jun 23 09:09:20 2026] 127.0.0.1:52631 Closing
+[Tue Jun 23 09:09:20 2026] 127.0.0.1:52635 Accepted
+[Tue Jun 23 09:09:20 2026] 127.0.0.1:52636 Accepted
+[Tue Jun 23 09:09:20 2026] 127.0.0.1:52635 [200]: GET /admin/assets/admin.css
+[Tue Jun 23 09:09:20 2026] 127.0.0.1:52637 Accepted
+[Tue Jun 23 09:09:20 2026] 127.0.0.1:52636 [200]: GET /logo.png
+[Tue Jun 23 09:09:20 2026] 127.0.0.1:52637 [200]: GET /admin/assets/admin.js
+[Tue Jun 23 09:09:20 2026] 127.0.0.1:52635 Closing
+[Tue Jun 23 09:09:20 2026] 127.0.0.1:52636 Closing
+[Tue Jun 23 09:09:20 2026] 127.0.0.1:52637 Closing
+[Tue Jun 23 09:09:22 2026] 127.0.0.1:52641 Accepted
+[Tue Jun 23 09:09:22 2026] 127.0.0.1:52641 Closing
+[Tue Jun 23 09:09:24 2026] 127.0.0.1:52645 Accepted
+[Tue Jun 23 09:09:24 2026] 127.0.0.1:52645 Closing
+[Tue Jun 23 09:09:34 2026] 127.0.0.1:52649 Accepted
+[Tue Jun 23 09:09:35 2026] 127.0.0.1:52649 Closing
+[Tue Jun 23 09:09:35 2026] 127.0.0.1:52653 Accepted
+[Tue Jun 23 09:09:35 2026] 127.0.0.1:52654 Accepted
+[Tue Jun 23 09:09:35 2026] 127.0.0.1:52653 [200]: GET /admin/dashboard.php
+[Tue Jun 23 09:09:35 2026] 127.0.0.1:52653 Closing
+[Tue Jun 23 09:09:35 2026] 127.0.0.1:52654 [200]: GET /admin/assets/admin.css?v=3
+[Tue Jun 23 09:09:35 2026] 127.0.0.1:52657 Accepted
+[Tue Jun 23 09:09:35 2026] 127.0.0.1:52657 [200]: GET /admin/assets/admin.js?v=3
+[Tue Jun 23 09:09:35 2026] 127.0.0.1:52654 Closing
+[Tue Jun 23 09:09:35 2026] 127.0.0.1:52659 Accepted
+[Tue Jun 23 09:09:35 2026] 127.0.0.1:52657 Closing
+[Tue Jun 23 09:09:35 2026] 127.0.0.1:52659 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:09:35 2026] 127.0.0.1:52659 Closing
+[Tue Jun 23 09:09:38 2026] 127.0.0.1:52662 Accepted
+[Tue Jun 23 09:09:38 2026] 127.0.0.1:52662 Closing
+[Tue Jun 23 09:09:38 2026] 127.0.0.1:52664 Accepted
+[Tue Jun 23 09:09:38 2026] 127.0.0.1:52664 Closing
+[Tue Jun 23 09:10:38 2026] 127.0.0.1:52685 Accepted
+[Tue Jun 23 09:10:38 2026] 127.0.0.1:52685 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:10:38 2026] 127.0.0.1:52685 Closing
+[Tue Jun 23 09:28:53 2026] 127.0.0.1:53061 Accepted
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53061 Closing
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53063 Accepted
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53065 Accepted
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53063 Closing
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53067 Accepted
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53065 Closing
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53069 Accepted
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53067 Closing
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53071 Accepted
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53069 Closing
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53073 Accepted
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53071 Closing
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53075 Accepted
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53073 Closing
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53077 Accepted
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53075 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53077 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53080 Accepted
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53081 Accepted
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53075 Closing
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53080 Closing
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53077 Closing
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53081 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53081 Closing
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53083 Accepted
+[Tue Jun 23 09:28:54 2026] 127.0.0.1:53083 Closing
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53116 Accepted
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53116 Closing
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53118 Accepted
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53122 Accepted
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53118 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53124 Accepted
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53122 Closing
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53129 Accepted
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53124 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53130 Accepted
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53129 Closing
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53131 Accepted
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53130 Closing
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53132 Accepted
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53131 Closing
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53134 Accepted
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53118 Closing
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53132 Closing
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53136 Accepted
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53134 Closing
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53138 Accepted
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53136 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53124 Closing
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53138 Closing
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53136 Closing
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53140 Accepted
+[Tue Jun 23 09:39:46 2026] 127.0.0.1:53140 Closing
+[Tue Jun 23 11:38:52 2026] 127.0.0.1:53386 Accepted
+[Tue Jun 23 11:38:52 2026] 127.0.0.1:53388 Accepted
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53386 Closing
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53394 Accepted
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53388 Closing
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53395 Accepted
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53394 Closing
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53396 Accepted
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53395 Closing
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53397 Accepted
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53396 Closing
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53398 Accepted
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53397 Closing
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53401 Accepted
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53398 Closing
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53403 Accepted
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53401 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53405 Accepted
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53403 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53405 Closing
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53407 Accepted
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53409 Accepted
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53407 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53409 Closing
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53401 Closing
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53403 Closing
+[Tue Jun 23 11:38:53 2026] 127.0.0.1:53407 Closing
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53442 Accepted
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53442 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53442 Closing
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53444 Accepted
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53444 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53444 Closing
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53447 Accepted
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53448 Accepted
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53447 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53448 Closing
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53452 Accepted
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53453 Accepted
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53452 Closing
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53454 Accepted
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53453 Closing
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53456 Accepted
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53454 Closing
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53447 Closing
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53456 Closing
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53458 Accepted
+[Tue Jun 23 11:45:06 2026] 127.0.0.1:53458 Closing
+[Tue Jun 23 11:45:10 2026] 127.0.0.1:53483 Accepted
+[Tue Jun 23 11:45:10 2026] 127.0.0.1:53483 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 11:45:10 2026] 127.0.0.1:53485 Accepted
+[Tue Jun 23 11:45:10 2026] 127.0.0.1:53485 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 11:45:10 2026] 127.0.0.1:53483 Closing
+[Tue Jun 23 11:45:10 2026] 127.0.0.1:53485 Closing
+[Tue Jun 23 11:45:10 2026] 127.0.0.1:53487 Accepted
+[Tue Jun 23 11:45:10 2026] 127.0.0.1:53487 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 11:45:10 2026] 127.0.0.1:53487 Closing
+[Tue Jun 23 11:45:10 2026] 127.0.0.1:53489 Accepted
+[Tue Jun 23 11:45:10 2026] 127.0.0.1:53489 Closing
+[Tue Jun 23 11:45:11 2026] 127.0.0.1:53491 Accepted
+[Tue Jun 23 11:45:11 2026] 127.0.0.1:53491 Closing
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53551 Accepted
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53551 Closing
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53553 Accepted
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53559 Accepted
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53553 Closing
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53560 Accepted
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53559 Closing
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53561 Accepted
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53560 Closing
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53562 Accepted
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53561 Closing
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53563 Accepted
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53562 Closing
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53565 Accepted
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53563 Closing
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53567 Accepted
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53565 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53569 Accepted
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53567 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53569 Closing
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53571 Accepted
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53573 Accepted
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53571 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53573 Closing
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53565 Closing
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53567 Closing
+[Tue Jun 23 12:44:41 2026] 127.0.0.1:53571 Closing
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53608 Accepted
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53609 Accepted
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53608 [200]: GET /admin/dashboard.php
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53608 Closing
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53609 [200]: GET /admin/assets/admin.css?v=3
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53611 Accepted
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53611 [200]: GET /admin/assets/admin.js?v=3
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53613 Accepted
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53609 Closing
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53611 Closing
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53613 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53613 Closing
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53615 Accepted
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53615 Closing
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53617 Accepted
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53617 Closing
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53619 Accepted
+[Tue Jun 23 16:17:39 2026] 127.0.0.1:53619 Closing
+[Tue Jun 23 16:18:29 2026] 127.0.0.1:53727 Accepted
+[Tue Jun 23 16:18:29 2026] 127.0.0.1:53727 [200]: GET /admin/stock.php
+[Tue Jun 23 16:18:29 2026] 127.0.0.1:53727 Closing
+[Tue Jun 23 16:18:29 2026] 127.0.0.1:53729 Accepted
+[Tue Jun 23 16:18:29 2026] 127.0.0.1:53729 [200]: GET /admin/assets/admin.css?v=3
+[Tue Jun 23 16:18:29 2026] 127.0.0.1:53732 Accepted
+[Tue Jun 23 16:18:29 2026] 127.0.0.1:53733 Accepted
+[Tue Jun 23 16:18:29 2026] 127.0.0.1:53732 [200]: GET /admin/assets/admin.js?v=3
+[Tue Jun 23 16:18:29 2026] 127.0.0.1:53729 Closing
+[Tue Jun 23 16:18:29 2026] 127.0.0.1:53733 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 16:18:29 2026] 127.0.0.1:53732 Closing
+[Tue Jun 23 16:18:29 2026] 127.0.0.1:53733 Closing
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53736 Accepted
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53736 [200]: GET /admin/hero-products.php
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53736 Closing
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53738 Accepted
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53738 [200]: GET /admin/assets/admin.css?v=3
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53741 Accepted
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53742 Accepted
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53741 [200]: GET /admin/assets/admin.js?v=3
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53738 Closing
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53742 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53741 Closing
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53742 Closing
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53744 Accepted
+[Tue Jun 23 16:18:31 2026] 127.0.0.1:53744 Closing
+[Tue Jun 23 16:18:39 2026] 127.0.0.1:53761 Accepted
+[Tue Jun 23 16:18:39 2026] 127.0.0.1:53761 Closing
+[Tue Jun 23 16:18:39 2026] 127.0.0.1:53766 Accepted
+[Tue Jun 23 16:18:39 2026] 127.0.0.1:53767 Accepted
+[Tue Jun 23 16:18:39 2026] 127.0.0.1:53766 Closing
+[Tue Jun 23 16:18:39 2026] 127.0.0.1:53768 Accepted
+[Tue Jun 23 16:18:39 2026] 127.0.0.1:53767 Closing
+[Tue Jun 23 16:18:39 2026] 127.0.0.1:53769 Accepted
+[Tue Jun 23 16:18:39 2026] 127.0.0.1:53768 Closing
+[Tue Jun 23 16:18:39 2026] 127.0.0.1:53769 Closing
+[Tue Jun 23 16:18:39 2026] 127.0.0.1:53771 Accepted
+[Tue Jun 23 16:18:39 2026] 127.0.0.1:53771 Closing
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54065 Accepted
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54065 Closing
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54067 Accepted
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54069 Accepted
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54067 Closing
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54073 Accepted
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54069 Closing
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54074 Accepted
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54073 Closing
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54075 Accepted
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54074 Closing
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54077 Accepted
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54075 Closing
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54079 Accepted
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54077 Closing
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54079 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 16:42:27 2026] 127.0.0.1:54079 Closing
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55401 Accepted
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55401 Closing
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55403 Accepted
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55408 Accepted
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55403 Closing
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55409 Accepted
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55408 Closing
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55410 Accepted
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55409 Closing
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55411 Accepted
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55410 Closing
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55413 Accepted
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55411 Closing
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55415 Accepted
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55413 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55415 Closing
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55417 Accepted
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55419 Accepted
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55417 Closing
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55413 Closing
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55419 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 18:41:22 2026] 127.0.0.1:55419 Closing
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56414 Accepted
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56414 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56419 Accepted
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56420 Accepted
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56419 Closing
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56421 Accepted
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56420 Closing
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56422 Accepted
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56421 Closing
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56424 Accepted
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56422 Closing
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56426 Accepted
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56414 Closing
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56424 Closing
+[Tue Jun 23 23:01:57 2026] 127.0.0.1:56426 Closing
+[Tue Jun 23 23:02:31 2026] 127.0.0.1:56436 Accepted
+[Tue Jun 23 23:02:31 2026] 127.0.0.1:56436 Closing
+[Tue Jun 23 23:02:31 2026] 127.0.0.1:56438 Accepted
+[Tue Jun 23 23:02:31 2026] 127.0.0.1:56438 Closing
+[Tue Jun 23 23:02:31 2026] 127.0.0.1:56440 Accepted
+[Tue Jun 23 23:02:31 2026] 127.0.0.1:56440 [200]: GET /uploads/branding/logo.png
+[Tue Jun 23 23:02:31 2026] 127.0.0.1:56440 Closing
+[Tue Jun 23 23:59:52 2026] 127.0.0.1:56893 Accepted
+[Tue Jun 23 23:59:52 2026] 127.0.0.1:56893 Closing
+[Tue Jun 23 23:59:52 2026] 127.0.0.1:56895 Accepted
+[Tue Jun 23 23:59:52 2026] 127.0.0.1:56895 Closing
+[Tue Jun 23 23:59:52 2026] 127.0.0.1:56898 Accepted
+[Tue Jun 23 23:59:52 2026] 127.0.0.1:56898 Closing
+[Tue Jun 23 23:59:52 2026] 127.0.0.1:56900 Accepted
+[Tue Jun 23 23:59:52 2026] 127.0.0.1:56900 Closing

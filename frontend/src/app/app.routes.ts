@@ -14,5 +14,7 @@ export const routes: Routes = [
   { path: 'wishlist', loadComponent: () => import('./features/account/account.component').then(m => m.AccountComponent) },
   { path: 'contact', loadComponent: () => import('./features/contact/contact.component').then(m => m.ContactComponent) },
   { path: 'page/:slug', loadComponent: () => import('./features/page/page.component').then(m => m.PageComponent) },
+  { path: 'about', loadComponent: () => import('./features/page/about.component').then(m => m.AboutComponent) },
+  { path: 'faq', loadComponent: () => import('./features/page/faq.component').then(m => m.FaqComponent) },
   { path: '**', redirectTo: '' }
 ];

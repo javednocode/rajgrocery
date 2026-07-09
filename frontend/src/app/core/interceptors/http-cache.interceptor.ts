@@ -56,6 +56,7 @@ function isCacheableGet(req: HttpRequest<unknown>): boolean {
   if (req.method !== 'GET') return false;
   if (!req.url.includes('/api')) return false;
   if (req.headers.has('Authorization')) return false;
+  if (/\/api\/(settings|banners)\b/.test(req.url)) return false;
   return !/\/api\/(orders|customers|auth|dashboard|email|import|stock|optimize|debug)\b/.test(req.url);
 }
 

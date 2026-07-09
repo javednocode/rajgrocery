@@ -1,0 +1,419 @@
+{
+    "timestamp": "2026-06-27T19:29:31+00:00",
+    "pages_checked": 29,
+    "passed": 81,
+    "failed": 1,
+    "warnings": 0,
+    "results": [
+        [
+            "PASS",
+            "Syntax OK: banners.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: blog-edit.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: blogs.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: categories.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: convert-images.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: coupons.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: customers.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: dashboard.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: delivery.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: email-settings.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: featured.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: hero-products.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: import.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: index.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: inventory.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: media-library.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: orders.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: page-builder.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: pages.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: payments-config.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: product-edit.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: products.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: reports.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: seo-manager.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: settings.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: site-manager.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: stock.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: theme-manager.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Syntax OK: trending.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: banners.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: blog-edit.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: blogs.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: categories.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: convert-images.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: coupons.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: customers.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: dashboard.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: delivery.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: email-settings.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: featured.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: hero-products.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: import.php",
+            ""
+        ],
+        [
+            "FAIL",
+            "Structure: index.php",
+            "missing $pageTitle, missing header include, missing footer include"
+        ],
+        [
+            "PASS",
+            "Structure OK: inventory.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: media-library.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: orders.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: page-builder.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: pages.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: payments-config.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: product-edit.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: products.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: reports.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: seo-manager.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: settings.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: site-manager.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: stock.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: theme-manager.php",
+            ""
+        ],
+        [
+            "PASS",
+            "Structure OK: trending.php",
+            ""
+        ],
+        [
+            "PASS",
+            "No brand names found in any admin page",
+            "29 pages scanned"
+        ],
+        [
+            "PASS",
+            "includes\/header.php exists",
+            ""
+        ],
+        [
+            "PASS",
+            "includes\/footer.php exists",
+            ""
+        ],
+        [
+            "PASS",
+            "includes\/sidebar.php exists",
+            ""
+        ],
+        [
+            "PASS",
+            "dashboard.php: protected via header include (session check)",
+            ""
+        ],
+        [
+            "PASS",
+            "products.php: protected via header include (session check)",
+            ""
+        ],
+        [
+            "PASS",
+            "orders.php: protected via header include (session check)",
+            ""
+        ],
+        [
+            "PASS",
+            "customers.php: protected via header include (session check)",
+            ""
+        ],
+        [
+            "PASS",
+            "settings.php: protected via header include (session check)",
+            ""
+        ],
+        [
+            "PASS",
+            "header.php contains session\/auth check",
+            ""
+        ],
+        [
+            "PASS",
+            "header.php redirects to login.php if not authenticated",
+            ""
+        ],
+        [
+            "PASS",
+            "Sidebar: Products link present",
+            "products.php"
+        ],
+        [
+            "PASS",
+            "Sidebar: Categories link present",
+            "categories.php"
+        ],
+        [
+            "PASS",
+            "Sidebar: Inventory link present",
+            "inventory.php"
+        ],
+        [
+            "PASS",
+            "Sidebar: Orders link present",
+            "orders.php"
+        ],
+        [
+            "PASS",
+            "Sidebar: Customers link present",
+            "customers.php"
+        ],
+        [
+            "PASS",
+            "Sidebar: Reports link present",
+            "reports.php"
+        ],
+        [
+            "PASS",
+            "Sidebar: Theme Manager link present",
+            "theme-manager.php"
+        ],
+        [
+            "PASS",
+            "Sidebar: Media Library link present",
+            "media-library.php"
+        ],
+        [
+            "PASS",
+            "Sidebar: SEO Manager link present",
+            "seo-manager.php"
+        ],
+        [
+            "PASS",
+            "Sidebar: Site Manager link present",
+            "site-manager.php"
+        ],
+        [
+            "PASS",
+            "Sidebar: Site Settings link present",
+            "settings.php"
+        ],
+        [
+            "PASS",
+            "Sidebar: Payments link present",
+            "payments-config.php"
+        ],
+        [
+            "PASS",
+            "Admin page count meets minimum (\u226525)",
+            "29 pages"
+        ]
+    ]
+}

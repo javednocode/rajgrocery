@@ -1,0 +1,11 @@
+{
+  "key": "affiliate",
+  "name": "affiliate",
+  "version": "1.0",
+  "description": "Plug-in module — enable in Admin Panel → Modules",
+  "requires": [],
+  "settings_prefix": "affiliate_",
+  "api_prefix": "/api/modules/affiliate",
+  "db_schema": "schema.sql",
+  "status": "planned"
+}

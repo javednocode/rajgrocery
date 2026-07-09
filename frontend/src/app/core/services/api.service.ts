@@ -27,33 +27,38 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/products`, { params: httpParams });
   }
 
-  getFeaturedProducts(limit = 8): Observable<any> {
-    return this.http.get(`${this.baseUrl}/products/featured?limit=${limit}`);
+  getFeaturedProducts(limit = 8, country = ''): Observable<any> {
+    return this.http.get(`${this.baseUrl}/products/featured?limit=${limit}${country ? '&country=' + encodeURIComponent(country) : ''}`);
   }
 
   getHeroProducts(): Observable<any> {
     return this.http.get(`${this.baseUrl}/hero-products`);
   }
 
-  getTrendingProducts(limit = 8): Observable<any> {
-    return this.http.get(`${this.baseUrl}/products/trending?limit=${limit}`);
+  getTrendingProducts(limit = 8, country = ''): Observable<any> {
+    return this.http.get(`${this.baseUrl}/products/trending?limit=${limit}${country ? '&country=' + encodeURIComponent(country) : ''}`);
   }
 
   getProductBySlug(slug: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/products/slug/${slug}`);
   }
 
-  searchProducts(query: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/products/search?q=${encodeURIComponent(query)}`);
+  searchProducts(query: string, country = ''): Observable<any> {
+    return this.http.get(`${this.baseUrl}/products/search?q=${encodeURIComponent(query)}${country ? '&country=' + encodeURIComponent(country) : ''}`);
+  }
+
+  // ── Countries (admin-managed marketplaces) ──
+  getCountries(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/countries`);
   }
 
   // ── Categories ──
-  getCategories(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/categories`);
+  getCategories(country = ''): Observable<any> {
+    return this.http.get(`${this.baseUrl}/categories${country ? '?country=' + encodeURIComponent(country) : ''}`);
   }
 
-  getFeaturedCategories(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/categories/featured`);
+  getFeaturedCategories(country = ''): Observable<any> {
+    return this.http.get(`${this.baseUrl}/categories/featured${country ? '?country=' + encodeURIComponent(country) : ''}`);
   }
 
   getCategoryBySlug(slug: string): Observable<any> {
@@ -61,8 +66,8 @@ export class ApiService {
   }
 
   // ── Banners ──
-  getBanners(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/banners`);
+  getBanners(country = ''): Observable<any> {
+    return this.http.get(`${this.baseUrl}/banners${country ? '?country=' + encodeURIComponent(country) : ''}`);
   }
 
   // ── Settings ──
@@ -110,6 +115,11 @@ export class ApiService {
   // ── Delivery ──
   calculateDelivery(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/delivery/calculate`, data);
+  }
+
+  // ── Contact Form ──
+  sendContactForm(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/contact`, data);
   }
 
   /**

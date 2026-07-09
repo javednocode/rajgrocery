@@ -1,0 +1,489 @@
+{
+    "timestamp": "2026-06-27T19:24:10+00:00",
+    "passed": 94,
+    "failed": 2,
+    "warnings": 0,
+    "score": 98,
+    "results": [
+        [
+            "PASS",
+            "attributes.php uses prepared statements",
+            "21 uses"
+        ],
+        [
+            "PASS",
+            "auth.php uses prepared statements",
+            "2 uses"
+        ],
+        [
+            "PASS",
+            "banners.php uses prepared statements",
+            "10 uses"
+        ],
+        [
+            "PASS",
+            "blogs.php uses prepared statements",
+            "8 uses"
+        ],
+        [
+            "PASS",
+            "categories.php uses prepared statements",
+            "15 uses"
+        ],
+        [
+            "PASS",
+            "coupons.php uses prepared statements",
+            "1 uses"
+        ],
+        [
+            "PASS",
+            "customers.php uses prepared statements",
+            "4 uses"
+        ],
+        [
+            "PASS",
+            "email_queue.php uses prepared statements",
+            "6 uses"
+        ],
+        [
+            "PASS",
+            "hero_products.php uses prepared statements",
+            "6 uses"
+        ],
+        [
+            "PASS",
+            "import.php uses prepared statements",
+            "10 uses"
+        ],
+        [
+            "PASS",
+            "inventory.php uses prepared statements",
+            "14 uses"
+        ],
+        [
+            "PASS",
+            "optimize_indexes.php uses prepared statements",
+            "1 uses"
+        ],
+        [
+            "PASS",
+            "orders.php uses prepared statements",
+            "29 uses"
+        ],
+        [
+            "PASS",
+            "pages.php uses prepared statements",
+            "8 uses"
+        ],
+        [
+            "PASS",
+            "payments.php uses prepared statements",
+            "5 uses"
+        ],
+        [
+            "PASS",
+            "products.php uses prepared statements",
+            "50 uses"
+        ],
+        [
+            "PASS",
+            "reports.php uses prepared statements",
+            "16 uses"
+        ],
+        [
+            "PASS",
+            "settings.php uses prepared statements",
+            "1 uses"
+        ],
+        [
+            "PASS",
+            "shipping_zones.php uses prepared statements",
+            "17 uses"
+        ],
+        [
+            "PASS",
+            "sitemap.php uses prepared statements",
+            "4 uses"
+        ],
+        [
+            "PASS",
+            "stock.php uses prepared statements",
+            "4 uses"
+        ],
+        [
+            "PASS",
+            "convert-images.php uses prepared statements",
+            "1 uses"
+        ],
+        [
+            "PASS",
+            "auth_middleware.php uses prepared statements",
+            "2 uses"
+        ],
+        [
+            "PASS",
+            "branding.php uses prepared statements",
+            "3 uses"
+        ],
+        [
+            "PASS",
+            "email.php uses prepared statements",
+            "8 uses"
+        ],
+        [
+            "PASS",
+            "security.php uses prepared statements",
+            "2 uses"
+        ],
+        [
+            "PASS",
+            "slug.php uses prepared statements",
+            "1 uses"
+        ],
+        [
+            "FAIL",
+            "Potential raw SQL in: optimize_indexes.php",
+            ""
+        ],
+        [
+            "FAIL",
+            "Potential raw SQL in: products.php",
+            ""
+        ],
+        [
+            "PASS",
+            "banners.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "blog-edit.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "blogs.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "categories.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "convert-images.php: XSS-safe (1 escaped outputs)",
+            ""
+        ],
+        [
+            "PASS",
+            "coupons.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "customers.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "dashboard.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "delivery.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "email-settings.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "featured.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "hero-products.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "import.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "index.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "inventory.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "media-library.php: XSS-safe (13 escaped outputs)",
+            ""
+        ],
+        [
+            "PASS",
+            "orders.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "page-builder.php: XSS-safe (5 escaped outputs)",
+            ""
+        ],
+        [
+            "PASS",
+            "pages.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "payments-config.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "product-edit.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "products.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "reports.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "seo-manager.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "settings.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "site-manager.php: XSS-safe (8 escaped outputs)",
+            ""
+        ],
+        [
+            "PASS",
+            "stock.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "theme-manager.php: XSS-safe (13 escaped outputs)",
+            ""
+        ],
+        [
+            "PASS",
+            "trending.php: No raw user output detected",
+            ""
+        ],
+        [
+            "PASS",
+            "XSS: No unescaped user-data outputs detected across admin pages",
+            ""
+        ],
+        [
+            "PASS",
+            "security.php exists with CSRF functions",
+            ""
+        ],
+        [
+            "PASS",
+            "getCsrfToken() defined",
+            ""
+        ],
+        [
+            "PASS",
+            "verifyCsrfToken() defined",
+            ""
+        ],
+        [
+            "PASS",
+            "CSRF token uses cryptographic random_bytes",
+            ""
+        ],
+        [
+            "PASS",
+            "CSRF comparison uses hash_equals (timing-safe)",
+            ""
+        ],
+        [
+            "PASS",
+            "security.php required in index.php (headers on all requests)",
+            ""
+        ],
+        [
+            "PASS",
+            "sendSecurityHeaders() called on every request",
+            ""
+        ],
+        [
+            "PASS",
+            "checkRateLimit() implemented",
+            ""
+        ],
+        [
+            "PASS",
+            "Block-until mechanism in rate limiter",
+            ""
+        ],
+        [
+            "PASS",
+            "Rate limit file writes use exclusive lock",
+            ""
+        ],
+        [
+            "PASS",
+            "Auth middleware integrates rate limiting",
+            ""
+        ],
+        [
+            "PASS",
+            "HTTP 429 returned when rate limited",
+            ""
+        ],
+        [
+            "PASS",
+            "Header: X-Content-Type-Options",
+            "present in security.php"
+        ],
+        [
+            "PASS",
+            "Header: X-Frame-Options",
+            "present in security.php"
+        ],
+        [
+            "PASS",
+            "Header: X-XSS-Protection",
+            "present in security.php"
+        ],
+        [
+            "PASS",
+            "Header: Referrer-Policy",
+            "present in security.php"
+        ],
+        [
+            "PASS",
+            "Header: Strict-Transport-Security",
+            "present in security.php"
+        ],
+        [
+            "PASS",
+            "Header: Content-Security-Policy",
+            "present in security.php"
+        ],
+        [
+            "PASS",
+            "Header: Permissions-Policy",
+            "present in security.php"
+        ],
+        [
+            "PASS",
+            "requireAuth() usage in index.php",
+            "77 protected routes"
+        ],
+        [
+            "PASS",
+            "Product listing does not require auth (public read)",
+            "verified"
+        ],
+        [
+            "PASS",
+            "Protected routes use requireAuth() middleware",
+            ""
+        ],
+        [
+            "PASS",
+            "requireRole() implemented",
+            ""
+        ],
+        [
+            "PASS",
+            "Role hierarchy defined",
+            ""
+        ],
+        [
+            "PASS",
+            "super_admin bypass handled separately",
+            ""
+        ],
+        [
+            "PASS",
+            "hasPermission() for fine-grained control",
+            ""
+        ],
+        [
+            "PASS",
+            "JWT uses hash_hmac (HMAC-SHA256)",
+            ""
+        ],
+        [
+            "PASS",
+            "JWT comparison uses hash_equals (timing-safe)",
+            ""
+        ],
+        [
+            "PASS",
+            "JWT expiry claim validated",
+            ""
+        ],
+        [
+            "PASS",
+            "JWT secret uses config constant",
+            ""
+        ],
+        [
+            "PASS",
+            "sanitizeStr() helper available",
+            ""
+        ],
+        [
+            "PASS",
+            "sanitizeInt() helper available",
+            ""
+        ],
+        [
+            "PASS",
+            "sanitizeEnum() whitelist helper",
+            ""
+        ],
+        [
+            "PASS",
+            "strip_tags used in string sanitization",
+            ""
+        ],
+        [
+            "PASS",
+            "addAuditLog() implemented",
+            ""
+        ],
+        [
+            "PASS",
+            "logSecurityEvent() implemented",
+            ""
+        ],
+        [
+            "PASS",
+            "Audit log captures old\/new values",
+            ""
+        ]
+    ]
+}

@@ -10,6 +10,11 @@ function getSettings($db) {
     $group = $_GET['group'] ?? null;
     $cacheKey = 'settings_' . ($group ?: 'all');
 
+    // Prevent Cloudflare/CDN/reverse-proxy from caching settings across domains.
+    // Settings are domain-specific; shared CDN caching causes cross-brand bleed.
+    header('Cache-Control: private, no-store');
+    header('Vary: Host');
+
     if (function_exists('cacheGet')) {
         $cached = cacheGet($cacheKey);
         if ($cached !== null) {
@@ -32,6 +37,7 @@ function getSettings($db) {
 
     successResponse($settings);
 }
+
 
 function getSetting($db, $key) {
     try {
@@ -75,9 +81,16 @@ function updateSettings($db) {
         }
     }
 
-    foreach (['site_logo', 'site_favicon'] as $fileKey) {
+    $fileKeys = [
+        'site_logo' => 'branding',
+        'site_favicon' => 'branding',
+        'promo_1_image' => 'promos',
+        'promo_2_image' => 'promos',
+        'promo_3_image' => 'promos',
+    ];
+    foreach ($fileKeys as $fileKey => $uploadFolder) {
         if (empty($_FILES[$fileKey]) || $_FILES[$fileKey]['error'] !== UPLOAD_ERR_OK) continue;
-        $r = uploadImage($_FILES[$fileKey], 'branding');
+        $r = uploadImage($_FILES[$fileKey], $uploadFolder);
         if (!empty($r['success'])) {
             $type = $defaults[$fileKey][1] ?? 'image';
             $group = brandingSettingGroup($fileKey);
@@ -96,3 +109,68 @@ function updateSettings($db) {
 
     successResponse(null, 'Settings updated');
 }
+
+/**
+ * Public Settings — no auth required.
+ * Returns safe, public-facing configuration for the Angular frontend.
+ * GET /api/settings/public
+ */
+function getPublicSettings(PDO $db): void {
+    header('Cache-Control: private, no-store');
+
+    try {
+        // Load ALL settings from site_settings (no site_id column in this schema)
+        $stmt = $db->query("SELECT setting_key, setting_value FROM site_settings");
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $data = [];
+        foreach ($rows as $row) {
+            $data[$row['setting_key']] = $row['setting_value'];
+        }
+
+        // Resolve site_logo URL — prepend base URL if it's a relative path
+        if (!empty($data['site_logo']) && !str_starts_with($data['site_logo'], 'http')) {
+            $data['logo_url'] = $data['site_logo']; // alias for frontend compatibility
+        }
+        if (!empty($data['site_favicon']) && !str_starts_with($data['site_favicon'], 'http')) {
+            $data['favicon_url'] = $data['site_favicon'];
+        }
+
+        // Map alternate key names the frontend uses
+        if (!empty($data['currency_symbol'])) {
+            $data['currency_symbol'] = $data['currency_symbol'];
+        }
+
+        // Fallback defaults for keys the frontend expects
+        $defaults = [
+            'site_name'          => 'Indian Market Grocery Store',
+            'site_tagline'       => 'Premium South Asian groceries delivered.',
+            'site_logo'          => '/logo.png',
+            'logo_url'           => '/logo.png',
+            'currency_symbol'    => '€',
+            'shipping_free_above'=> '50',
+            'hero_eyebrow'       => 'Premium Indian Grocery',
+            'hero_title'         => 'Authentic Indian groceries, delivered fresh.',
+            'hero_subtitle'      => 'Shop trusted brands, fresh staples, spices, rice, atta, lentils, snacks and more.',
+        ];
+        foreach ($defaults as $k => $v) {
+            if (!isset($data[$k]) || $data[$k] === '') {
+                $data[$k] = $v;
+            }
+        }
+
+        successResponse($data);
+
+    } catch (\Throwable $e) {
+        error_log('getPublicSettings error: ' . $e->getMessage());
+        // Return minimal defaults so the frontend still renders
+        successResponse([
+            'site_name'       => 'Indian Market Grocery Store',
+            'site_logo'       => '/logo.png',
+            'logo_url'        => '/logo.png',
+            'currency_symbol' => '€',
+        ]);
+    }
+}
+
+

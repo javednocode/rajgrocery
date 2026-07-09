@@ -1,64 +1,183 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { SeoService } from '../../core/services/seo.service';
-import { ScrollAnimateDirective } from '../../shared/directives/scroll-animate.directive';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-blog-list',
   standalone: true,
-  imports: [RouterLink, DatePipe, ScrollAnimateDirective],
+  imports: [RouterLink, FormsModule],
   template: `
-  <section class="bl-hero"><div class="td-container">
-    <span class="td-eyebrow">The Journal</span>
-    <h1>Stories, recipes<br/>& kitchen wisdom.</h1>
-  </div></section>
-  <section class="bl-body"><div class="td-container">
-    @if (posts().length === 0) {
-      <div class="bl-empty"><h3>No stories yet</h3><p>Check back soon — we're cooking something up.</p></div>
-    } @else {
-      <div class="bl-grid">
-        @for (p of posts(); track p.id; let i = $index) {
-          <a class="bl-card" [routerLink]="['/blog', p.slug]" appScrollAnimate [animationDelay]="(i % 3 * 0.07) + 's'">
-            <div class="bl-img">@if (p.featured_image) { <img [src]="p.featured_image" [alt]="p.title" loading="lazy" /> }</div>
-            <div class="bl-info">
-              @if (p.category_name) { <span class="bl-cat">{{ p.category_name }}</span> }
-              <h3>{{ p.title }}</h3>
-              @if (p.excerpt) { <p>{{ p.excerpt }}</p> }
-              <div class="bl-meta">{{ p.author }} · {{ p.published_at | date:'mediumDate' }}</div>
+  <!-- Hero -->
+  <section class="bl-hero">
+    <div class="container">
+      <span class="bl-eyebrow">Our Blog</span>
+      <h1>Recipes & Stories</h1>
+      <p>Discover authentic Indian recipes, cooking tips, and cultural stories from our community.</p>
+    </div>
+  </section>
+
+  <!-- Body -->
+  <section class="bl-body">
+    <div class="container">
+      @if (loading()) {
+        <div class="bl-grid">
+          @for (s of [1,2,3,4,5,6]; track s) {
+            <div class="skeleton" style="height:360px;border-radius:16px"></div>
+          }
+        </div>
+      } @else if (posts().length === 0) {
+        <div class="empty-state">
+          <div style="font-size:3rem;margin-bottom:16px">📖</div>
+          <h3>No articles yet</h3>
+          <p>Check back soon for recipes and stories.</p>
+        </div>
+      } @else {
+        <!-- Featured post -->
+        @if (posts()[0]; as first) {
+          <a class="bl-featured" [routerLink]="['/blog', first.slug]">
+            <div class="bl-feat-img">
+              @if (first.featured_image) {
+                <img [src]="media(first.featured_image)" [alt]="first.title" loading="eager" fetchpriority="high" />
+              } @else {
+                <div class="bl-feat-ph">📖</div>
+              }
+            </div>
+            <div class="bl-feat-body">
+              @if (first.category) { <span class="bl-tag">{{ first.category }}</span> }
+              <h2 class="bl-feat-title">{{ first.title }}</h2>
+              @if (first.excerpt) { <p class="bl-feat-exc">{{ first.excerpt }}</p> }
+              <div class="bl-meta">
+                @if (first.published_at) { <span>📅 {{ formatDate(first.published_at) }}</span> }
+                @if (first.read_time) { <span>⏱ {{ first.read_time }} min read</span> }
+              </div>
+              <span class="bl-read-link">Read article →</span>
             </div>
           </a>
         }
-      </div>
-    }
-  </div></section>
+
+        <!-- Other posts -->
+        @if (posts().length > 1) {
+          <div class="bl-grid">
+            @for (p of posts().slice(1); track p.id) {
+              <a class="bl-card" [routerLink]="['/blog', p.slug]">
+                <div class="bl-card-img">
+                  @if (p.featured_image) {
+                    <img [src]="media(p.featured_image)" [alt]="p.title" loading="lazy" />
+                  } @else {
+                    <div class="bl-card-ph">📖</div>
+                  }
+                </div>
+                <div class="bl-card-body">
+                  @if (p.category) { <span class="bl-tag">{{ p.category }}</span> }
+                  <h3 class="bl-card-title">{{ p.title }}</h3>
+                  @if (p.excerpt) { <p class="bl-card-exc">{{ p.excerpt }}</p> }
+                  <div class="bl-meta">
+                    @if (p.published_at) { <span>{{ formatDate(p.published_at) }}</span> }
+                    @if (p.read_time) { <span>{{ p.read_time }} min</span> }
+                  </div>
+                  <span class="bl-read-link">Read more →</span>
+                </div>
+              </a>
+            }
+          </div>
+        }
+      }
+    </div>
+  </section>
   `,
   styles: [`
-  .bl-hero{padding:84px 0 56px;background:var(--td-secondary)}
-  .bl-hero h1{font-size:clamp(2.2rem,4.4vw,3.6rem);font-weight:800;line-height:1.08;letter-spacing:-.03em;margin-top:6px}
-  .bl-body{padding:64px 0 32px}
-  .bl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
-  .bl-card{border:1px solid var(--td-line);border-radius:var(--td-radius);overflow:hidden;transition:transform .35s var(--td-ease),box-shadow .35s;display:flex;flex-direction:column;background:#fff}
-  .bl-card:hover{transform:translateY(-5px);box-shadow:var(--td-shadow)}
-  .bl-img{aspect-ratio:16/10;background:var(--td-secondary);overflow:hidden}
-  .bl-img img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--td-ease)}
-  .bl-card:hover .bl-img img{transform:scale(1.05)}
-  .bl-info{padding:24px;display:flex;flex-direction:column;flex:1}
-  .bl-cat{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--td-accent);margin-bottom:10px}
-  .bl-info h3{font-size:18px;font-weight:700;line-height:1.4;margin-bottom:10px}
-  .bl-info p{font-size:14px;color:var(--td-muted);line-height:1.7;margin:0 0 18px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-  .bl-meta{margin-top:auto;font-size:12.5px;color:var(--td-muted)}
-  .bl-empty{text-align:center;padding:90px 20px;color:var(--td-muted)}
-  @media (max-width:1000px){.bl-grid{grid-template-columns:1fr 1fr}}
-  @media (max-width:640px){.bl-grid{grid-template-columns:1fr}.bl-hero{padding:56px 0 40px}}
+  .container { max-width: 1300px; margin: 0 auto; padding: 0 24px; width: 100%; }
+  @media(min-width:1200px){.container{padding:0 48px}}
+  .skeleton { background: linear-gradient(90deg,#EFE8DA 25%,#F7F2E7 50%,#EFE8DA 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+  /* HERO */
+  .bl-hero {
+    background: linear-gradient(135deg, #211D16 0%, #37322A 100%);
+    padding: 52px 0 56px;
+  }
+  .bl-eyebrow { display: inline-block; font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #C4622D; margin-bottom: 12px; }
+  .bl-hero h1 { font-family: 'Fraunces', Georgia, serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 400; color: #fff; margin-bottom: 10px; }
+  .bl-hero p { font-size: 16px; color: rgba(255,255,255,.65); max-width: 540px; margin: 0; line-height: 1.7; }
+
+  /* BODY */
+  .bl-body { padding: 48px 0 64px; background: #FAF6EF; }
+
+  /* TAGS */
+  .bl-tag { display: inline-block; font-family: 'Manrope', sans-serif; font-size: 10.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #C4622D; margin-bottom: 10px; }
+
+  /* FEATURED */
+  .bl-featured {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    background: #fff; border: 1.5px solid #E8E1D2;
+    border-radius: 24px; overflow: hidden;
+    text-decoration: none; margin-bottom: 40px;
+    transition: all .3s; min-height: 360px;
+  }
+  .bl-featured:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(28,25,19,.12); border-color: rgba(196,98,45,.25); }
+  .bl-feat-img { position: relative; overflow: hidden; background: #F1EADD; display: flex; align-items: center; justify-content: center; min-height: 360px; }
+  .bl-feat-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; transition: transform .5s; }
+  .bl-featured:hover .bl-feat-img img { transform: scale(1.05); }
+  .bl-feat-ph { font-size: 4rem; }
+  .bl-feat-body { padding: 40px; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+  .bl-feat-title { font-family: 'Fraunces', Georgia, serif; font-size: clamp(1.3rem, 2.5vw, 2rem); font-weight: 400; color: #211D16; line-height: 1.25; }
+  .bl-feat-exc { font-size: 15px; color: #7C7466; line-height: 1.7; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; margin: 0; }
+  .bl-meta { display: flex; gap: 14px; font-size: 12.5px; color: #ABA394; font-family: 'Manrope', sans-serif; }
+  .bl-read-link { font-size: 14px; font-weight: 800; color: #C4622D; font-family: 'Manrope', sans-serif; margin-top: 4px; }
+
+  /* GRID */
+  .bl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .bl-card {
+    background: #fff; border: 1.5px solid #E8E1D2; border-radius: 20px;
+    overflow: hidden; text-decoration: none; display: flex; flex-direction: column;
+    transition: all .3s;
+  }
+  .bl-card:hover { transform: translateY(-5px); box-shadow: 0 14px 40px rgba(28,25,19,.1); border-color: rgba(196,98,45,.25); }
+  .bl-card-img { height: 220px; overflow: hidden; background: #F1EADD; display: flex; align-items: center; justify-content: center; }
+  .bl-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+  .bl-card:hover .bl-card-img img { transform: scale(1.05); }
+  .bl-card-ph { font-size: 3rem; }
+  .bl-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .bl-card-title { font-family: 'Fraunces', Georgia, serif; font-size: 1.15rem; font-weight: 400; color: #211D16; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .bl-card-exc { font-size: 13.5px; color: #7C7466; line-height: 1.6; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; flex: 1; }
+
+  @media (max-width: 900px) {
+    .bl-featured { grid-template-columns: 1fr; }
+    .bl-feat-img { min-height: 240px; }
+    .bl-grid { grid-template-columns: repeat(2,1fr); }
+  }
+  @media (max-width: 540px) {
+    .bl-grid { grid-template-columns: 1fr; }
+    .bl-feat-body { padding: 24px; }
+  }
+
+  @media (max-width: 640px) {
+    .bl-hero { padding: 26px 0 30px; }
+    .bl-body { padding: 24px 0 40px; }
+  }
   `]
 })
 export class BlogListComponent implements OnInit {
   posts = signal<any[]>([]);
+  loading = signal(true);
+  mediaUrl = (environment as any).mediaUrl || '';
+
   constructor(private api: ApiService, private seo: SeoService) {}
+
   ngOnInit() {
-    this.seo.setMeta({ title: 'The Journal', description: 'Recipes, stories and kitchen wisdom from The Desi.' });
-    this.api.getBlogs().subscribe({ next: (r: any) => { if (r.success) this.posts.set(r.data || []); }, error: () => {} });
+    this.seo.setMeta({ title: 'Blog & Recipes', description: 'Discover authentic Indian recipes, cooking tips, and more.' });
+    this.api.getBlogs().subscribe({
+      next: (r: any) => { if (r.success) this.posts.set(r.data || []); this.loading.set(false); },
+      error: () => this.loading.set(false)
+    });
+  }
+
+  media(p: string) { if (!p) return ''; return p.startsWith('http') ? p : this.mediaUrl + p; }
+
+  formatDate(d: string): string {
+    try { return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return d; }
   }
 }
