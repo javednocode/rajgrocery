@@ -18,14 +18,22 @@ import { environment } from '../../../environments/environment';
   @if (loading()) {
     <div class="container pd-skel-wrap">
       <div class="pd-skel-grid">
-        <div class="skeleton" style="aspect-ratio:1/1;border-radius:14px"></div>
+        <div class="pd-skel-gallery">
+          <div class="skeleton" style="aspect-ratio:1/1;border-radius:16px"></div>
+          <div class="pd-skel-thumbs">
+            @for (t of [1,2,3,4]; track t) {
+              <div class="skeleton pd-skel-thumb"></div>
+            }
+          </div>
+        </div>
         <div class="pd-skel-info">
-          <div class="skeleton" style="height:12px;width:80px;border-radius:6px"></div>
-          <div class="skeleton" style="height:36px;width:90%;border-radius:8px;margin-top:6px"></div>
-          <div class="skeleton" style="height:36px;width:55%;border-radius:8px;margin-top:4px"></div>
-          <div class="skeleton" style="height:12px;width:100px;border-radius:6px;margin-top:8px"></div>
-          <div class="skeleton" style="height:72px;border-radius:10px;margin-top:12px"></div>
-          <div class="skeleton" style="height:52px;border-radius:999px;margin-top:12px"></div>
+          <div class="skeleton" style="height:11px;width:90px;border-radius:6px"></div>
+          <div class="skeleton" style="height:42px;width:92%;border-radius:10px;margin-top:8px"></div>
+          <div class="skeleton" style="height:42px;width:65%;border-radius:10px;margin-top:4px"></div>
+          <div class="skeleton" style="height:11px;width:110px;border-radius:6px;margin-top:8px"></div>
+          <div class="skeleton" style="height:56px;border-radius:10px;margin-top:16px"></div>
+          <div class="skeleton" style="height:80px;border-radius:12px;margin-top:10px"></div>
+          <div class="skeleton" style="height:56px;border-radius:999px;margin-top:14px"></div>
         </div>
       </div>
     </div>
@@ -95,22 +103,29 @@ import { environment } from '../../../environments/environment';
               }
 
               <!-- New badge -->
-              @if (p.is_new) {
+              @if (p.is_new && discount() === 0) {
                 <span class="pd-new-badge">New</span>
               }
 
-              <!-- Image nav buttons -->
+              <!-- Out of stock overlay -->
+              @if (p.stock <= 0) {
+                <div class="pd-oos-overlay">
+                  <span class="pd-oos-label">Out of Stock</span>
+                </div>
+              }
+
+              <!-- Image nav -->
               @if (productImages(p).length > 1) {
                 <button class="pd-img-btn pd-img-prev" type="button"
                   (click)="prevImage()" aria-label="Previous image">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
                     <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2"
                       stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
                 </button>
                 <button class="pd-img-btn pd-img-next" type="button"
                   (click)="nextImage()" aria-label="Next image">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
                     <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2"
                       stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
@@ -123,7 +138,7 @@ import { environment } from '../../../environments/environment';
                 </div>
               }
 
-              <!-- Wishlist -->
+              <!-- Wishlist button -->
               <button class="pd-wish-btn"
                 [class.on]="wishlist.has(p.id)"
                 (click)="wishlist.toggle(p, media(selectedImage()))"
@@ -158,6 +173,7 @@ import { environment } from '../../../environments/environment';
             <!-- Category chip -->
             @if (p.categories?.[0]) {
               <a class="pd-cat-chip" [routerLink]="['/category', p.categories[0].slug]">
+                <span class="pd-cat-chip-line" aria-hidden="true"></span>
                 {{ p.categories[0].name }}
               </a>
             }
@@ -165,10 +181,12 @@ import { environment } from '../../../environments/environment';
             <!-- Product name -->
             <h1 class="pd-name">{{ p.name }}</h1>
 
-            <!-- Brand + SKU line -->
+            <!-- Brand + SKU -->
             @if (p.brand || p.sku) {
               <div class="pd-meta-line">
-                @if (p.brand) { <span class="pd-brand">{{ p.brand }}</span> }
+                @if (p.brand) {
+                  <span class="pd-brand">{{ p.brand }}</span>
+                }
                 @if (p.sku) {
                   <span class="pd-sku">SKU: <strong>{{ p.sku }}</strong></span>
                 }
@@ -178,9 +196,14 @@ import { environment } from '../../../environments/environment';
             <!-- Price block -->
             <div class="pd-price-block">
               @if (onSale()) {
-                <span class="pd-price-main">{{ cur }}{{ activePrice() }}</span>
-                <span class="pd-price-was">{{ cur }}{{ p.price }}</span>
+                <div class="pd-price-sale-row">
+                  <span class="pd-price-main">{{ cur }}{{ activePrice() }}</span>
+                  <span class="pd-price-was">{{ cur }}{{ p.price }}</span>
+                </div>
                 <span class="pd-save-tag">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                    <path d="M20 7H4l2 12h12L20 7zM9 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
                   Save {{ cur }}{{ (+p.price - +activePrice()).toFixed(2) }}
                 </span>
               } @else {
@@ -190,12 +213,21 @@ import { environment } from '../../../environments/environment';
 
             <!-- Stock status -->
             <div class="pd-stock-row">
-              <span class="pd-stock-dot" [class.out]="p.stock <= 0"></span>
-              <span class="pd-stock-label" [class.out]="p.stock <= 0">
-                {{ p.stock > 0 ? 'In Stock' : 'Out of Stock' }}
-              </span>
-              @if (p.stock > 0 && p.stock <= 10) {
-                <span class="pd-stock-warn">Only {{ p.stock }} left</span>
+              @if (p.stock > 0) {
+                <span class="pd-stock-dot"></span>
+                <span class="pd-stock-label">In Stock</span>
+                @if (p.stock <= 10) {
+                  <span class="pd-stock-warn">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                    </svg>
+                    Only {{ p.stock }} left
+                  </span>
+                }
+              } @else {
+                <span class="pd-stock-dot out"></span>
+                <span class="pd-stock-label out">Out of Stock</span>
               }
             </div>
 
@@ -204,24 +236,31 @@ import { environment } from '../../../environments/environment';
               <p class="pd-short-desc">{{ p.short_description }}</p>
             }
 
+            <!-- Divider -->
+            <div class="pd-divider"></div>
+
             <!-- Variations -->
             @if (p.variations?.length) {
               <div class="pd-variants">
-                <span class="pd-variants-label">
-                  Options
+                <div class="pd-variants-header">
+                  <span class="pd-variants-label">Options</span>
                   @if (selectedVariation()) {
-                    <strong>— {{ selectedVariation().name }}</strong>
+                    <span class="pd-variants-selected">{{ selectedVariation().name }}</span>
                   }
-                </span>
+                </div>
                 <div class="pd-var-row">
                   @for (v of p.variations; track v.id) {
                     <button class="pd-var-btn" type="button"
                       [class.on]="selectedVariation()?.id === v.id"
+                      [class.oos]="v.stock <= 0"
                       [disabled]="v.stock <= 0"
                       (click)="pickVar(v)"
                       [attr.aria-pressed]="selectedVariation()?.id === v.id">
                       <span class="pd-var-name">{{ v.name }}</span>
                       <em class="pd-var-price">{{ cur }}{{ v.sale_price && +v.sale_price < +v.price ? v.sale_price : v.price }}</em>
+                      @if (v.stock <= 0) {
+                        <span class="pd-var-oos" aria-label="Out of stock">✕</span>
+                      }
                     </button>
                   }
                 </div>
@@ -246,21 +285,28 @@ import { environment } from '../../../environments/environment';
                     </svg>
                   </button>
                 </div>
+                <span class="pd-qty-price" aria-live="polite">
+                  {{ cur }}{{ (+activePrice() * qty).toFixed(2) }}
+                </span>
               </div>
 
               <button class="pd-atc-btn" type="button"
                 [disabled]="p.stock <= 0 || adding()"
+                [class.pd-atc-added]="added()"
                 (click)="addToCart(p)">
                 @if (added()) {
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                     <path d="M5 13l4 4 10-11" stroke="currentColor" stroke-width="2.5"
                       stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
-                  Added to cart!
+                  Added to Cart!
                 } @else if (p.stock <= 0) {
                   Out of Stock
+                } @else if (adding()) {
+                  <span class="pd-atc-spinner" aria-hidden="true"></span>
+                  Adding…
                 } @else {
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                     <path d="M6 7h14l-1.5 9.5a2 2 0 0 1-2 1.5H9a2 2 0 0 1-2-1.7L5.3 4.6A2 2 0 0 0 3.3 3H2"
                       stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
                     <circle cx="10" cy="21" r="1.3" fill="currentColor"/>
@@ -269,9 +315,22 @@ import { environment } from '../../../environments/environment';
                   Add to Cart
                 }
               </button>
+
+              <!-- Secondary: wishlist button (text link) -->
+              <button class="pd-wish-link"
+                [class.on]="wishlist.has(p.id)"
+                (click)="wishlist.toggle(p, media(selectedImage()))"
+                type="button">
+                <svg width="15" height="15" viewBox="0 0 24 24"
+                  [attr.fill]="wishlist.has(p.id) ? 'currentColor' : 'none'">
+                  <path d="M12 20s-7-4.3-9.3-8.6C1 8 2.6 4.7 6 4.3c2-.2 3.6.8 4.5 2.3h3c.9-1.5 2.5-2.5 4.5-2.3 3.4.4 5 3.7 3.3 7.1C19 15.7 12 20 12 20z"
+                    stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                </svg>
+                {{ wishlist.has(p.id) ? 'Saved to Wishlist' : 'Add to Wishlist' }}
+              </button>
             </div>
 
-            <!-- Trust strip — verifiable claims only -->
+            <!-- Trust strip -->
             <div class="pd-trust" aria-label="Shopping assurance">
               <div class="pd-trust-item">
                 <span class="pd-trust-icon">
@@ -280,7 +339,7 @@ import { environment } from '../../../environments/environment';
                     <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
                   </svg>
                 </span>
-                <div><strong>Secure Checkout</strong><span>256-bit encrypted</span></div>
+                <div><strong>Secure Checkout</strong><span>256-bit SSL</span></div>
               </div>
               <div class="pd-trust-item">
                 <span class="pd-trust-icon">
@@ -289,7 +348,7 @@ import { environment } from '../../../environments/environment';
                     <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="1.7"/>
                   </svg>
                 </span>
-                <div><strong>Local HK Store</strong><span>Hong Kong based</span></div>
+                <div><strong>Hong Kong Store</strong><span>Local delivery</span></div>
               </div>
               <div class="pd-trust-item">
                 <span class="pd-trust-icon">
@@ -305,13 +364,13 @@ import { environment } from '../../../environments/environment';
           </div>
         </div>
 
-        <!-- ═══ TABS: Description / Specifications ═══ -->
+        <!-- ═══ TABS ═══ -->
         <div class="pd-tabs">
           <div class="pd-tab-row" role="tablist">
             <button class="pd-tab" role="tab" [class.on]="activeTab() === 'desc'"
               [attr.aria-selected]="activeTab() === 'desc'"
               (click)="activeTab.set('desc')">Description</button>
-            @if (p.specifications?.length || p.weight) {
+            @if (p.specifications?.length || p.weight || p.sku || p.brand || p.unit) {
               <button class="pd-tab" role="tab" [class.on]="activeTab() === 'specs'"
                 [attr.aria-selected]="activeTab() === 'specs'"
                 (click)="activeTab.set('specs')">Specifications</button>
@@ -354,7 +413,7 @@ import { environment } from '../../../environments/environment';
         @if (related().length) {
           <section class="pd-related">
             <div class="pd-related-head">
-              <span class="sec-eyebrow">From the same shelf</span>
+              <p class="sec-eyebrow">From the same shelf</p>
               <h2 class="pd-related-title">You May Also Like</h2>
             </div>
             <div class="pd-related-grid">
@@ -369,14 +428,17 @@ import { environment } from '../../../environments/environment';
     </div>
 
     <!-- ═══ STICKY MOBILE ADD-TO-CART BAR ═══ -->
-    <!-- Only shows on mobile (≤900px), positioned above bottom nav -->
     @if (p.stock > 0) {
-      <div class="pd-sticky-bar">
+      <div class="pd-sticky-bar" [class.pd-sticky-added]="added()">
         <div class="pd-sticky-info">
           @if (selectedImage()) {
-            <img [src]="media(selectedImage())" [alt]="p.name" class="pd-sticky-thumb" />
+            <img [src]="media(selectedImage())" [alt]="p.name" class="pd-sticky-thumb"
+                 (error)="onImgErr($event)" />
           }
-          <span class="pd-sticky-price">{{ cur }}{{ activePrice() }}</span>
+          <div class="pd-sticky-details">
+            <span class="pd-sticky-name">{{ p.name }}</span>
+            <span class="pd-sticky-price">{{ cur }}{{ activePrice() }}</span>
+          </div>
         </div>
         <button class="pd-sticky-btn" type="button"
           (click)="addToCart(p)" [disabled]="adding()">
@@ -389,350 +451,445 @@ import { environment } from '../../../environments/environment';
 
   styles: [`
   /* ── Skeleton ── */
-  .pd-skel-wrap { padding: 48px 0 64px; }
-  .pd-skel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
-  .pd-skel-info { display: flex; flex-direction: column; gap: 10px; }
-  .skeleton {
-    background: linear-gradient(90deg, var(--kg-warm) 25%, var(--kg-sand) 50%, var(--kg-warm) 75%);
-    background-size: 200% 100%; animation: shimmer 1.6s infinite;
+  .pd-skel-wrap { padding: 52px 0 72px; }
+  .pd-skel-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start;
   }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .pd-skel-gallery { display: flex; flex-direction: column; gap: 14px; }
+  .pd-skel-thumbs { display: flex; gap: 10px; }
+  .pd-skel-thumb { width: 72px; height: 72px; border-radius: var(--r); flex-shrink: 0; }
+  .pd-skel-info { display: flex; flex-direction: column; gap: 12px; }
 
   /* ── Not found ── */
   .pd-notfound {
     display: flex; flex-direction: column; align-items: center;
-    gap: 18px; padding: 80px 24px; text-align: center; max-width: 440px; margin: 0 auto;
+    gap: 18px; padding: 88px 24px; text-align: center; max-width: 440px; margin: 0 auto;
   }
   .pd-notfound-icon {
-    width: 80px; height: 80px; border-radius: var(--r-xl);
-    background: var(--kg-warm); color: var(--kg-faint);
-    display: grid; place-items: center; border: 1.5px solid var(--kg-line);
+    width: 84px; height: 84px; border-radius: var(--r-xl);
+    background: var(--raj-warm); color: var(--raj-faint);
+    display: grid; place-items: center; border: 1.5px solid var(--raj-line);
   }
-  .pd-notfound-title { font-size: 1.4rem; font-weight: 800; color: var(--kg-ink); margin: 0; }
-  .pd-notfound-text { font-size: 14.5px; color: var(--kg-muted); line-height: 1.7; margin: 0; }
+  .pd-notfound-title {
+    font-family: var(--font-display); font-size: 1.5rem; font-weight: 600;
+    color: var(--raj-ink); margin: 0;
+  }
+  .pd-notfound-text { font-size: 14.5px; color: var(--raj-muted); line-height: 1.72; margin: 0; }
   .pd-notfound-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 
   /* ── Wrap ── */
-  .pd-wrap { padding: 36px 0 72px; background: var(--kg-cream); }
+  .pd-wrap { padding: 40px 0 80px; background: var(--raj-canvas); }
 
   /* ── Breadcrumb ── */
   .pd-crumbs {
-    display: flex; align-items: center; gap: 6px;
-    font-size: 12.5px; color: var(--kg-faint); margin-bottom: 32px; flex-wrap: wrap;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    font-size: 12px; color: var(--raj-faint); margin-bottom: 36px;
+    font-family: var(--font-sans); font-weight: 700;
+    letter-spacing: .04em; text-transform: uppercase;
   }
-  .pd-crumbs a { color: var(--kg-muted); text-decoration: none; transition: color .2s; font-weight: 600; }
-  .pd-crumbs a:hover { color: var(--kg-forest); }
-  .pd-crumbs svg { opacity: .38; flex-shrink: 0; }
-  .pd-crumbs span { color: var(--kg-ink); font-weight: 700; }
+  .pd-crumbs a { color: var(--raj-muted); text-decoration: none; transition: color .2s; }
+  .pd-crumbs a:hover { color: var(--raj-leaf); }
+  .pd-crumbs svg { opacity: .35; flex-shrink: 0; }
+  .pd-crumbs span { color: var(--raj-ink); }
 
   /* ── Main grid ── */
   .pd-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 56px;
-    margin-bottom: 52px; align-items: start;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+    margin-bottom: 56px; align-items: start;
   }
 
   /* ═══ GALLERY ═══ */
-  .pd-gallery { display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(var(--header-height) + 16px); }
+  .pd-gallery {
+    display: flex; flex-direction: column; gap: 14px;
+    position: sticky; top: calc(var(--header-height) + 18px);
+  }
 
   .pd-main-img-wrap {
-    position: relative; border-radius: 14px; overflow: hidden;
-    background: var(--kg-warm); border: 1.5px solid var(--kg-line);
+    position: relative; border-radius: 18px; overflow: hidden;
+    background: var(--raj-warm);
+    border: 1.5px solid var(--raj-line);
     aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center;
     touch-action: pan-y;
+    box-shadow: var(--shadow-sm);
   }
   .pd-main-img {
-    width: 80%; height: 80%; object-fit: contain;
-    transition: opacity .25s;
+    width: 82%; height: 82%; object-fit: contain;
+    transition: opacity .22s;
   }
-  .pd-img-anim { animation: pdImgPop .28s var(--ease2); }
-  @keyframes pdImgPop { 0% { transform: scale(.96); opacity: .7; } 100% { transform: scale(1); opacity: 1; } }
+  .pd-img-anim { animation: pdImgPop .3s var(--ease2) both; }
+  @keyframes pdImgPop {
+    0% { transform: scale(.95); opacity: .6; }
+    100% { transform: scale(1); opacity: 1; }
+  }
 
   .pd-mono {
-    font-family: var(--font-sans); font-size: clamp(80px, 14vw, 140px);
-    font-weight: 800; color: var(--kg-line-warm); user-select: none;
+    font-family: var(--font-display);
+    font-size: clamp(80px, 14vw, 140px);
+    font-weight: 600; color: var(--raj-line-warm); user-select: none;
+  }
+
+  /* OOS overlay */
+  .pd-oos-overlay {
+    position: absolute; inset: 0; z-index: 5;
+    background: rgba(250,247,241,.72); backdrop-filter: blur(3px);
+    display: grid; place-items: center;
+  }
+  .pd-oos-label {
+    font-family: var(--font-sans); font-size: 15px; font-weight: 800;
+    color: var(--raj-ink); background: var(--raj-paper);
+    border: 1.5px solid var(--raj-line); border-radius: var(--r-full);
+    padding: 10px 22px; letter-spacing: .04em;
   }
 
   /* Badges */
   .pd-disc-badge {
-    position: absolute; top: 12px; left: 12px;
-    background: var(--kg-terra); color: #FFFFFF;
-    font-size: 11.5px; font-weight: 800; padding: 4px 12px;
+    position: absolute; top: 14px; left: 14px; z-index: 4;
+    background: var(--raj-chilli); color: #FFFFFF;
+    font-size: 12px; font-weight: 800; padding: 5px 14px;
     border-radius: var(--r-full); font-family: var(--font-sans); letter-spacing: .04em;
+    box-shadow: 0 3px 10px rgba(192,57,43,.3);
   }
   .pd-new-badge {
-    position: absolute; top: 12px; left: 12px;
-    background: var(--kg-forest); color: #FFFFFF;
-    font-size: 11.5px; font-weight: 800; padding: 4px 12px;
+    position: absolute; top: 14px; left: 14px; z-index: 4;
+    background: var(--raj-leaf); color: #FFFFFF;
+    font-size: 12px; font-weight: 800; padding: 5px 14px;
     border-radius: var(--r-full); font-family: var(--font-sans);
   }
-  .pd-disc-badge + .pd-new-badge { left: auto; right: 12px; }
 
-  /* Image nav */
+  /* Nav buttons */
   .pd-img-btn {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    width: 36px; height: 36px; border-radius: var(--r-full);
-    background: rgba(255,255,255,.92); color: var(--kg-ink);
-    border: 1.5px solid var(--kg-line); display: grid; place-items: center;
-    box-shadow: var(--shadow-xs); transition: all .2s; cursor: pointer;
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 4;
+    width: 40px; height: 40px; border-radius: var(--r-full);
+    background: rgba(255,255,255,.95); color: var(--raj-ink);
+    border: 1.5px solid var(--raj-line); display: grid; place-items: center;
+    box-shadow: var(--shadow-sm); transition: all .22s; cursor: pointer;
   }
-  .pd-img-btn:hover { color: var(--kg-forest); border-color: var(--kg-forest); background: #FFFFFF; box-shadow: var(--shadow-sm); }
-  .pd-img-prev { left: 10px; }
-  .pd-img-next { right: 10px; }
+  .pd-img-btn:hover { color: var(--raj-leaf); border-color: var(--raj-leaf); background: #FFFFFF; box-shadow: var(--shadow); }
+  .pd-img-prev { left: 12px; }
+  .pd-img-next { right: 12px; }
 
+  /* Dot indicators */
   .pd-img-dots {
-    position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 5px; padding: 5px 8px; border-radius: var(--r-full);
-    background: rgba(255,255,255,.82); border: 1px solid var(--kg-line-lt);
+    position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 4;
+    display: flex; gap: 5px; padding: 6px 10px; border-radius: var(--r-full);
+    background: rgba(255,255,255,.85); border: 1px solid var(--raj-line-lt);
   }
-  .pd-img-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--kg-line-warm); transition: all .3s; }
-  .pd-img-dots span.on { width: 14px; border-radius: var(--r-full); background: var(--kg-forest); }
+  .pd-img-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--raj-line-warm); transition: all .3s; }
+  .pd-img-dots span.on { width: 16px; border-radius: var(--r-full); background: var(--raj-leaf); }
 
-  /* Wishlist */
+  /* Wishlist (on gallery image) */
   .pd-wish-btn {
-    position: absolute; top: 12px; right: 12px;
-    width: 38px; height: 38px; border-radius: var(--r-full);
-    background: rgba(255,255,255,.92); border: 1.5px solid var(--kg-line);
-    display: grid; place-items: center; color: var(--kg-faint);
+    position: absolute; top: 14px; right: 14px; z-index: 4;
+    width: 40px; height: 40px; border-radius: var(--r-full);
+    background: rgba(255,255,255,.95); border: 1.5px solid var(--raj-line);
+    display: grid; place-items: center; color: var(--raj-faint);
     cursor: pointer; transition: all .22s; backdrop-filter: blur(4px);
   }
-  .pd-wish-btn:hover { color: var(--kg-clay); border-color: var(--kg-clay); }
-  .pd-wish-btn.on { color: var(--kg-clay); border-color: rgba(192,57,43,.4); background: var(--kg-clay-bg); }
+  .pd-wish-btn:hover { color: var(--raj-chilli); border-color: var(--raj-chilli); }
+  .pd-wish-btn.on { color: var(--raj-chilli); border-color: rgba(192,57,43,.45); background: var(--raj-chilli-bg); }
 
   /* Thumbnails */
-  .pd-thumbs { display: flex; gap: 9px; flex-wrap: wrap; }
+  .pd-thumbs { display: flex; gap: 10px; flex-wrap: wrap; }
   .pd-thumb {
-    width: 70px; height: 70px; border-radius: var(--r);
-    border: 2px solid var(--kg-line); background: var(--kg-warm);
-    overflow: hidden; cursor: pointer; transition: border-color .2s; padding: 0;
-    display: grid; place-items: center;
+    width: 74px; height: 74px; border-radius: var(--r);
+    border: 2px solid var(--raj-line); background: var(--raj-warm);
+    overflow: hidden; cursor: pointer; transition: border-color .22s, box-shadow .22s; padding: 0;
+    display: grid; place-items: center; flex-shrink: 0;
   }
-  .pd-thumb:hover { border-color: var(--kg-forest-lt); }
-  .pd-thumb.on { border-color: var(--kg-forest); box-shadow: 0 0 0 2px var(--kg-forest-bg); }
+  .pd-thumb:hover { border-color: var(--raj-leaf-lt); }
+  .pd-thumb.on { border-color: var(--raj-leaf); box-shadow: 0 0 0 3px var(--raj-leaf-bg); }
   .pd-thumb img { width: 100%; height: 100%; object-fit: contain; }
 
   /* ═══ INFO PANEL ═══ */
-  .pd-info { display: flex; flex-direction: column; gap: 16px; }
+  .pd-info { display: flex; flex-direction: column; gap: 18px; }
 
+  /* Category chip */
   .pd-cat-chip {
-    display: inline-flex; align-items: center;
-    font-size: 10.5px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
-    color: var(--kg-forest-dk); text-decoration: none; transition: color .2s;
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 10.5px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--raj-turmeric-dk); text-decoration: none; transition: color .2s;
     font-family: var(--font-sans);
   }
-  .pd-cat-chip:hover { color: var(--kg-terra); }
+  .pd-cat-chip-line {
+    display: inline-block; width: 18px; height: 2px;
+    background: var(--raj-turmeric); border-radius: 2px;
+  }
+  .pd-cat-chip:hover { color: var(--raj-leaf); }
 
+  /* Name */
   .pd-name {
-    font-family: var(--font-sans);
-    font-size: clamp(1.35rem, 2.4vw, 2rem);
-    font-weight: 800; color: var(--kg-ink); line-height: 1.18;
-    letter-spacing: -0.02em; margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 2.5vw, 2.1rem);
+    font-weight: 600; color: var(--raj-ink); line-height: 1.15;
+    letter-spacing: -0.022em; margin: 0;
   }
 
-  .pd-meta-line { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-  .pd-brand {
-    font-size: 12.5px; color: var(--kg-muted); font-weight: 700;
-    font-family: var(--font-sans);
-  }
-  .pd-sku { font-size: 12px; color: var(--kg-faint); font-family: var(--font-sans); }
-  .pd-sku strong { color: var(--kg-muted); }
+  /* Meta line */
+  .pd-meta-line { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: -6px; }
+  .pd-brand { font-size: 12.5px; color: var(--raj-muted); font-weight: 700; font-family: var(--font-sans); }
+  .pd-sku { font-size: 12px; color: var(--raj-faint); font-family: var(--font-sans); }
+  .pd-sku strong { color: var(--raj-muted); }
 
   /* Price */
-  .pd-price-block { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .pd-price-block { display: flex; flex-direction: column; gap: 6px; margin-top: -2px; }
+  .pd-price-sale-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   .pd-price-main {
-    font-family: var(--font-sans); font-size: clamp(1.6rem, 2.8vw, 2.1rem);
-    font-weight: 800; color: var(--kg-ink); line-height: 1;
-    letter-spacing: -0.02em;
+    font-family: var(--font-sans); font-size: clamp(1.7rem, 3vw, 2.3rem);
+    font-weight: 800; color: var(--raj-ink); line-height: 1;
+    letter-spacing: -0.025em; font-variant-numeric: tabular-nums;
   }
-  .pd-price-was { font-size: 15px; color: var(--kg-faint); text-decoration: line-through; font-weight: 600; }
+  .pd-price-was {
+    font-size: 16px; color: var(--raj-faint); text-decoration: line-through;
+    font-weight: 600; font-variant-numeric: tabular-nums;
+  }
   .pd-save-tag {
-    font-size: 12px; font-weight: 800; color: var(--kg-forest-dk);
-    background: var(--kg-forest-bg); padding: 3px 10px; border-radius: var(--r-full);
-    font-family: var(--font-sans);
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 800; color: var(--raj-leaf-dk);
+    background: var(--raj-leaf-bg); padding: 5px 12px; border-radius: var(--r-full);
+    border: 1px solid var(--raj-leaf-bg2); font-family: var(--font-sans);
   }
 
   /* Stock */
-  .pd-stock-row { display: flex; align-items: center; gap: 8px; }
-  .pd-stock-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--kg-forest-lt); flex-shrink: 0; }
-  .pd-stock-dot.out { background: var(--kg-clay); }
-  .pd-stock-label { font-size: 13.5px; font-weight: 700; color: var(--kg-forest); font-family: var(--font-sans); }
-  .pd-stock-label.out { color: var(--kg-clay); }
+  .pd-stock-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pd-stock-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--raj-leaf-lt); flex-shrink: 0; }
+  .pd-stock-dot.out { background: var(--raj-chilli); }
+  .pd-stock-label { font-size: 13.5px; font-weight: 700; color: var(--raj-leaf); font-family: var(--font-sans); }
+  .pd-stock-label.out { color: var(--raj-chilli); }
   .pd-stock-warn {
-    font-size: 11.5px; font-weight: 700; color: var(--kg-terra-dk);
-    background: var(--kg-terra-bg); padding: 3px 10px; border-radius: var(--r-full);
-    font-family: var(--font-sans);
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11.5px; font-weight: 700; color: var(--raj-turmeric-dk);
+    background: var(--raj-turmeric-bg); padding: 4px 11px; border-radius: var(--r-full);
+    border: 1px solid var(--raj-turmeric-bg2); font-family: var(--font-sans);
   }
 
-  .pd-short-desc { font-size: 14.5px; color: var(--kg-muted); line-height: 1.75; margin: 0; }
+  .pd-short-desc {
+    font-size: 15px; color: var(--raj-muted); line-height: 1.78; margin: 0;
+  }
+
+  /* Divider */
+  .pd-divider { height: 1px; background: var(--raj-line); margin: -4px 0; }
 
   /* Variations */
-  .pd-variants { display: flex; flex-direction: column; gap: 10px; }
+  .pd-variants { display: flex; flex-direction: column; gap: 12px; }
+  .pd-variants-header { display: flex; align-items: center; gap: 10px; }
   .pd-variants-label {
-    font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--kg-faint); font-family: var(--font-sans);
+    font-size: 10.5px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--raj-faint); font-family: var(--font-sans);
   }
-  .pd-variants-label strong { color: var(--kg-ink); font-weight: 700; text-transform: none; letter-spacing: 0; }
+  .pd-variants-selected {
+    font-size: 12.5px; font-weight: 700; color: var(--raj-leaf-dk);
+    background: var(--raj-leaf-bg); padding: 3px 10px; border-radius: var(--r-full);
+    border: 1px solid var(--raj-leaf-bg2); font-family: var(--font-sans);
+  }
   .pd-var-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .pd-var-btn {
-    display: flex; flex-direction: column; align-items: center; gap: 2px;
-    padding: 9px 16px; border: 1.5px solid var(--kg-line-warm); border-radius: var(--r);
-    font-family: var(--font-sans); cursor: pointer; transition: all .2s; background: var(--kg-paper);
+    position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 10px 16px; border: 1.5px solid var(--raj-line-warm); border-radius: var(--r);
+    font-family: var(--font-sans); cursor: pointer; transition: all .22s;
+    background: var(--raj-paper); min-width: 72px;
   }
-  .pd-var-btn:hover:not(:disabled) { border-color: var(--kg-forest); }
-  .pd-var-btn.on { border-color: var(--kg-forest); background: var(--kg-forest-bg); box-shadow: 0 0 0 1px var(--kg-forest); }
-  .pd-var-btn:disabled { opacity: .42; cursor: not-allowed; }
-  .pd-var-name { font-size: 13px; font-weight: 700; color: var(--kg-ink); }
-  .pd-var-price { font-style: normal; font-size: 12px; color: var(--kg-muted); font-weight: 600; }
-  .pd-var-btn.on .pd-var-name { color: var(--kg-forest-dk); }
+  .pd-var-btn:hover:not(:disabled):not(.oos) { border-color: var(--raj-leaf); }
+  .pd-var-btn.on {
+    border-color: var(--raj-leaf); background: var(--raj-leaf-bg);
+    box-shadow: 0 0 0 1.5px var(--raj-leaf);
+  }
+  .pd-var-btn.oos { opacity: .42; cursor: not-allowed; }
+  .pd-var-btn:disabled { cursor: not-allowed; }
+  .pd-var-name { font-size: 13.5px; font-weight: 700; color: var(--raj-ink); }
+  .pd-var-price { font-style: normal; font-size: 12px; color: var(--raj-muted); font-weight: 600; }
+  .pd-var-btn.on .pd-var-name { color: var(--raj-leaf-dk); }
+  .pd-var-oos {
+    position: absolute; top: 5px; right: 7px; font-size: 9px;
+    color: var(--raj-chilli); font-weight: 800;
+  }
 
   /* Quantity + ATC */
   .pd-atc-area { display: flex; flex-direction: column; gap: 12px; }
-  .pd-qty-row { display: flex; align-items: center; gap: 12px; }
+  .pd-qty-row { display: flex; align-items: center; gap: 14px; }
   .pd-qty {
     display: flex; align-items: center;
-    border: 1.5px solid var(--kg-line-warm); border-radius: var(--r-lg); overflow: hidden;
-    flex-shrink: 0; background: var(--kg-paper);
+    border: 1.5px solid var(--raj-line-warm); border-radius: var(--r-lg); overflow: hidden;
+    flex-shrink: 0; background: var(--raj-paper);
   }
   .pd-qty-btn {
-    width: 44px; height: 48px; display: grid; place-items: center;
-    color: var(--kg-ink); cursor: pointer; background: none;
+    width: 46px; height: 50px; display: grid; place-items: center;
+    color: var(--raj-ink); cursor: pointer; background: none;
     transition: background .2s, color .2s;
   }
-  .pd-qty-btn:hover:not(:disabled) { background: var(--kg-forest-bg); color: var(--kg-forest); }
+  .pd-qty-btn:hover:not(:disabled) { background: var(--raj-leaf-bg); color: var(--raj-leaf); }
   .pd-qty-btn:disabled { opacity: .3; cursor: not-allowed; }
   .pd-qty-val {
-    min-width: 44px; text-align: center; font-size: 15.5px; font-weight: 800;
-    color: var(--kg-ink); font-family: var(--font-sans);
-    border-left: 1.5px solid var(--kg-line-lt); border-right: 1.5px solid var(--kg-line-lt);
+    min-width: 46px; text-align: center; font-size: 16px; font-weight: 800;
+    color: var(--raj-ink); font-family: var(--font-sans);
+    border-left: 1.5px solid var(--raj-line-lt); border-right: 1.5px solid var(--raj-line-lt);
+    font-variant-numeric: tabular-nums;
   }
+  .pd-qty-price {
+    font-family: var(--font-sans); font-size: 15px; font-weight: 700;
+    color: var(--raj-muted); font-variant-numeric: tabular-nums;
+  }
+
   .pd-atc-btn {
     width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
-    background: var(--kg-forest); color: #FFFFFF;
-    border: none; border-radius: var(--r-xl); padding: 16px 28px;
-    font-family: var(--font-sans); font-size: 15.5px; font-weight: 800;
-    cursor: pointer; transition: all .28s; box-shadow: var(--shadow-forest);
+    background: var(--raj-leaf); color: #FFFFFF;
+    border: none; border-radius: var(--r-2xl); padding: 17px 28px;
+    font-family: var(--font-sans); font-size: 16px; font-weight: 800;
+    cursor: pointer; transition: all .3s var(--ease); box-shadow: var(--shadow-leaf);
     letter-spacing: 0.01em;
   }
   .pd-atc-btn:hover:not(:disabled) {
-    background: var(--kg-forest-dk); transform: translateY(-2px);
-    box-shadow: 0 14px 32px rgba(27,76,140,.35);
+    background: var(--raj-leaf-dk); transform: translateY(-2px);
+    box-shadow: 0 16px 38px rgba(23,81,63,.32);
   }
+  .pd-atc-btn:active:not(:disabled) { transform: translateY(0); }
   .pd-atc-btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; transform: none; }
+  .pd-atc-btn.pd-atc-added { background: var(--raj-leaf-dk); }
+  .pd-atc-spinner {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+    animation: pdSpin .65s linear infinite; flex-shrink: 0;
+  }
+  @keyframes pdSpin { to { transform: rotate(360deg); } }
+
+  /* Wishlist text link */
+  .pd-wish-link {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: var(--font-sans); font-size: 13.5px; font-weight: 700;
+    color: var(--raj-muted); background: none; border: 1.5px solid var(--raj-line);
+    border-radius: var(--r-full); padding: 10px 20px; cursor: pointer; transition: all .22s;
+  }
+  .pd-wish-link:hover { color: var(--raj-chilli); border-color: var(--raj-chilli); background: var(--raj-chilli-bg); }
+  .pd-wish-link.on { color: var(--raj-chilli); border-color: rgba(192,57,43,.38); background: var(--raj-chilli-bg); }
 
   /* Trust strip */
   .pd-trust {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-    padding: 14px; background: var(--kg-warm); border-radius: var(--r-lg);
-    border: 1px solid var(--kg-line);
+    padding: 14px; background: var(--raj-warm); border-radius: var(--r-lg);
+    border: 1px solid var(--raj-line);
   }
   .pd-trust-item {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 8px; border-radius: var(--r); background: var(--kg-paper);
-    border: 1px solid var(--kg-line-lt);
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 10px; border-radius: var(--r); background: var(--raj-paper);
+    border: 1px solid var(--raj-line-lt);
   }
   .pd-trust-icon {
-    width: 28px; height: 28px; border-radius: var(--r-sm); flex-shrink: 0;
+    width: 30px; height: 30px; border-radius: var(--r-sm); flex-shrink: 0;
     display: grid; place-items: center;
-    background: var(--kg-forest-bg); color: var(--kg-forest);
+    background: var(--raj-leaf-bg); color: var(--raj-leaf);
   }
-  .pd-trust-icon svg { width: 15px; height: 15px; }
+  .pd-trust-icon svg { width: 16px; height: 16px; }
   .pd-trust-item > div { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
-  .pd-trust-item strong { font-size: 11px; color: var(--kg-ink); font-family: var(--font-sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pd-trust-item span { font-size: 10px; color: var(--kg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pd-trust-item strong { font-size: 11px; color: var(--raj-ink); font-family: var(--font-sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pd-trust-item span { font-size: 10px; color: var(--raj-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   /* ═══ TABS ═══ */
-  .pd-tabs { margin-bottom: 52px; border-top: 1px solid var(--kg-line); padding-top: 0; }
+  .pd-tabs { margin-bottom: 56px; border-top: 1px solid var(--raj-line); padding-top: 0; }
   .pd-tab-row {
-    display: flex; gap: 0; border-bottom: 2px solid var(--kg-line-lt); margin-bottom: 28px;
+    display: flex; gap: 0; border-bottom: 2px solid var(--raj-line-lt); margin-bottom: 30px;
   }
   .pd-tab {
-    padding: 14px 22px; font-family: var(--font-sans); font-size: 14px; font-weight: 700;
-    color: var(--kg-muted); background: none; border: none;
-    border-bottom: 2px solid transparent; margin-bottom: -2px;
-    cursor: pointer; transition: all .2s; letter-spacing: .01em;
+    padding: 16px 24px; font-family: var(--font-sans); font-size: 14px; font-weight: 700;
+    color: var(--raj-muted); background: none; border: none;
+    border-bottom: 2.5px solid transparent; margin-bottom: -2px;
+    cursor: pointer; transition: all .22s; letter-spacing: .01em;
   }
-  .pd-tab.on { color: var(--kg-forest-dk); border-bottom-color: var(--kg-forest); }
-  .pd-tab:hover:not(.on) { color: var(--kg-ink); }
-  .pd-tab-body { min-height: 100px; }
+  .pd-tab.on { color: var(--raj-leaf-dk); border-bottom-color: var(--raj-leaf); }
+  .pd-tab:hover:not(.on) { color: var(--raj-ink); }
+  .pd-tab-body { min-height: 80px; }
   .pd-desc {
-    font-size: 15px; color: var(--kg-ink-2); line-height: 1.85;
-    max-width: 760px;
+    font-size: 15.5px; color: var(--raj-ink-2); line-height: 1.88;
+    max-width: 720px;
   }
-  .pd-desc h1, .pd-desc h2, .pd-desc h3 { margin: 20px 0 10px; }
-  .pd-desc p { margin-bottom: 14px; }
-  .pd-desc ul, .pd-desc ol { padding-left: 20px; margin-bottom: 14px; }
-  .pd-desc li { margin-bottom: 6px; }
-  .pd-desc-none { color: var(--kg-faint); font-style: italic; }
+  .pd-desc h1, .pd-desc h2, .pd-desc h3 { margin: 22px 0 10px; color: var(--raj-ink); }
+  .pd-desc p { margin-bottom: 16px; color: var(--raj-muted); }
+  .pd-desc ul, .pd-desc ol { padding-left: 22px; margin-bottom: 16px; }
+  .pd-desc li { margin-bottom: 6px; color: var(--raj-muted); }
+  .pd-desc-none { color: var(--raj-faint); font-style: italic; }
   .pd-specs { display: flex; flex-direction: column; max-width: 560px; }
   .pd-spec-row {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 0; border-bottom: 1px solid var(--kg-line-lt);
-    font-size: 13.5px; gap: 16px;
+    padding: 13px 0; border-bottom: 1px solid var(--raj-line-lt);
+    font-size: 14px; gap: 16px;
   }
   .pd-spec-row:last-child { border-bottom: none; }
-  .pd-spec-row span:first-child { color: var(--kg-muted); font-weight: 600; }
-  .pd-spec-row span:last-child { color: var(--kg-ink); font-weight: 700; text-align: right; }
+  .pd-spec-row span:first-child { color: var(--raj-muted); font-weight: 600; }
+  .pd-spec-row span:last-child { color: var(--raj-ink); font-weight: 700; text-align: right; }
 
-  /* ═══ RELATED PRODUCTS ═══ */
-  .pd-related { margin-bottom: 20px; }
-  .pd-related-head { margin-bottom: 28px; }
-  .pd-related-title { font-size: 1.4rem; font-weight: 800; color: var(--kg-ink); margin: 0; }
+  /* ═══ RELATED ═══ */
+  .pd-related { margin-bottom: 24px; }
+  .pd-related-head { margin-bottom: 30px; }
+  .pd-related-title {
+    font-family: var(--font-display); font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+    font-weight: 600; color: var(--raj-ink); margin: 0; letter-spacing: -0.02em;
+  }
   .pd-related-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 
   /* ═══ STICKY MOBILE BAR ═══ */
   .pd-sticky-bar {
     display: none;
-    position: fixed; bottom: 68px; left: 0; right: 0; z-index: 100;
-    background: var(--kg-paper); border-top: 1.5px solid var(--kg-line);
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+    background: var(--raj-paper);
+    border-top: 1.5px solid var(--raj-line);
     padding: 10px 16px; gap: 12px; align-items: center;
-    box-shadow: 0 -6px 22px rgba(18,56,33,.1);
+    box-shadow: 0 -8px 28px rgba(20,52,42,.1);
+    transition: background .3s;
   }
-  .pd-sticky-info { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+  .pd-sticky-bar.pd-sticky-added { background: var(--raj-leaf-bg); }
+  .pd-sticky-info { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
   .pd-sticky-thumb {
-    width: 38px; height: 38px; object-fit: contain; border-radius: var(--r);
-    background: var(--kg-warm); flex-shrink: 0; border: 1px solid var(--kg-line);
+    width: 40px; height: 40px; object-fit: contain; border-radius: var(--r);
+    background: var(--raj-warm); flex-shrink: 0; border: 1px solid var(--raj-line);
   }
-  .pd-sticky-price { font-size: 16px; font-weight: 800; color: var(--kg-ink); letter-spacing: -0.01em; }
+  .pd-sticky-details { display: flex; flex-direction: column; min-width: 0; }
+  .pd-sticky-name {
+    font-size: 12px; font-weight: 700; color: var(--raj-ink); font-family: var(--font-sans);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .pd-sticky-price {
+    font-size: 16px; font-weight: 800; color: var(--raj-ink);
+    letter-spacing: -0.01em; font-variant-numeric: tabular-nums;
+  }
   .pd-sticky-btn {
-    background: var(--kg-forest); color: #FFFFFF; border: none;
-    border-radius: var(--r-lg); padding: 12px 20px;
+    background: var(--raj-leaf); color: #FFFFFF; border: none;
+    border-radius: var(--r-lg); padding: 13px 22px;
     font-family: var(--font-sans); font-size: 14px; font-weight: 800; cursor: pointer;
     transition: background .22s; white-space: nowrap; flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(23,81,63,.28);
   }
-  .pd-sticky-btn:hover:not(:disabled) { background: var(--kg-forest-dk); }
+  .pd-sticky-btn:hover:not(:disabled) { background: var(--raj-leaf-dk); }
   .pd-sticky-btn:disabled { opacity: .5; cursor: not-allowed; }
 
   /* ═══ RESPONSIVE ═══ */
-  @media (max-width: 1000px) {
-    .pd-grid { grid-template-columns: 1fr 1fr; gap: 36px; }
+  @media (max-width: 1100px) {
+    .pd-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
     .pd-related-grid { grid-template-columns: repeat(2, 1fr); }
     .pd-trust { grid-template-columns: 1fr; gap: 6px; }
-    .pd-trust-item { gap: 10px; padding: 10px 12px; }
   }
 
   @media (max-width: 860px) {
-    .pd-grid { grid-template-columns: 1fr; gap: 24px; }
+    .pd-grid { grid-template-columns: 1fr; gap: 28px; }
     .pd-gallery { position: static; }
-    .pd-wrap { padding: 24px 0 100px; }
+    .pd-wrap { padding: 28px 0 100px; }
     .pd-sticky-bar { display: flex; }
     .pd-skel-grid { grid-template-columns: 1fr; }
     .pd-trust { grid-template-columns: repeat(3, 1fr); }
+    .pd-related-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
   @media (max-width: 640px) {
-    .pd-name { font-size: 1.3rem; }
-    .pd-price-main { font-size: 1.55rem; }
-    .pd-crumbs { font-size: 11.5px; margin-bottom: 18px; font-size: 11px; }
+    .pd-name { font-size: 1.4rem; }
+    .pd-price-main { font-size: 1.7rem; }
+    .pd-crumbs { font-size: 10.5px; margin-bottom: 20px; }
     .pd-related-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .pd-thumbs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+    .pd-thumbs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
     .pd-thumbs::-webkit-scrollbar { display: none; }
-    .pd-thumb { width: 58px; height: 58px; flex-shrink: 0; }
-    .pd-tabs { margin-bottom: 28px; }
-    .pd-tab { padding: 12px 16px; font-size: 13px; }
-    .pd-atc-btn { font-size: 14.5px; padding: 14px 22px; }
+    .pd-thumb { width: 60px; height: 60px; flex-shrink: 0; }
+    .pd-tabs { margin-bottom: 32px; }
+    .pd-tab { padding: 12px 17px; font-size: 13px; }
+    .pd-atc-btn { font-size: 15px; padding: 15px 24px; }
     .pd-trust { grid-template-columns: 1fr 1fr; }
     .pd-trust-item:last-child { grid-column: span 2; justify-content: center; }
-    .pd-sticky-bar { bottom: 60px; padding: 9px 14px; }
-    .pd-img-btn { width: 32px; height: 32px; }
+    .pd-img-btn { width: 34px; height: 34px; }
     .pd-img-prev { left: 8px; }
     .pd-img-next { right: 8px; }
   }
@@ -740,13 +897,13 @@ import { environment } from '../../../environments/environment';
   @media (max-width: 400px) {
     .pd-trust { grid-template-columns: 1fr; }
     .pd-trust-item:last-child { grid-column: auto; justify-content: flex-start; }
-    .pd-var-btn { padding: 8px 12px; }
-    .pd-related-grid { gap: 10px; }
+    .pd-var-btn { padding: 8px 12px; min-width: 60px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .pd-img-anim { animation: none; }
     .pd-atc-btn, .pd-img-btn { transition: none; }
+    .pd-atc-spinner { animation: none; }
   }
   `]
 })
@@ -790,7 +947,6 @@ export class ProductDetailComponent implements OnInit {
             const imgs = p.images || [];
             this.selectedImage.set(p.primary_image || imgs[0]?.image_path || '');
             this.seo.setProductMeta(p);
-            // Load related products from same category
             if (p.categories?.[0]?.slug) {
               this.api.getProducts({ category: p.categories[0].slug, limit: 4, exclude: p.id }).subscribe({
                 next: (rel: any) => {
@@ -898,7 +1054,7 @@ export class ProductDetailComponent implements OnInit {
     setTimeout(() => {
       this.adding.set(false);
       this.added.set(true);
-      setTimeout(() => this.added.set(false), 2200);
+      setTimeout(() => this.added.set(false), 2400);
     }, 280);
   }
 }

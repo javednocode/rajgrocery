@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, AfterViewInit, ElementRef, ViewChildren, QueryList } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { SeoService } from '../../core/services/seo.service';
@@ -9,22 +9,31 @@ import { environment } from '../../../environments/environment';
   standalone: true,
   imports: [RouterLink],
   template: `
-  <!-- Page header -->
-  <header class="cl-header">
-    <div class="container">
+  <!-- Page hero -->
+  <header class="cl-hero">
+    <div class="cl-hero-noise" aria-hidden="true"></div>
+    <div class="container cl-hero-inner">
       <nav class="cl-crumbs" aria-label="Breadcrumb">
         <a routerLink="/">Home</a>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-          <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span aria-current="page">All Categories</span>
+        <span class="cl-sep" aria-hidden="true">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+            <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span aria-current="page">Categories</span>
       </nav>
-      <h1 class="cl-heading">Shop by Category</h1>
-      <p class="cl-sub">Everything you need for your Indian kitchen, in one place.</p>
+      <div class="cl-hero-content">
+        <p class="cl-eyebrow">
+          <span class="cl-eyebrow-line" aria-hidden="true"></span>
+          Shop by Category
+        </p>
+        <h1 class="cl-heading">Find Everything<br>You Need</h1>
+        <p class="cl-sub">Authentic Indian groceries, spices and pantry staples — all in one place, delivered across Hong Kong.</p>
+      </div>
     </div>
   </header>
 
-  <!-- Grid body -->
+  <!-- Grid section -->
   <section class="cl-body">
     <div class="container">
 
@@ -40,7 +49,7 @@ import { environment } from '../../../environments/environment';
         <!-- Empty state -->
         <div class="cl-empty">
           <div class="cl-empty-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
               <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
                 stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
               <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.6"/>
@@ -48,24 +57,32 @@ import { environment } from '../../../environments/environment';
             </svg>
           </div>
           <h2 class="cl-empty-title">Categories coming soon</h2>
-          <p class="cl-empty-text">
-            Our store categories are being set up. Check back shortly or browse all products.
-          </p>
+          <p class="cl-empty-text">Our store categories are being set up. Check back shortly or browse all products.</p>
           <a routerLink="/" class="btn btn-primary">Back to Home</a>
         </div>
 
       } @else {
-        <!-- Count + grid -->
+        <!-- Count bar -->
         <div class="cl-toolbar">
           <span class="cl-count">{{ categories().length }} {{ categories().length === 1 ? 'category' : 'categories' }}</span>
+          <a routerLink="/search" class="cl-browse-all">
+            Browse all products
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
         </div>
-        <div class="cl-grid">
-          @for (c of categories(); track c.id; let i = $index) {
-            <a class="cl-card" [class.cl-card-noimg]="!c.image"
-               [routerLink]="['/category', c.slug]"
-               [attr.aria-label]="c.name + (c.product_count > 0 ? ' — ' + c.product_count + ' products' : '')">
 
-              <!-- Image or fallback -->
+        <!-- Category grid -->
+        <div class="cl-grid" #gridRef>
+          @for (c of categories(); track c.id; let i = $index) {
+            <a class="cl-card" #cardRef
+               [class.cl-card-noimg]="!c.image"
+               [routerLink]="['/category', c.slug]"
+               [attr.aria-label]="c.name + (c.product_count > 0 ? ' — ' + c.product_count + ' products' : '')"
+               [style.--stagger]="i">
+
+              <!-- Image or emoji fallback -->
               <div class="cl-card-media">
                 @if (c.image) {
                   <img class="cl-img" [src]="media(c.image)" [alt]="c.name"
@@ -79,17 +96,22 @@ import { environment } from '../../../environments/environment';
               <!-- Info -->
               <div class="cl-info">
                 <strong class="cl-name">{{ c.name }}</strong>
-                @if (c.product_count > 0) {
-                  <em class="cl-count-badge">{{ c.product_count }} {{ c.product_count === 1 ? 'product' : 'products' }}</em>
-                } @else if (c.description) {
-                  <em class="cl-count-badge">{{ c.description }}</em>
-                }
+                <div class="cl-meta-row">
+                  @if (c.product_count > 0) {
+                    <em class="cl-count-badge">
+                      <span class="cl-count-dot" aria-hidden="true"></span>
+                      {{ c.product_count }} {{ c.product_count === 1 ? 'product' : 'products' }}
+                    </em>
+                  } @else if (c.description) {
+                    <em class="cl-count-badge">{{ c.description }}</em>
+                  }
+                </div>
               </div>
 
               <!-- Arrow -->
               <span class="cl-arrow" aria-hidden="true">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </span>
             </a>
@@ -101,73 +123,113 @@ import { environment } from '../../../environments/environment';
   `,
 
   styles: [`
-  /* ── Header ── */
-  .cl-header {
-    background: var(--kg-dark);
-    padding: 48px 0 52px;
+  /* ── Hero ── */
+  .cl-hero {
+    background: var(--raj-dark);
+    padding: 64px 0 68px;
     position: relative; overflow: hidden;
   }
-  .cl-header::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 70% 120% at 10% 50%, rgba(27,76,140,.35) 0%, transparent 70%);
-    pointer-events: none;
+  .cl-hero-noise {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(ellipse 72% 110% at 5% 55%, rgba(23,81,63,.38) 0%, transparent 68%),
+      radial-gradient(ellipse 50% 80% at 92% 15%, rgba(228,163,59,.12) 0%, transparent 65%);
   }
-  .cl-header .container { position: relative; z-index: 1; }
+  .cl-hero-inner { position: relative; z-index: 1; }
+  .cl-hero-content { max-width: 640px; }
 
-  /* ── Breadcrumb ── */
+  /* Breadcrumb */
   .cl-crumbs {
     display: flex; align-items: center; gap: 6px;
-    font-size: 12.5px; color: rgba(255,255,255,.45);
-    margin-bottom: 18px;
+    font-size: 12px; color: rgba(255,255,255,.4);
+    margin-bottom: 28px; font-family: var(--font-sans);
+    font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
   }
-  .cl-crumbs a { color: rgba(255,255,255,.7); transition: color .2s; text-decoration: none; }
-  .cl-crumbs a:hover { color: var(--kg-forest-lt); }
-  .cl-crumbs svg { opacity: .4; flex-shrink: 0; }
-  .cl-crumbs span { color: rgba(255,255,255,.85); font-weight: 600; }
+  .cl-crumbs a { color: rgba(255,255,255,.6); text-decoration: none; transition: color .2s; }
+  .cl-crumbs a:hover { color: var(--raj-turmeric-lt); }
+  .cl-sep { display: flex; align-items: center; opacity: .35; }
 
-  /* ── Hero text ── */
-  .cl-heading {
-    font-family: var(--font-sans); font-size: clamp(1.7rem, 3.5vw, 2.6rem);
-    font-weight: 800; color: #FFFFFF; margin-bottom: 10px; letter-spacing: -0.02em;
-    line-height: 1.15; position: relative;
+  /* Hero text */
+  .cl-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--font-sans); font-size: 11px; font-weight: 800;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--raj-turmeric); margin-bottom: 16px;
   }
-  .cl-sub { font-size: 15px; color: rgba(255,255,255,.62); margin: 0; line-height: 1.65; }
+  .cl-eyebrow-line {
+    display: inline-block; width: 22px; height: 2px;
+    background: var(--raj-turmeric); border-radius: 2px;
+  }
+  .cl-heading {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
+    font-weight: 600; color: #FFFFFF;
+    margin-bottom: 14px; letter-spacing: -0.025em;
+    line-height: 1.1;
+  }
+  .cl-sub {
+    font-size: 15.5px; color: rgba(255,255,255,.58);
+    margin: 0; line-height: 1.72; max-width: 520px;
+  }
 
   /* ── Body ── */
-  .cl-body { padding: 48px 0 80px; background: var(--kg-warm); }
-  .cl-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
-  .cl-count { font-size: 13px; color: var(--kg-muted); font-weight: 700; font-family: var(--font-sans); }
+  .cl-body { padding: 52px 0 88px; background: var(--raj-warm); }
+  .cl-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 32px;
+  }
+  .cl-count {
+    font-size: 12.5px; color: var(--raj-muted);
+    font-weight: 800; font-family: var(--font-sans);
+    letter-spacing: .06em; text-transform: uppercase;
+  }
+  .cl-browse-all {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12.5px; font-weight: 800; color: var(--raj-leaf);
+    font-family: var(--font-sans); letter-spacing: .04em;
+    text-transform: uppercase; text-decoration: none;
+    transition: gap .22s var(--ease), color .2s;
+  }
+  .cl-browse-all:hover { color: var(--raj-turmeric-dk); gap: 12px; }
+  .cl-browse-all svg { flex-shrink: 0; }
 
   /* ── Grid ── */
   .cl-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
+    gap: 20px;
   }
 
   /* ── Category card ── */
   .cl-card {
     position: relative; display: flex; flex-direction: column;
-    border-radius: 12px; overflow: hidden;
-    background: var(--kg-paper);
-    border: 1px solid var(--kg-line-lt);
+    border-radius: var(--r-lg); overflow: hidden;
+    background: var(--raj-paper);
+    border: 1px solid var(--raj-line-lt);
     text-decoration: none;
-    transition: box-shadow .35s var(--ease), border-color .25s, transform .35s var(--ease);
+    transition: box-shadow .38s var(--ease), border-color .28s, transform .38s var(--ease);
     box-shadow: var(--shadow-xs);
+    /* stagger reveal */
+    opacity: 0;
+    transform: translateY(28px);
+    animation: clCardIn .55s var(--ease) both;
+    animation-delay: calc(var(--stagger, 0) * 55ms);
+  }
+  @keyframes clCardIn {
+    to { opacity: 1; transform: translateY(0); }
   }
   .cl-card:hover {
     box-shadow: var(--shadow);
-    border-color: var(--kg-line-warm);
-    transform: translateY(-4px);
+    border-color: var(--raj-line-warm);
+    transform: translateY(-5px);
   }
 
-  /* Media area */
+  /* Media */
   .cl-card-media {
     position: relative;
     aspect-ratio: 4 / 3;
     overflow: hidden;
-    background: var(--kg-warm);
+    background: var(--raj-sand);
     display: flex; align-items: center; justify-content: center;
   }
   .cl-img {
@@ -175,88 +237,109 @@ import { environment } from '../../../environments/environment';
     width: 100%; height: 100%; object-fit: cover;
     transition: transform .7s var(--ease);
   }
-  .cl-card:hover .cl-img { transform: scale(1.05); }
+  .cl-card:hover .cl-img { transform: scale(1.07); }
   .cl-veil {
     position: absolute; inset: 0; z-index: 1;
-    background: linear-gradient(to top, rgba(18,56,33,.5) 0%, rgba(18,56,33,.1) 40%, transparent 65%);
-    opacity: 0; transition: opacity .35s;
+    background: linear-gradient(to top, rgba(20,52,42,.55) 0%, rgba(20,52,42,.1) 42%, transparent 68%);
+    opacity: 0; transition: opacity .38s;
   }
   .cl-card:hover .cl-veil { opacity: 1; }
   .cl-emoji {
-    font-size: 36px; line-height: 1;
+    font-size: 40px; line-height: 1;
     position: relative; z-index: 1;
-    transition: transform .35s var(--ease);
+    transition: transform .4s var(--ease);
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,.12));
   }
-  .cl-card:hover .cl-emoji { transform: scale(1.12); }
+  .cl-card:hover .cl-emoji { transform: scale(1.14); }
 
-  /* Info row */
+  /* Info */
   .cl-info {
-    padding: 13px 14px 12px;
-    display: flex; flex-direction: column; gap: 3px;
+    padding: 14px 15px 38px;
+    display: flex; flex-direction: column; gap: 5px;
     flex: 1;
   }
   .cl-name {
-    font-family: var(--font-sans); font-size: 14px; font-weight: 800;
-    color: var(--kg-ink); line-height: 1.3; letter-spacing: -0.01em;
+    font-family: var(--font-sans); font-size: 14.5px; font-weight: 800;
+    color: var(--raj-ink); line-height: 1.3; letter-spacing: -0.01em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cl-meta-row { display: flex; align-items: center; gap: 6px; }
+  .cl-count-dot {
+    display: inline-block; width: 5px; height: 5px; border-radius: 50%;
+    background: var(--raj-leaf-lt); flex-shrink: 0;
   }
   .cl-count-badge {
     font-style: normal; font-family: var(--font-sans);
-    font-size: 11.5px; font-weight: 600; color: var(--kg-muted);
+    font-size: 11.5px; font-weight: 600; color: var(--raj-muted);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  /* Arrow pill */
+  /* Arrow */
   .cl-arrow {
-    position: absolute; right: 12px; bottom: 12px;
-    width: 28px; height: 28px; border-radius: var(--r-full);
+    position: absolute; right: 14px; bottom: 14px;
+    width: 30px; height: 30px; border-radius: var(--r-full);
     display: grid; place-items: center;
-    background: var(--kg-forest-bg); color: var(--kg-forest);
-    opacity: 0; transform: translateY(6px);
-    transition: opacity .3s, transform .3s, background .25s, color .25s;
+    background: var(--raj-leaf-bg); color: var(--raj-leaf);
+    border: 1.5px solid var(--raj-leaf-bg2);
+    opacity: 0; transform: translate(6px, 6px) scale(.85);
+    transition: opacity .3s var(--ease), transform .3s var(--ease), background .25s, color .25s, border-color .25s;
   }
   .cl-card:hover .cl-arrow {
-    opacity: 1; transform: translateY(0);
-    background: var(--kg-forest); color: #FFFFFF;
+    opacity: 1; transform: translate(0, 0) scale(1);
+    background: var(--raj-leaf); color: #FFFFFF; border-color: var(--raj-leaf);
   }
 
   /* No-image variant */
-  .cl-card-noimg .cl-card-media { background: var(--kg-sand-2); }
+  .cl-card-noimg .cl-card-media { background: var(--raj-sand-2); }
   .cl-card-noimg .cl-veil { display: none; }
 
   /* ── Skeleton ── */
-  .cl-skel { aspect-ratio: 1 / 1.15; border-radius: 14px; }
+  .cl-skel { aspect-ratio: 1 / 1.2; border-radius: var(--r-lg); }
 
-  /* ── Empty state ── */
+  /* ── Empty ── */
   .cl-empty {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 18px; padding: 80px 24px; text-align: center; max-width: 480px; margin: 0 auto;
+    gap: 18px; padding: 88px 24px; text-align: center; max-width: 480px; margin: 0 auto;
   }
   .cl-empty-icon {
-    width: 72px; height: 72px; border-radius: var(--r-xl);
-    background: var(--kg-forest-bg); color: var(--kg-forest);
+    width: 76px; height: 76px; border-radius: var(--r-xl);
+    background: var(--raj-leaf-bg); color: var(--raj-leaf);
     display: grid; place-items: center;
+    border: 1.5px solid var(--raj-leaf-bg2);
   }
-  .cl-empty-title { font-size: 1.3rem; font-weight: 800; color: var(--kg-ink); margin: 0; }
-  .cl-empty-text { font-size: 15px; color: var(--kg-muted); margin: 0; line-height: 1.7; }
+  .cl-empty-title {
+    font-family: var(--font-display); font-size: 1.45rem; font-weight: 600;
+    color: var(--raj-ink); margin: 0;
+  }
+  .cl-empty-text { font-size: 15px; color: var(--raj-muted); margin: 0; line-height: 1.72; }
 
   /* ── Responsive ── */
   @media (max-width: 1100px) {
     .cl-grid { grid-template-columns: repeat(3, 1fr); }
   }
-  @media (max-width: 760px) {
-    .cl-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .cl-header { padding: 28px 0 32px; }
+  @media (max-width: 768px) {
+    .cl-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .cl-hero { padding: 36px 0 40px; }
+    .cl-heading { font-size: 2rem; }
   }
   @media (max-width: 480px) {
-    .cl-card { border-radius: 10px; }
+    .cl-grid { gap: 10px; }
+    .cl-card { border-radius: var(--r); }
     .cl-name { font-size: 13px; }
     .cl-count-badge { font-size: 10.5px; }
-    .cl-emoji { font-size: 30px; }
+    .cl-emoji { font-size: 32px; }
     .cl-arrow { display: none; }
     .cl-card:hover { transform: none; }
-    .cl-body { padding: 28px 0 56px; }
-    .cl-toolbar { margin-bottom: 16px; }
+    .cl-body { padding: 28px 0 60px; }
+    .cl-toolbar { margin-bottom: 18px; }
+    .cl-info { padding: 11px 12px 32px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cl-card { animation: none !important; opacity: 1; transform: none; }
+    .cl-card:hover { transform: none; }
+    .cl-card:hover .cl-img { transform: none; }
+    .cl-card:hover .cl-emoji { transform: none; }
   }
   `]
 })

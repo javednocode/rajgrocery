@@ -14,22 +14,44 @@ import { environment } from '../../../environments/environment';
 
   <!-- Page header -->
   <header class="cd-header">
+    <div class="cd-header-bg" aria-hidden="true"></div>
     <div class="container">
-      <nav class="cd-crumbs" aria-label="Breadcrumb">
-        <a routerLink="/">Home</a>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-          <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <a routerLink="/categories">Categories</a>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-          <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span aria-current="page">{{ category()?.name || '…' }}</span>
-      </nav>
-      <h1 class="cd-heading">{{ category()?.name || 'Loading…' }}</h1>
-      @if (category()?.description) {
-        <p class="cd-sub">{{ category()?.description }}</p>
-      }
+      <div class="cd-header-inner">
+        <!-- Left: crumbs + title -->
+        <div class="cd-header-text">
+          <nav class="cd-crumbs" aria-label="Breadcrumb">
+            <a routerLink="/">Home</a>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+              <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <a routerLink="/categories">Categories</a>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+              <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span aria-current="page">{{ category()?.name || '…' }}</span>
+          </nav>
+          @if (category()?.name) {
+            <p class="cd-eyebrow">
+              <span class="cd-eyebrow-line" aria-hidden="true"></span>
+              Category
+            </p>
+          }
+          <h1 class="cd-heading">{{ category()?.name || 'Loading…' }}</h1>
+          @if (category()?.description) {
+            <p class="cd-sub">{{ category()?.description }}</p>
+          }
+        </div>
+
+        <!-- Right: product count pill -->
+        @if (!loading() && total() > 0) {
+          <div class="cd-header-stat">
+            <span class="cd-stat-num">{{ total() }}</span>
+            <span class="cd-stat-label">{{ total() === 1 ? 'Product' : 'Products' }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Subcategories -->
       @if (category()?.subcategories?.length) {
         <div class="cd-subcats">
           @for (s of category()?.subcategories; track s.id) {
@@ -40,7 +62,7 @@ import { environment } from '../../../environments/environment';
     </div>
   </header>
 
-  <!-- Body: sidebar + products -->
+  <!-- Body -->
   <section class="cd-body">
     <div class="container">
       <div class="cd-layout">
@@ -48,10 +70,11 @@ import { environment } from '../../../environments/environment';
         <!-- ═══ DESKTOP FILTER SIDEBAR ═══ -->
         <aside class="cd-sidebar" aria-label="Filter products">
           <div class="cd-sidebar-inner">
-
             <div class="cd-filt-head">
               <h2 class="cd-filt-title">Filters</h2>
-              <button class="cd-filt-reset" (click)="resetFilters()" type="button">Clear all</button>
+              @if (hasActiveFilters()) {
+                <button class="cd-filt-reset" (click)="resetFilters()" type="button">Clear all</button>
+              }
             </div>
 
             <!-- Sort -->
@@ -71,13 +94,13 @@ import { environment } from '../../../environments/environment';
               <h3 class="cd-fblock-label">Price Range</h3>
               <div class="cd-price-row">
                 <div class="cd-price-input">
-                  <label for="min-price-desk">Min</label>
+                  <label for="min-price-desk">Min (HK$)</label>
                   <input id="min-price-desk" type="number" placeholder="0"
                     [(ngModel)]="minPrice" (change)="reload()" min="0" />
                 </div>
                 <span class="cd-price-sep">—</span>
                 <div class="cd-price-input">
-                  <label for="max-price-desk">Max</label>
+                  <label for="max-price-desk">Max (HK$)</label>
                   <input id="max-price-desk" type="number" placeholder="Any"
                     [(ngModel)]="maxPrice" (change)="reload()" min="0" />
                 </div>
@@ -93,7 +116,6 @@ import { environment } from '../../../environments/environment';
                 In stock only
               </label>
             </div>
-
           </div>
         </aside>
 
@@ -107,7 +129,7 @@ import { environment } from '../../../environments/environment';
                 <strong>{{ total() }}</strong> {{ total() === 1 ? 'product' : 'products' }}
               }
             </span>
-            <!-- Mobile filter + sort controls -->
+            <!-- Mobile controls -->
             <div class="cd-mobile-controls">
               <button class="cd-filter-btn" (click)="drawerOpen.set(true)" type="button"
                 [class.cd-filter-btn-active]="hasActiveFilters()">
@@ -129,14 +151,46 @@ import { environment } from '../../../environments/environment';
             </div>
           </div>
 
-          <!-- Products grid -->
+          <!-- Active filter chips -->
+          @if (hasActiveFilters()) {
+            <div class="cd-active-filters">
+              @if (sortBy !== 'newest') {
+                <span class="cd-chip">
+                  Sort: {{ sortLabel() }}
+                  <button (click)="sortBy='newest'; reload()" aria-label="Remove sort filter">×</button>
+                </span>
+              }
+              @if (minPrice) {
+                <span class="cd-chip">
+                  Min: {{ 'HK$' + minPrice }}
+                  <button (click)="minPrice=null; reload()" aria-label="Remove min price">×</button>
+                </span>
+              }
+              @if (maxPrice) {
+                <span class="cd-chip">
+                  Max: {{ 'HK$' + maxPrice }}
+                  <button (click)="maxPrice=null; reload()" aria-label="Remove max price">×</button>
+                </span>
+              }
+              @if (inStockOnly) {
+                <span class="cd-chip">
+                  In Stock
+                  <button (click)="inStockOnly=false; reload()" aria-label="Remove in stock filter">×</button>
+                </span>
+              }
+            </div>
+          }
+
+          <!-- Loading skeleton -->
           @if (loading()) {
             <div class="cd-grid">
               @for (s of [1,2,3,4,5,6,7,8,9,10,11,12]; track s) {
                 <div class="skeleton cd-skel"></div>
               }
             </div>
+
           } @else if (products().length === 0) {
+            <!-- Empty state -->
             <div class="cd-empty">
               <div class="cd-empty-icon">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
@@ -153,17 +207,20 @@ import { environment } from '../../../environments/environment';
                 }
               </p>
               @if (hasActiveFilters()) {
-                <button (click)="resetFilters()" class="btn btn-outline" type="button">Clear filters</button>
+                <button (click)="resetFilters()" class="btn btn-outline" type="button">Clear Filters</button>
               } @else {
                 <a routerLink="/categories" class="btn btn-outline">Browse All Categories</a>
               }
             </div>
+
           } @else {
+            <!-- Products grid -->
             <div class="cd-grid">
               @for (p of products(); track p.id) {
                 <app-product-card [product]="p" />
               }
             </div>
+
             <!-- Pagination -->
             @if (totalPages() > 1) {
               <nav class="cd-pagination" aria-label="Pagination">
@@ -209,7 +266,6 @@ import { environment } from '../../../environments/environment';
       </button>
     </div>
     <div class="cd-drawer-body">
-      <!-- Sort -->
       <div class="cd-fblock">
         <h3 class="cd-fblock-label">Sort by</h3>
         <select [(ngModel)]="sortBy" (change)="reload()" class="cd-fsel" aria-label="Sort products">
@@ -220,24 +276,22 @@ import { environment } from '../../../environments/environment';
           <option value="name_asc">Name: A–Z</option>
         </select>
       </div>
-      <!-- Price -->
       <div class="cd-fblock">
         <h3 class="cd-fblock-label">Price Range</h3>
         <div class="cd-price-row">
           <div class="cd-price-input">
-            <label for="min-price-mob">Min</label>
+            <label for="min-price-mob">Min (HK$)</label>
             <input id="min-price-mob" type="number" placeholder="0"
               [(ngModel)]="minPrice" (change)="reload()" min="0" />
           </div>
           <span class="cd-price-sep">—</span>
           <div class="cd-price-input">
-            <label for="max-price-mob">Max</label>
+            <label for="max-price-mob">Max (HK$)</label>
             <input id="max-price-mob" type="number" placeholder="Any"
               [(ngModel)]="maxPrice" (change)="reload()" min="0" />
           </div>
         </div>
       </div>
-      <!-- Availability -->
       <div class="cd-fblock">
         <h3 class="cd-fblock-label">Availability</h3>
         <label class="cd-fcheck" for="in-stock-mob">
@@ -259,244 +313,289 @@ import { environment } from '../../../environments/environment';
   styles: [`
   /* ── Header ── */
   .cd-header {
-    background: var(--kg-dark);
-    padding: 44px 0 48px; position: relative; overflow: hidden;
+    background: var(--raj-dark);
+    padding: 52px 0 56px;
+    position: relative; overflow: hidden;
   }
-  .cd-header::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 60% 130% at 8% 60%, rgba(27,76,140,.32) 0%, transparent 65%);
-    pointer-events: none;
+  .cd-header-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 65% 130% at 6% 62%, rgba(23,81,63,.36) 0%, transparent 68%),
+      radial-gradient(ellipse 45% 90% at 95% 10%, rgba(228,163,59,.11) 0%, transparent 70%);
   }
   .cd-header .container { position: relative; z-index: 1; }
+  .cd-header-inner { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
 
   /* Breadcrumb */
   .cd-crumbs {
     display: flex; align-items: center; gap: 6px;
-    font-size: 12.5px; color: rgba(255,255,255,.42);
-    margin-bottom: 16px; flex-wrap: wrap;
+    font-size: 11.5px; color: rgba(255,255,255,.38);
+    margin-bottom: 20px; flex-wrap: wrap;
+    font-family: var(--font-sans); font-weight: 700;
+    letter-spacing: .04em; text-transform: uppercase;
   }
-  .cd-crumbs a { color: rgba(255,255,255,.7); text-decoration: none; transition: color .2s; }
-  .cd-crumbs a:hover { color: var(--kg-forest-lt); }
-  .cd-crumbs svg { opacity: .38; flex-shrink: 0; }
-  .cd-crumbs span { color: rgba(255,255,255,.88); font-weight: 700; }
+  .cd-crumbs a { color: rgba(255,255,255,.58); text-decoration: none; transition: color .2s; }
+  .cd-crumbs a:hover { color: var(--raj-turmeric-lt); }
+  .cd-crumbs svg { opacity: .35; flex-shrink: 0; }
+  .cd-crumbs span { color: rgba(255,255,255,.82); }
 
-  .cd-heading {
-    font-family: var(--font-sans); font-size: clamp(1.55rem, 3vw, 2.3rem);
-    font-weight: 800; color: #FFFFFF; margin-bottom: 8px;
-    letter-spacing: -0.02em; line-height: 1.15;
+  /* Eyebrow */
+  .cd-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--font-sans); font-size: 10.5px; font-weight: 800;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--raj-turmeric); margin-bottom: 10px;
   }
-  .cd-sub { font-size: 14.5px; color: rgba(255,255,255,.6); max-width: 540px; margin: 0 0 14px; line-height: 1.65; }
-  .cd-subcats { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cd-eyebrow-line {
+    display: inline-block; width: 18px; height: 2px;
+    background: var(--raj-turmeric); border-radius: 2px;
+  }
+  .cd-heading {
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 3.2vw, 2.6rem);
+    font-weight: 600; color: #FFFFFF; margin-bottom: 8px;
+    letter-spacing: -0.022em; line-height: 1.1;
+  }
+  .cd-sub { font-size: 14.5px; color: rgba(255,255,255,.58); max-width: 520px; margin: 0; line-height: 1.68; }
+
+  /* Stat pill */
+  .cd-header-stat {
+    display: flex; flex-direction: column; align-items: center;
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+    border-radius: var(--r-xl); padding: 14px 22px; flex-shrink: 0;
+    backdrop-filter: blur(4px);
+  }
+  .cd-stat-num {
+    font-family: var(--font-display); font-size: 2rem; font-weight: 600;
+    color: #FFFFFF; line-height: 1; letter-spacing: -0.03em;
+  }
+  .cd-stat-label { font-size: 11px; color: rgba(255,255,255,.5); font-weight: 700; margin-top: 2px; letter-spacing: .08em; text-transform: uppercase; font-family: var(--font-sans); }
+
+  /* Subcategories */
+  .cd-subcats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; position: relative; z-index: 1; }
   .cd-subcat {
-    font-size: 12.5px; font-weight: 700; padding: 6px 14px; border-radius: var(--r-full);
-    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
-    color: rgba(255,255,255,.82); transition: all .2s; text-decoration: none;
+    font-size: 12.5px; font-weight: 700; padding: 7px 15px; border-radius: var(--r-full);
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16);
+    color: rgba(255,255,255,.78); transition: all .22s; text-decoration: none;
     font-family: var(--font-sans);
   }
-  .cd-subcat:hover { background: var(--kg-forest); border-color: var(--kg-forest); color: #FFFFFF; }
+  .cd-subcat:hover { background: var(--raj-leaf); border-color: var(--raj-leaf); color: #FFFFFF; }
 
   /* ── Body layout ── */
-  .cd-body { padding: 40px 0 72px; background: var(--kg-warm); }
+  .cd-body { padding: 44px 0 80px; background: var(--raj-warm); }
   .cd-layout { display: grid; grid-template-columns: 230px 1fr; gap: 32px; align-items: start; }
 
   /* ── Sidebar ── */
   .cd-sidebar { position: sticky; top: calc(var(--header-height) + 20px); }
   .cd-sidebar-inner {
-    background: var(--kg-paper); border: 1px solid var(--kg-line-lt);
-    border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 0;
+    background: var(--raj-paper); border: 1px solid var(--raj-line-lt);
+    border-radius: var(--r-lg); padding: 20px;
+    display: flex; flex-direction: column; gap: 0;
+    box-shadow: var(--shadow-xs);
   }
   .cd-filt-head {
-    display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;
   }
-  .cd-filt-title { font-size: 14px; font-weight: 800; color: var(--kg-ink); margin: 0; }
+  .cd-filt-title { font-size: 14px; font-weight: 800; color: var(--raj-ink); margin: 0; font-family: var(--font-sans); }
   .cd-filt-reset {
-    font-size: 11.5px; color: var(--kg-forest); font-weight: 700; cursor: pointer;
+    font-size: 11.5px; color: var(--raj-leaf); font-weight: 700; cursor: pointer;
     background: none; border: none; padding: 0; font-family: var(--font-sans);
     transition: color .2s;
   }
-  .cd-filt-reset:hover { color: var(--kg-terra); }
-  .cd-fblock { padding: 14px 0; border-bottom: 1px solid var(--kg-line-lt); }
+  .cd-filt-reset:hover { color: var(--raj-turmeric-dk); }
+  .cd-fblock { padding: 14px 0; border-bottom: 1px solid var(--raj-line-lt); }
   .cd-fblock:last-child { border-bottom: none; padding-bottom: 0; }
   .cd-fblock-label {
     font-size: 10px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
-    color: var(--kg-faint); margin-bottom: 10px; font-family: var(--font-sans);
+    color: var(--raj-faint); margin-bottom: 10px; font-family: var(--font-sans);
   }
   .cd-fsel {
-    width: 100%; padding: 9px 34px 9px 12px; border: 1.5px solid var(--kg-line); border-radius: var(--r);
-    font-size: 13.5px; background: var(--kg-paper); color: var(--kg-ink); cursor: pointer;
+    width: 100%; padding: 9px 34px 9px 12px; border: 1.5px solid var(--raj-line); border-radius: var(--r);
+    font-size: 13.5px; background: var(--raj-paper); color: var(--raj-ink); cursor: pointer;
     font-family: var(--font-sans); font-weight: 600;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%2366716A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 12px center;
     transition: border-color .2s;
   }
-  .cd-fsel:focus { outline: none; border-color: var(--kg-forest); box-shadow: 0 0 0 3px var(--kg-forest-bg); }
+  .cd-fsel:focus { outline: none; border-color: var(--raj-leaf); box-shadow: 0 0 0 3px var(--raj-leaf-bg); }
 
   .cd-price-row { display: flex; align-items: center; gap: 8px; }
-  .cd-price-sep { color: var(--kg-faint); flex-shrink: 0; font-weight: 600; }
+  .cd-price-sep { color: var(--raj-faint); flex-shrink: 0; font-weight: 600; }
   .cd-price-input { flex: 1; }
   .cd-price-input label {
-    display: block; font-size: 10px; color: var(--kg-faint); font-weight: 700;
-    letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px;
+    display: block; font-size: 10px; color: var(--raj-faint); font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase; margin-bottom: 5px;
   }
   .cd-price-input input {
-    width: 100%; padding: 8px 10px; border: 1.5px solid var(--kg-line); border-radius: var(--r);
-    font-size: 13px; font-family: var(--font-sans); color: var(--kg-ink);
-    background: var(--kg-paper); transition: border-color .2s;
+    width: 100%; padding: 8px 10px; border: 1.5px solid var(--raj-line); border-radius: var(--r);
+    font-size: 13px; font-family: var(--font-sans); color: var(--raj-ink);
+    background: var(--raj-paper); transition: border-color .2s;
   }
-  .cd-price-input input:focus { outline: none; border-color: var(--kg-forest); box-shadow: 0 0 0 3px var(--kg-forest-bg); }
+  .cd-price-input input:focus { outline: none; border-color: var(--raj-leaf); box-shadow: 0 0 0 3px var(--raj-leaf-bg); }
 
-  .cd-fcheck { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; color: var(--kg-ink); font-weight: 600; }
+  .cd-fcheck { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13.5px; color: var(--raj-ink); font-weight: 600; font-family: var(--font-sans); }
   .cd-fcheck input { display: none; }
   .cd-fcheck-box {
-    width: 18px; height: 18px; border: 2px solid var(--kg-line-warm); border-radius: var(--r-sm);
+    width: 18px; height: 18px; border: 2px solid var(--raj-line-warm); border-radius: var(--r-sm);
     flex-shrink: 0; transition: all .2s; position: relative;
   }
   .cd-fcheck input:checked ~ .cd-fcheck-box {
-    background: var(--kg-forest); border-color: var(--kg-forest);
+    background: var(--raj-leaf); border-color: var(--raj-leaf);
   }
   .cd-fcheck input:checked ~ .cd-fcheck-box::after {
     content: '';
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    position: absolute; top: 50%; left: 50%;
     width: 10px; height: 6px; border-left: 2px solid #fff; border-bottom: 2px solid #fff;
     transform: translate(-50%,-60%) rotate(-45deg);
   }
 
-  /* ── Main / product area ── */
-  .cd-main {}
-
-  /* Topbar */
+  /* ── Main ── */
   .cd-topbar {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 22px; gap: 12px;
+    margin-bottom: 18px; gap: 12px;
   }
-  .cd-topbar-count { font-size: 13.5px; color: var(--kg-muted); font-weight: 600; }
-  .cd-topbar-count strong { color: var(--kg-ink); font-weight: 800; }
+  .cd-topbar-count { font-size: 13.5px; color: var(--raj-muted); font-weight: 600; font-family: var(--font-sans); }
+  .cd-topbar-count strong { color: var(--raj-ink); font-weight: 800; }
 
-  /* Mobile controls (hidden on desktop) */
+  /* Active filter chips */
+  .cd-active-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .cd-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12px; font-weight: 700; font-family: var(--font-sans);
+    color: var(--raj-leaf-dk); background: var(--raj-leaf-bg); border: 1px solid var(--raj-leaf-bg2);
+    padding: 5px 12px; border-radius: var(--r-full);
+  }
+  .cd-chip button {
+    background: none; border: none; cursor: pointer; color: var(--raj-leaf);
+    font-size: 16px; line-height: 1; padding: 0 0 0 2px; display: grid; place-items: center;
+    width: 16px; height: 16px; border-radius: 50%; transition: background .2s;
+  }
+  .cd-chip button:hover { background: var(--raj-leaf-bg2); }
+
+  /* Mobile controls */
   .cd-mobile-controls { display: none; align-items: center; gap: 8px; }
   .cd-filter-btn {
     display: inline-flex; align-items: center; gap: 7px; position: relative;
     padding: 9px 16px; border-radius: var(--r-full);
-    border: 1.5px solid var(--kg-line-warm); background: var(--kg-paper);
+    border: 1.5px solid var(--raj-line-warm); background: var(--raj-paper);
     font-family: var(--font-sans); font-size: 13px; font-weight: 700;
-    color: var(--kg-ink); cursor: pointer; transition: all .2s;
+    color: var(--raj-ink); cursor: pointer; transition: all .2s;
   }
-  .cd-filter-btn:hover { border-color: var(--kg-forest); color: var(--kg-forest); }
-  .cd-filter-btn-active { border-color: var(--kg-forest); color: var(--kg-forest); background: var(--kg-forest-bg); }
+  .cd-filter-btn:hover { border-color: var(--raj-leaf); color: var(--raj-leaf); }
+  .cd-filter-btn-active { border-color: var(--raj-leaf); color: var(--raj-leaf); background: var(--raj-leaf-bg); }
   .cd-filter-dot {
-    position: absolute; top: 8px; right: 10px;
+    position: absolute; top: 7px; right: 9px;
     width: 7px; height: 7px; border-radius: 50%;
-    background: var(--kg-terra); border: 1.5px solid var(--kg-paper);
+    background: var(--raj-turmeric); border: 1.5px solid var(--raj-paper);
   }
   .cd-sort-select {
-    padding: 9px 30px 9px 12px; border: 1.5px solid var(--kg-line-warm); border-radius: var(--r-full);
-    font-size: 13px; background: var(--kg-paper); color: var(--kg-ink); cursor: pointer;
+    padding: 9px 30px 9px 12px; border: 1.5px solid var(--raj-line-warm); border-radius: var(--r-full);
+    font-size: 13px; background: var(--raj-paper); color: var(--raj-ink); cursor: pointer;
     font-family: var(--font-sans); font-weight: 700;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%2366716A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 10px center;
   }
-  .cd-sort-select:focus { outline: none; border-color: var(--kg-forest); }
+  .cd-sort-select:focus { outline: none; border-color: var(--raj-leaf); }
 
   /* Product grid */
   .cd-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-  .cd-skel { aspect-ratio: 1 / 1.42; border-radius: 12px; }
+  .cd-skel { aspect-ratio: 1 / 1.42; border-radius: var(--r-lg); }
 
   /* Empty state */
   .cd-empty {
     display: flex; flex-direction: column; align-items: center;
-    gap: 16px; padding: 64px 24px; text-align: center; max-width: 440px; margin: 0 auto;
+    gap: 18px; padding: 72px 24px; text-align: center; max-width: 440px; margin: 0 auto;
   }
   .cd-empty-icon {
-    width: 64px; height: 64px; border-radius: var(--r-xl);
-    background: var(--kg-warm); color: var(--kg-faint);
+    width: 72px; height: 72px; border-radius: var(--r-xl);
+    background: var(--raj-sand); color: var(--raj-faint);
     display: grid; place-items: center;
+    border: 1.5px solid var(--raj-line);
   }
-  .cd-empty-title { font-size: 1.15rem; font-weight: 800; color: var(--kg-ink); margin: 0; }
-  .cd-empty-text { font-size: 14.5px; color: var(--kg-muted); margin: 0; line-height: 1.7; }
+  .cd-empty-title {
+    font-family: var(--font-display); font-size: 1.3rem; font-weight: 600;
+    color: var(--raj-ink); margin: 0;
+  }
+  .cd-empty-text { font-size: 14.5px; color: var(--raj-muted); margin: 0; line-height: 1.72; }
 
   /* Pagination */
-  .cd-pagination { display: flex; align-items: center; gap: 6px; justify-content: center; margin-top: 40px; flex-wrap: wrap; }
+  .cd-pagination { display: flex; align-items: center; gap: 6px; justify-content: center; margin-top: 44px; flex-wrap: wrap; }
   .cd-page-btn {
-    min-width: 38px; height: 38px; padding: 0 8px;
+    min-width: 40px; height: 40px; padding: 0 8px;
     display: grid; place-items: center; border-radius: var(--r);
-    border: 1.5px solid var(--kg-line); background: var(--kg-paper);
-    font-size: 13.5px; font-weight: 700; color: var(--kg-ink-2);
+    border: 1.5px solid var(--raj-line); background: var(--raj-paper);
+    font-size: 13.5px; font-weight: 700; color: var(--raj-ink-2);
     cursor: pointer; transition: all .2s; font-family: var(--font-sans);
   }
-  .cd-page-btn:hover:not(:disabled) { border-color: var(--kg-forest); color: var(--kg-forest); background: var(--kg-forest-bg); }
-  .cd-page-btn.active { background: var(--kg-forest); border-color: var(--kg-forest); color: #FFFFFF; }
+  .cd-page-btn:hover:not(:disabled) { border-color: var(--raj-leaf); color: var(--raj-leaf); background: var(--raj-leaf-bg); }
+  .cd-page-btn.active { background: var(--raj-leaf); border-color: var(--raj-leaf); color: #FFFFFF; }
   .cd-page-btn:disabled { opacity: .35; cursor: not-allowed; }
 
-  /* ═══ MOBILE FILTER DRAWER ═══ */
+  /* ═══ MOBILE DRAWER ═══ */
   .cd-drawer-overlay {
     position: fixed; inset: 0; z-index: 998;
-    background: rgba(18,56,33,.45);
+    background: rgba(20,52,42,.5);
     backdrop-filter: blur(2px);
-    animation: cdFadeIn .2s ease both;
+    animation: cdFadeIn .22s ease both;
   }
   @keyframes cdFadeIn { from { opacity: 0; } to { opacity: 1; } }
-
   .cd-drawer {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 999;
-    background: var(--kg-paper);
-    border-radius: 20px 20px 0 0;
-    box-shadow: 0 -16px 48px rgba(18,56,33,.18);
+    background: var(--raj-paper);
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 -16px 48px rgba(20,52,42,.18);
     transform: translateY(100%);
     transition: transform .36s var(--ease);
     max-height: 88svh; display: flex; flex-direction: column;
-    /* always rendered, toggled by class */
     pointer-events: none;
   }
   .cd-drawer.open { transform: translateY(0); pointer-events: auto; }
-
   .cd-drawer-handle {
     width: 40px; height: 4px; border-radius: 2px;
-    background: var(--kg-line-warm); margin: 12px auto 0;
-    flex-shrink: 0;
+    background: var(--raj-line-warm); margin: 14px auto 0; flex-shrink: 0;
   }
   .cd-drawer-head {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 20px; border-bottom: 1px solid var(--kg-line-lt); flex-shrink: 0;
+    padding: 14px 20px; border-bottom: 1px solid var(--raj-line-lt); flex-shrink: 0;
   }
-  .cd-drawer-title { font-size: 16px; font-weight: 800; color: var(--kg-ink); margin: 0; }
+  .cd-drawer-title { font-size: 16px; font-weight: 800; color: var(--raj-ink); margin: 0; }
   .cd-drawer-close {
     width: 36px; height: 36px; border-radius: var(--r-full);
     display: grid; place-items: center;
-    background: var(--kg-warm); border: 1.5px solid var(--kg-line);
-    color: var(--kg-muted); cursor: pointer; transition: all .2s;
+    background: var(--raj-warm); border: 1.5px solid var(--raj-line);
+    color: var(--raj-muted); cursor: pointer; transition: all .2s;
   }
-  .cd-drawer-close:hover { background: var(--kg-clay-bg); color: var(--kg-clay); border-color: var(--kg-clay); }
+  .cd-drawer-close:hover { background: var(--raj-chilli-bg); color: var(--raj-chilli); border-color: var(--raj-chilli); }
   .cd-drawer-body { flex: 1; overflow-y: auto; padding: 4px 20px 8px; }
   .cd-drawer-footer {
     display: flex; gap: 10px; padding: 14px 20px;
-    border-top: 1px solid var(--kg-line-lt); flex-shrink: 0;
+    border-top: 1px solid var(--raj-line-lt); flex-shrink: 0;
   }
   .cd-drawer-footer .btn { flex: 1; justify-content: center; }
 
-  /* ── Responsive breakpoints ── */
+  /* ── Responsive ── */
   @media (max-width: 1100px) {
     .cd-layout { grid-template-columns: 210px 1fr; gap: 24px; }
     .cd-grid { grid-template-columns: repeat(2, 1fr); }
+    .cd-header-stat { display: none; }
   }
 
   @media (max-width: 860px) {
-    /* Hide desktop sidebar — switch to drawer */
     .cd-layout { grid-template-columns: 1fr; }
     .cd-sidebar { display: none; }
     .cd-mobile-controls { display: flex; }
     .cd-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-    .cd-body { padding: 28px 0 56px; }
-    .cd-header { padding: 28px 0 32px; }
+    .cd-body { padding: 28px 0 60px; }
+    .cd-header { padding: 32px 0 36px; }
   }
 
   @media (max-width: 480px) {
     .cd-grid { gap: 10px; }
     .cd-skel { aspect-ratio: 1 / 1.4; }
-    .cd-heading { font-size: 1.3rem; }
-    .cd-topbar { margin-bottom: 14px; }
+    .cd-heading { font-size: 1.55rem; }
+    .cd-topbar { margin-bottom: 12px; }
     .cd-empty { padding: 40px 16px; }
   }
   `]
@@ -532,13 +631,21 @@ export class CategoryDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() { /* close drawer on nav */ }
+  ngOnDestroy() {}
 
   @HostListener('document:keydown.escape')
   onEscape() { this.drawerOpen.set(false); }
 
   hasActiveFilters() {
     return this.minPrice !== null || this.maxPrice !== null || this.inStockOnly || this.sortBy !== 'newest';
+  }
+
+  sortLabel(): string {
+    const map: Record<string, string> = {
+      newest: 'Newest', popular: 'Popular',
+      price_asc: 'Price ↑', price_desc: 'Price ↓', name_asc: 'A–Z'
+    };
+    return map[this.sortBy] || this.sortBy;
   }
 
   reload() { this.page = 1; this.drawerOpen.set(false); this.load(); }
