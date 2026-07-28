@@ -628,13 +628,13 @@ export class CartComponent implements OnInit {
 
   ngOnInit() {
     this.seo.setMeta({
-      title: 'Shopping Basket | LAAVI STORE',
+      title: 'Shopping Basket',
       description: 'Review your selected Indian groceries and proceed to checkout.'
     });
   }
 
   // currency_symbol is configured via SettingsService (DB → API → settings signal).
-  // Fallback is 'HK$' — LAAVI STORE operates in Hong Kong.
+  // Fallback is 'HK$' — Raj Grocery Store operates in Hong Kong.
   get cur() { return this.settings.get('currency_symbol', 'HK$'); }
 
   freeAbove(): number { return +(this.settings.get('shipping_free_above', '50') || 50); }

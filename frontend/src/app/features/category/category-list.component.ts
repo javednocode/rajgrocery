@@ -272,8 +272,8 @@ export class CategoryListComponent implements OnInit {
 
   ngOnInit() {
     this.seo.setMeta({
-      title: 'Shop All Categories | LAAVI STORE',
-      description: 'Browse all Indian grocery categories at LAAVI STORE — spices, rice, dal, snacks, beverages and more.'
+      title: 'Shop All Categories',
+      description: 'Browse every Indian grocery category — spices, rice, dal, atta, snacks, beverages and fresh vegetables.'
     });
     this.fetch();
   }

@@ -52,7 +52,7 @@ import { environment } from '../../../environments/environment';
         @if (heroSub()) {
           <p class="hm-hero-sub">{{ heroSub() }}</p>
         } @else {
-          <p class="hm-hero-sub">Shop everyday Indian groceries, pantry essentials, snacks, beverages and household favourites from LAAVI STORE.</p>
+          <p class="hm-hero-sub">{{ settings.get('hero_subtitle','Shop everyday Indian groceries, pantry staples, snacks, beverages and fresh vegetables.') }}</p>
         }
 
         <!-- CTAs -->
@@ -98,7 +98,7 @@ import { environment } from '../../../environments/environment';
                   } @else if (b.image || b.fallback_image) {
                     <img class="hm-hero-media hm-hero-kenburns"
                       [src]="media(b.image || b.fallback_image)"
-                      [alt]="b.title || 'LAAVI STORE'"
+                      [alt]="b.title || settings.get('site_name','Raj Grocery Store')"
                       loading="eager" fetchpriority="high" />
                   }
                 </div>
@@ -107,7 +107,7 @@ import { environment } from '../../../environments/environment';
               <!-- Fallback when no banners uploaded yet -->
               <div class="hm-hero-slide active hm-hero-frame-fallback">
                 <div class="hm-hero-fallback-inner">
-                  <div class="hm-hero-fallback-logo">LAAVI<br>STORE</div>
+                  <div class="hm-hero-fallback-logo">{{ settings.get('site_name','Raj Grocery Store') }}</div>
                   <p>Add a banner or video<br>from the Admin Panel</p>
                 </div>
               </div>
@@ -417,12 +417,12 @@ import { environment } from '../../../environments/environment';
       </section>
     }
 
-    <!-- ══════════ WHY SHOP AT LAAVI ══════════ -->
+    <!-- ══════════ WHY SHOP AT RAJ ══════════ -->
     <section class="section hm-why" kgScene>
       <div class="container">
         <div class="hm-sec-head hm-sec-head-center">
           <span class="sec-eyebrow" kgFx="rise-sm">{{ settings.get('promise_label','Our Promise') }}</span>
-          <h2 class="sec-title">{{ settings.get('promise_title','Why Shop at LAAVI STORE') }}</h2>
+          <h2 class="sec-title">{{ settings.get('promise_title','Why Shop at ' + settings.get('site_name','Raj Grocery Store')) }}</h2>
         </div>
         <div class="hm-why-grid">
           <div class="hm-why-item" kgFx="rise">
@@ -464,7 +464,7 @@ import { environment } from '../../../environments/environment';
           <div class="hm-store-inner" kgFx="rise" data-aos="zoom-in" data-aos-duration="700">
             <div class="hm-store-text">
               <span class="sec-eyebrow">Visit Us</span>
-              <h2 class="hm-store-heading">LAAVI STORE</h2>
+              <h2 class="hm-store-heading">{{ settings.get('site_name','Raj Grocery Store') }}</h2>
               <p class="hm-store-location">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
                 {{ storeAddress() }}
@@ -511,7 +511,7 @@ import { environment } from '../../../environments/environment';
                 <p class="hm-rev-text">{{ t.text }}</p>
                 <div class="hm-rev-author">
                   <strong>{{ t.name }}</strong>
-                  <span class="hm-rev-role">LAAVI Customer</span>
+                  <span class="hm-rev-role">Verified Customer</span>
                   @if (t.city) { <span class="hm-rev-city">{{ t.city }}</span> }
                 </div>
               </div>
@@ -550,7 +550,7 @@ import { environment } from '../../../environments/environment';
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>
               </svg>
             </span>
-            <span>LAAVI Gift Vouchers</span>
+            <span>Gift Vouchers</span>
           </div>
           <div class="hm-hkq-feat">
             <span class="hm-hkq-icon" aria-hidden="true">
@@ -639,14 +639,14 @@ import { environment } from '../../../environments/environment';
               <div class="hm-faq-img-bg"></div>
               <div class="hm-faq-leaf hm-faq-leaf-1" aria-hidden="true">
                 <svg viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M10 80 Q5 40 40 10 Q60 30 50 70 Q30 80 10 80Z" fill="#1A5C35" opacity="0.85"/>
-                  <path d="M40 10 Q45 45 25 72" stroke="#2E7D4F" stroke-width="1.5" fill="none"/>
+                  <path d="M10 80 Q5 40 40 10 Q60 30 50 70 Q30 80 10 80Z" fill="var(--raj-leaf)" opacity="0.85"/>
+                  <path d="M40 10 Q45 45 25 72" stroke="var(--raj-leaf-lt)" stroke-width="1.5" fill="none"/>
                 </svg>
               </div>
               <div class="hm-faq-leaf hm-faq-leaf-2" aria-hidden="true">
                 <svg viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 62 Q2 30 30 6 Q50 22 42 54 Q24 65 8 62Z" fill="#1A5C35" opacity="0.7"/>
-                  <path d="M30 6 Q35 36 18 58" stroke="#2E7D4F" stroke-width="1.2" fill="none"/>
+                  <path d="M8 62 Q2 30 30 6 Q50 22 42 54 Q24 65 8 62Z" fill="var(--raj-leaf)" opacity="0.7"/>
+                  <path d="M30 6 Q35 36 18 58" stroke="var(--raj-leaf-lt)" stroke-width="1.2" fill="none"/>
                 </svg>
               </div>
               <img class="hm-faq-person" src="https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=480&q=80"
@@ -706,7 +706,7 @@ import { environment } from '../../../environments/environment';
   .hm-hero {
     position: relative;
     min-height: clamp(580px, 94svh, 860px);
-    background: #05112A;   /* deep navy */
+    background: var(--raj-dark);   /* masala green ground */
     overflow: hidden;
     display: flex;
     align-items: stretch;
@@ -756,7 +756,7 @@ import { environment } from '../../../environments/environment';
   }
   .hm-hero-badge-dot {
     width: 7px; height: 7px; border-radius: 50%;
-    background: #29B8D5;
+    background: var(--raj-turmeric);
     animation: badgePulse 2.4s ease-in-out infinite;
     flex-shrink: 0;
   }
@@ -802,7 +802,7 @@ import { environment } from '../../../environments/environment';
   }
   .hm-hero-cta {
     display: inline-flex; align-items: center; gap: 9px;
-    background: #FFFFFF; color: #05112A;
+    background: #FFFFFF; color: var(--raj-ink);
     padding: 15px 28px; border-radius: 10px;
     font-family: var(--font-sans); font-size: 14px; font-weight: 800;
     letter-spacing: .01em;
@@ -810,7 +810,7 @@ import { environment } from '../../../environments/environment';
     box-shadow: 0 4px 24px rgba(0,0,0,.18);
     text-decoration: none;
   }
-  .hm-hero-cta:hover { background: #F0F4FF; transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.22); }
+  .hm-hero-cta:hover { background: var(--raj-leaf-bg); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.22); }
   .hm-hero-cta svg { transition: transform .25s; }
   .hm-hero-cta:hover svg { transform: translateX(3px); }
 
@@ -895,7 +895,7 @@ import { environment } from '../../../environments/environment';
 
   /* Fallback state when no banners uploaded */
   .hm-hero-frame-fallback {
-    background: linear-gradient(135deg, #0B1E42 0%, #0D2852 100%);
+    background: linear-gradient(135deg, var(--raj-dark) 0%, var(--raj-dark-2) 100%);
   }
   .hm-hero-fallback-inner {
     width: 100%; height: 100%;
@@ -1084,11 +1084,11 @@ import { environment } from '../../../environments/environment';
     position: absolute; inset: 0; z-index: 1;
     background:
       linear-gradient(to top,
-        color-mix(in srgb, var(--ov-c, #0B1C12) calc(var(--ov-o, 44) * 1% + 36%), transparent) 0%,
-        color-mix(in srgb, var(--ov-c, #0B1C12) calc(var(--ov-o, 44) * 0.65%), transparent) 46%,
+        color-mix(in srgb, var(--ov-c, #211A14) calc(var(--ov-o, 44) * 1% + 36%), transparent) 0%,
+        color-mix(in srgb, var(--ov-c, #211A14) calc(var(--ov-o, 44) * 0.65%), transparent) 46%,
         transparent 86%),
       linear-gradient(120deg,
-        color-mix(in srgb, var(--ov-c, #0B1C12) calc(var(--ov-o, 44) * 0.5%), transparent) 0%,
+        color-mix(in srgb, var(--ov-c, #211A14) calc(var(--ov-o, 44) * 0.5%), transparent) 0%,
         transparent 52%);
   }
   .hm-pr-body {
@@ -1188,7 +1188,7 @@ import { environment } from '../../../environments/environment';
     box-shadow: 0 12px 30px rgba(27,76,140,.14);
   }
 
-  /* ═══ WHY SHOP AT LAAVI ═══ */
+  /* ═══ WHY SHOP AT RAJ ═══ */
   .hm-why { background: var(--kg-cream); }
   .hm-why-grid {
     display: grid; grid-template-columns: repeat(4, 1fr);
@@ -1270,13 +1270,13 @@ import { environment } from '../../../environments/environment';
   .hm-rev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .hm-rev-card {
     border-radius: 20px; overflow: hidden;
-    background: #1A5C35;
+    background: var(--raj-leaf);
     display: flex; align-items: stretch;
     min-height: 300px; position: relative;
     transition: transform .35s var(--ease3), box-shadow .35s var(--ease3);
   }
   .hm-rev-card:hover { transform: translateY(-5px); box-shadow: 0 28px 64px rgba(26,92,53,.22); }
-  .hm-rev-card-alt { background: #6B1A1A; }
+  .hm-rev-card-alt { background: var(--raj-chilli-dk); }
   .hm-rev-card-alt:hover { box-shadow: 0 28px 64px rgba(107,26,26,.28); }
 
   .hm-rev-content {
@@ -1317,7 +1317,7 @@ import { environment } from '../../../environments/environment';
   }
 
   /* ═══ HK QUALITY SECTION ═══ */
-  .hm-hkq { padding: 84px 0 80px; background: #FAFAF8; }
+  .hm-hkq { padding: 84px 0 80px; background: var(--raj-canvas); }
   .hm-hkq-body { text-align: center; margin-bottom: 56px; }
   .hm-hkq-title {
     font-family: var(--font-sans);
@@ -1335,7 +1335,7 @@ import { environment } from '../../../environments/environment';
   }
   .hm-hkq-feat {
     background: #fff;
-    border: 1px solid var(--kg-line-lt, #E5E7EB);
+    border: 1px solid var(--kg-line-lt, var(--raj-line));
     border-radius: 18px; padding: 30px 16px 26px;
     display: flex; flex-direction: column;
     align-items: center; gap: 16px; text-align: center;
@@ -1351,7 +1351,7 @@ import { environment } from '../../../environments/environment';
   .hm-hkq-icon {
     display: flex; align-items: center; justify-content: center;
     width: 48px; height: 48px; border-radius: 50%;
-    background: #FAFAF8; color: var(--kg-forest);
+    background: var(--raj-canvas); color: var(--kg-forest);
   }
   .hm-hkq-icon svg { width: 24px; height: 24px; }
 
@@ -1531,7 +1531,7 @@ import { environment } from '../../../environments/environment';
   ═══════════════════════════════ */
   .hm-faq-wrap {
     padding: 96px 0 104px;
-    background: #FAFAF8;
+    background: var(--raj-canvas);
     position: relative;
     overflow: hidden;
   }
@@ -1558,14 +1558,14 @@ import { environment } from '../../../environments/environment';
     position: relative;
     border-radius: 24px;
     overflow: hidden;
-    background: #EAF2EC;
+    background: var(--raj-leaf-bg);
     aspect-ratio: 4/5;
     max-height: 520px;
     box-shadow: 0 32px 80px rgba(26,92,53,.14), 0 8px 20px rgba(0,0,0,.07);
   }
   .hm-faq-img-bg {
     position: absolute; inset: 0;
-    background: linear-gradient(160deg, #D4EDD8 0%, #E8F5F0 50%, #EAF2EC 100%);
+    background: linear-gradient(160deg, var(--raj-leaf-bg2) 0%, var(--raj-leaf-bg) 50%, var(--raj-leaf-bg) 100%);
   }
   .hm-faq-person {
     position: absolute; inset: 0;
@@ -1615,11 +1615,11 @@ import { environment } from '../../../environments/environment';
 
   .hm-faq-list { display: flex; flex-direction: column; }
   .hm-faq-item {
-    border-bottom: 1px solid var(--kg-line-lt, #E5E7EB);
+    border-bottom: 1px solid var(--kg-line-lt, var(--raj-line));
     cursor: pointer;
     transition: background .25s;
   }
-  .hm-faq-item:first-child { border-top: 1px solid var(--kg-line-lt, #E5E7EB); }
+  .hm-faq-item:first-child { border-top: 1px solid var(--kg-line-lt, var(--raj-line)); }
 
   .hm-faq-q {
     width: 100%; background: none; border: none; cursor: pointer;
@@ -1635,18 +1635,18 @@ import { environment } from '../../../environments/environment';
     transition: color .25s;
   }
   .hm-faq-item:hover .hm-faq-q,
-  .hm-faq-item.open .hm-faq-q { color: var(--kg-forest, #1A5C35); }
+  .hm-faq-item.open .hm-faq-q { color: var(--kg-forest); }
 
   .hm-faq-icon {
     flex-shrink: 0;
     width: 22px; height: 22px;
     display: flex; align-items: center; justify-content: center;
-    color: var(--kg-muted, #6B7280);
+    color: var(--kg-muted, var(--raj-muted));
     transition: transform .35s var(--ease3, cubic-bezier(.22,1,.36,1)), color .25s;
   }
   .hm-faq-item.open .hm-faq-icon {
     transform: rotate(180deg);
-    color: var(--kg-forest, #1A5C35);
+    color: var(--kg-forest);
   }
   .hm-faq-icon svg { width: 18px; height: 18px; }
 
@@ -1660,7 +1660,7 @@ import { environment } from '../../../environments/environment';
     overflow: hidden;
     font-size: 14.5px;
     line-height: 1.75;
-    color: var(--kg-muted, #6B7280);
+    color: var(--kg-muted, var(--raj-muted));
     padding-bottom: 18px;
     padding-right: 32px;
   }
@@ -1716,7 +1716,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   faqItems = [
     {
       q: 'What Indian grocery products do you stock?',
-      a: 'LAAVI STORE carries a wide range of authentic Indian groceries including spices & masalas, rice & grains, dals & pulses, atta & flours, snacks, beverages, dairy products, pickles, chutneys, and household essentials from trusted Indian brands.'
+      a: 'We carry a wide range of authentic Indian groceries including spices & masalas, rice & grains, dals & pulses, atta & flours, snacks, beverages, dairy products, pickles, chutneys, and household essentials from trusted Indian brands.'
     },
     {
       q: 'How do I place an order online?',
@@ -1856,7 +1856,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     els.forEach(el => this._faqObserver!.observe(el));
   }
 
-  /* ── Hero copy — admin banner first, then sensible LAAVI defaults ── */
+  /* ── Hero copy — admin banner first, then sensible brand defaults ── */
   private activeBanner(): any { return this.banners()[this.activeSlide()] || null; }
   heroTitle(): string { return ((this.activeBanner()?.title) || '').trim(); }
   heroWords(): string[] { const t = this.heroTitle(); return t ? t.split(/\s+/) : []; }
@@ -1938,7 +1938,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       .filter(t => t.name && t.text);
     if (fromSettings.length) { this.testimonials.set(fromSettings); return; }
     
-    /* LAAVI-appropriate fallback testimonials — Hong Kong-based */
+    /* Fallback testimonials — REPLACE with real reviews before launch */
     this.testimonials.set([
       { name: 'Priya M.', city: 'Tseung Kwan O, HK', text: 'Finally found a store with all my favourite Indian brands in one place. The MDH masalas are exactly as I get back home!', photo: '' },
       { name: 'Rahul S.', city: 'Tsim Sha Tsui, HK', text: 'Easy to order, great selection of atta, rice and dals. Everything arrived well-packed and fresh.', photo: '' },
@@ -2020,24 +2020,24 @@ export class HomeComponent implements OnInit, OnDestroy {
       label: 'Spice pantry', title: 'Authentic Indian Spices & Masalas',
       text: 'From ground coriander to whole garam masala — the real flavours of Indian cooking.',
       button: 'Shop Spices', link: '/categories',
-      badge: 'Best Sellers', badgeColor: '#1B4C8C',
-      overlayColor: '#0B1C12', overlayOpacity: 46, height: 0,
+      badge: 'Best Sellers', badgeColor: '#17513F',
+      overlayColor: '#211A14', overlayOpacity: 46, height: 0,
     },
     2: {
       img: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=1200&q=80&auto=format&fit=crop',
       label: 'Daily staples', title: 'Rice, Atta & Dal',
       text: 'Stock your pantry with everyday Indian essentials.',
       button: 'Shop Staples', link: '/categories',
-      badge: '', badgeColor: '#E0932E',
-      overlayColor: '#0D1810', overlayOpacity: 40, height: 0,
+      badge: '', badgeColor: 'var(--raj-turmeric)',
+      overlayColor: '#211A14', overlayOpacity: 40, height: 0,
     },
     3: {
       img: 'https://images.unsplash.com/photo-1606923829579-0cb981a83e2e?w=1200&q=80&auto=format&fit=crop',
       label: 'Snacks & sweets', title: 'Namkeen, Mithai & More',
       text: 'Your favourite Indian snacks and festive sweets, now in Hong Kong.',
       button: 'Explore Snacks', link: '/categories',
-      badge: 'New Arrivals', badgeColor: '#E0932E',
-      overlayColor: '#120B08', overlayOpacity: 42, height: 0,
+      badge: 'New Arrivals', badgeColor: 'var(--raj-turmeric)',
+      overlayColor: '#211A14', overlayOpacity: 42, height: 0,
     },
   };
 

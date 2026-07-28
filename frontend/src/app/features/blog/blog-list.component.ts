@@ -174,7 +174,7 @@ export class BlogListComponent implements OnInit {
   constructor(private api: ApiService, private seo: SeoService) {}
 
   ngOnInit() {
-    this.seo.setMeta({ title: 'Blog & Recipes | LAAVI STORE', description: 'Discover authentic Indian recipes, cooking tips, and more.' });
+    this.seo.setMeta({ title: 'Blog & Recipes', description: 'Discover authentic Indian recipes, cooking tips, and more.' });
     this.api.getBlogs().subscribe({
       next: (r: any) => { if (r.success) this.posts.set(r.data || []); this.loading.set(false); },
       error: () => this.loading.set(false)

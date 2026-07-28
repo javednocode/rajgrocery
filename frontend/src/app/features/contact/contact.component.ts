@@ -243,7 +243,7 @@ export class ContactComponent implements OnInit {
   constructor(public settings: SettingsService, private seo: SeoService, private api: ApiService, private sanitizer: DomSanitizer) {}
 
   ngOnInit() {
-    this.seo.setMeta({ title: 'Contact Us | LAAVI STORE', description: 'Get in touch with our customer support team.' });
+    this.seo.setMeta({ title: 'Contact Us', description: 'Get in touch with our customer support team.' });
   }
 
   mapUrl(): SafeResourceUrl | null {

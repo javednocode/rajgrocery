@@ -114,30 +114,32 @@ import { environment } from '../../../../environments/environment';
   `,
 
   styles: [`
-  /* ── Card shell ── */
+  /* ═══ RAJ GROCERY — PRODUCT CARD ═══
+     Warm oat image bay, tight commercial body, one obvious add action.
+     Density matters more than decoration: this sits in a grid of 20+. */
   .pc {
     position: relative;
-    background: var(--kg-paper);
-    border: 1px solid var(--kg-line-lt);
-    border-radius: 12px;
+    background: var(--raj-paper);
+    border: 1px solid var(--raj-line-lt);
+    border-radius: var(--r-lg);
     overflow: hidden;
     display: flex; flex-direction: column;
     height: 100%;
     transition: box-shadow .35s var(--ease), border-color .25s, transform .35s var(--ease);
   }
   .pc:hover {
-    box-shadow: 0 8px 28px rgba(16,24,40,.08);
-    border-color: var(--kg-line-warm);
+    box-shadow: var(--shadow);
+    border-color: var(--raj-line-warm);
     transform: translateY(-4px);
   }
   .pc.oos { opacity: .72; }
 
-  /* ── Media / image ── */
+  /* ── Media ── */
   .pc-media { display: block; position: relative; overflow: hidden; flex-shrink: 0; }
   .pc-img-wrap {
     display: flex; align-items: center; justify-content: center;
     aspect-ratio: 1 / 1;
-    background: var(--kg-warm);
+    background: var(--raj-warm);
     overflow: hidden; position: relative;
   }
   .pc-img {
@@ -146,22 +148,22 @@ import { environment } from '../../../../environments/environment';
     transition: transform .6s var(--ease);
     position: relative; z-index: 1;
   }
-  .pc:hover .pc-img { transform: scale(1.05); }
+  .pc:hover .pc-img { transform: scale(1.055); }
   .pc-img-overlay {
     position: absolute; inset: 0; z-index: 2;
-    background: rgba(27,31,28,0);
+    background: rgba(33,26,20,0);
     transition: background .35s;
     pointer-events: none;
   }
-  .pc:hover .pc-img-overlay { background: rgba(27,31,28,.03); }
+  .pc:hover .pc-img-overlay { background: rgba(33,26,20,.035); }
   .pc-monogram {
-    font-family: var(--font-sans);
-    font-size: 52px; font-weight: 800;
-    color: var(--kg-line-warm);
+    font-family: var(--font-display);
+    font-size: 54px; font-weight: 600;
+    color: var(--raj-line-warm);
     user-select: none;
     transition: color .4s;
   }
-  .pc:hover .pc-monogram { color: var(--kg-faint); }
+  .pc:hover .pc-monogram { color: var(--raj-faint); }
 
   /* ── Badges ── */
   .pc-badges {
@@ -172,27 +174,27 @@ import { environment } from '../../../../environments/environment';
   .pc-tag {
     font-family: var(--font-sans);
     font-size: 9.5px; font-weight: 800;
-    padding: 3px 9px; border-radius: var(--r-full);
-    letter-spacing: .08em; text-transform: uppercase; line-height: 1.5;
+    padding: 4px 10px; border-radius: var(--r-full);
+    letter-spacing: .08em; text-transform: uppercase; line-height: 1.4;
     animation: scaleIn .4s var(--ease2) both;
   }
-  .pc-tag-disc { background: var(--kg-terra); color: #FFFFFF; }
-  .pc-tag-new  { background: var(--kg-forest); color: #FFFFFF; }
-  .pc-tag-oos  { background: rgba(27,31,28,.75); color: #FFFFFF; }
+  .pc-tag-disc { background: var(--raj-chilli); color: #fff; }
+  .pc-tag-new  { background: var(--raj-leaf); color: #fff; }
+  .pc-tag-oos  { background: rgba(33,26,20,.78); color: #fff; }
 
   /* ── Wishlist ── */
   .pc-wish {
-    position: absolute; top: 10px; right: 10px; z-index: 4;
-    width: 32px; height: 32px; border-radius: var(--r-full);
-    border: 1.5px solid rgba(231,228,220,.9);
-    background: rgba(255,255,255,.88);
+    position: absolute; top: 9px; right: 9px; z-index: 4;
+    width: 34px; height: 34px; border-radius: var(--r-full);
+    border: 1.5px solid rgba(229,220,204,.9);
+    background: rgba(255,255,255,.9);
     backdrop-filter: blur(6px);
-    color: var(--kg-faint);
+    color: var(--raj-faint);
     display: grid; place-items: center;
-    transition: all .22s; cursor: pointer;
+    transition: var(--t); cursor: pointer;
   }
-  .pc-wish:hover { color: var(--kg-clay); border-color: var(--kg-clay); transform: scale(1.1); }
-  .pc-wish.on { color: var(--kg-clay); border-color: rgba(192,57,43,.4); background: var(--kg-clay-bg); }
+  .pc-wish:hover { color: var(--raj-chilli); border-color: var(--raj-chilli); transform: scale(1.1); }
+  .pc-wish.on { color: var(--raj-chilli); border-color: rgba(192,57,43,.4); background: var(--raj-chilli-bg); }
   .pc-wish.burst { animation: pcBurst .45s var(--ease2); }
   @keyframes pcBurst {
     0%   { transform: scale(1); }
@@ -214,98 +216,105 @@ import { environment } from '../../../../environments/environment';
   .pc-cat {
     font-family: var(--font-sans);
     font-size: 9.5px; font-weight: 800;
-    letter-spacing: .15em; text-transform: uppercase;
-    color: var(--kg-terra-dk);
+    letter-spacing: .14em; text-transform: uppercase;
+    color: var(--raj-turmeric-dk);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .pc-low {
     display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
-    font-size: 9px; font-weight: 700;
-    color: var(--kg-terra-dk);
+    font-size: 9.5px; font-weight: 700;
+    color: var(--raj-chilli);
   }
-  .pc-low i { width: 5px; height: 5px; border-radius: 50%; background: var(--kg-terra); animation: pcPulse 1.8s infinite; }
+  .pc-low i { width: 5px; height: 5px; border-radius: 50%; background: var(--raj-chilli); animation: pcPulse 1.8s infinite; }
   @keyframes pcPulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
 
   /* ── Name ── */
   .pc-name {
     font-family: var(--font-sans);
     font-size: 14.5px; font-weight: 700; line-height: 1.35;
-    letter-spacing: -0.01em;
-    color: var(--kg-ink);
+    letter-spacing: -0.008em;
+    color: var(--raj-ink);
     overflow: hidden;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
     transition: color .2s; text-decoration: none;
   }
-  .pc-name:hover { color: var(--kg-forest); }
+  .pc-name:hover { color: var(--raj-leaf); }
 
   /* ── Brand / unit ── */
   .pc-meta { display: flex; align-items: center; gap: 6px; }
   .pc-brand, .pc-unit {
-    font-size: 11.5px; color: var(--kg-faint); font-weight: 600;
+    font-size: 11.5px; color: var(--raj-faint); font-weight: 600;
     font-family: var(--font-sans); white-space: nowrap;
   }
-  .pc-unit::before { content: '·'; margin-right: 6px; color: var(--kg-line-warm); }
+  .pc-unit::before { content: '·'; margin-right: 6px; color: var(--raj-line-warm); }
   .pc-brand + .pc-unit::before { content: '·'; }
 
   /* ── Footer: price + add ── */
   .pc-foot {
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    margin-top: auto; padding-top: 10px;
-    border-top: 1px solid var(--kg-line-lt);
+    margin-top: auto; padding-top: 11px;
+    border-top: 1px solid var(--raj-line-lt);
   }
   .pc-price-row { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
   .pc-price {
-    font-family: var(--font-sans); font-size: 16.5px; font-weight: 800;
-    color: var(--kg-ink); letter-spacing: -0.01em; line-height: 1;
+    font-family: var(--font-sans); font-size: 17px; font-weight: 800;
+    color: var(--raj-ink); letter-spacing: -0.012em; line-height: 1;
+    font-variant-numeric: tabular-nums;
   }
   .pc-original {
-    font-size: 12px; color: var(--kg-faint); text-decoration: line-through; font-weight: 600;
+    font-size: 12px; color: var(--raj-faint); text-decoration: line-through; font-weight: 600;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* ── Add to cart button ── */
+  /* ── Add to cart ── */
   .pc-add {
-    width: 36px; height: 36px; flex-shrink: 0;
+    width: 40px; height: 40px; flex-shrink: 0;
     display: grid; place-items: center;
-    background: var(--kg-forest-bg);
-    border: 1.5px solid var(--kg-forest-bg2);
-    color: var(--kg-forest);
+    background: var(--raj-leaf-bg);
+    border: 1.5px solid var(--raj-leaf-bg2);
+    color: var(--raj-leaf);
     border-radius: var(--r-full);
     cursor: pointer;
     transition: background .22s, border-color .22s, color .22s, transform .22s, box-shadow .22s;
   }
   .pc-add:hover:not(:disabled) {
-    background: var(--kg-forest); color: #FFFFFF; border-color: var(--kg-forest);
-    transform: scale(1.08); box-shadow: var(--shadow-forest);
+    background: var(--raj-leaf); color: #fff; border-color: var(--raj-leaf);
+    transform: scale(1.08); box-shadow: var(--shadow-leaf);
   }
+  .pc-add:active:not(:disabled) { transform: scale(.96); }
   .pc-add.added {
-    background: var(--kg-forest); color: #FFFFFF; border-color: var(--kg-forest);
+    background: var(--raj-leaf); color: #fff; border-color: var(--raj-leaf);
   }
   .pc-add:disabled {
-    background: var(--kg-sand); color: var(--kg-faint);
-    border-color: var(--kg-line); opacity: .7; cursor: not-allowed;
+    background: var(--raj-sand); color: var(--raj-faint);
+    border-color: var(--raj-line); opacity: .7; cursor: not-allowed;
+  }
+
+  /* Touch devices get full 44px targets on the two tap actions */
+  @media (pointer: coarse) {
+    .pc-add  { width: 44px; height: 44px; }
+    .pc-wish { width: 40px; height: 40px; }
   }
 
   /* ── Mobile ── */
   @media (max-width: 640px) {
-    .pc { border-radius: 10px; }
+    .pc { border-radius: var(--r); }
     .pc-body { padding: 10px 11px 12px; gap: 4px; }
-    .pc-name { font-size: 13px; -webkit-line-clamp: 2; }
-    .pc-price { font-size: 14.5px; }
+    .pc-name { font-size: 13px; }
+    .pc-price { font-size: 15px; }
     .pc-original { font-size: 11px; }
     .pc-cat { font-size: 9px; }
-    .pc-add { width: 32px; height: 32px; }
-    .pc-wish { width: 28px; height: 28px; top: 8px; right: 8px; }
-    .pc-wish svg { width: 13px; height: 13px; }
+    .pc-wish { top: 8px; right: 8px; }
+    .pc-wish svg { width: 14px; height: 14px; }
     .pc-badges { top: 8px; left: 8px; }
-    .pc-tag { font-size: 8.5px; padding: 2.5px 7px; }
-    .pc-foot { padding-top: 8px; }
+    .pc-tag { font-size: 8.5px; padding: 3px 8px; }
+    .pc-foot { padding-top: 9px; }
   }
 
   /* ── Reduced motion ── */
   @media (prefers-reduced-motion: reduce) {
-    .pc { transition: none; }
-    .pc-img { transition: none; }
-    .pc-wish.burst { animation: none; }
+    .pc, .pc-img { transition: none; }
+    .pc-wish.burst, .pc-tag, .pc-low i { animation: none; }
   }
   `]
 })

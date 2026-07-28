@@ -10,7 +10,7 @@ export class SeoService {
 
   /** Returns the current brand name from DB settings */
   private brand(): string {
-    return this.settings.get('site_name', 'LAAVI STORE');
+    return this.settings.get('site_name', 'Raj Grocery Store');
   }
 
   /** Returns the configured site URL (no trailing slash) */

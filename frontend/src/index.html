@@ -2,35 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>LAAVI STORE | Indian Grocery Store in Hong Kong</title>
+  <title>Raj Grocery Store | Indian Grocery Store in Hong Kong</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="LAAVI STORE — your local Indian grocery store in Hong Kong. Authentic spices, rice, atta, dals, snacks and household essentials delivered to your door.">
-  <meta name="keywords" content="Indian grocery Hong Kong, Indian store HK, Indian spices Hong Kong, LAAVI STORE, Indian food online HK">
-  <meta name="author" content="LAAVI STORE">
+  <meta name="description" content="Raj Grocery Store — your Indian grocery store in Hong Kong. Spices, rice, atta, dals, snacks, fresh vegetables and household essentials delivered to your door.">
+  <meta name="keywords" content="Indian grocery Hong Kong, Indian store HK, Indian spices Hong Kong, Raj Grocery Store, Indian vegetables Hong Kong, Indian food online HK">
+  <meta name="author" content="Raj Grocery Store">
   <meta name="robots" content="index, follow">
 
-  <!-- PWA / App branding — will be overridden by SettingsService at runtime -->
-  <meta name="theme-color" content="#29B8D5">
+  <!-- PWA / App branding — overridden by SettingsService at runtime -->
+  <meta name="theme-color" content="#17513F">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="LAAVI STORE">
+  <meta name="apple-mobile-web-app-title" content="Raj Grocery Store">
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/logo.svg">
 
   <!-- Open Graph — overridden dynamically by SettingsService -->
-  <meta property="og:title" content="LAAVI STORE | Indian Grocery Store in Hong Kong">
-  <meta property="og:description" content="Your local Indian grocery store in Hong Kong — authentic spices, rice, atta, dals, snacks and more.">
+  <meta property="og:title" content="Raj Grocery Store | Indian Grocery Store in Hong Kong">
+  <meta property="og:description" content="Indian groceries, spices and fresh vegetables delivered across Hong Kong.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="">
   <meta property="og:image" content="/logo.svg">
   <meta property="og:locale" content="en_HK">
+  <meta property="og:site_name" content="Raj Grocery Store">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="LAAVI STORE | Indian Grocery Store in Hong Kong">
-  <meta name="twitter:description" content="Your local Indian grocery store in Hong Kong.">
+  <meta name="twitter:title" content="Raj Grocery Store | Indian Grocery Store in Hong Kong">
+  <meta name="twitter:description" content="Indian groceries, spices and fresh vegetables delivered across Hong Kong.">
 
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="canonical" href="">
@@ -39,306 +40,148 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-
-  <!-- AOS - Animate On Scroll -->
-  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
 
   <!-- Preload critical assets -->
   <link rel="preload" href="/logo.svg" as="image" fetchpriority="high">
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=Manrope:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600&family=Manrope:wght@400;500;600;700;800&display=swap"></noscript>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Manrope:wght@400..800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Manrope:wght@400..800&display=swap"></noscript>
 
   <!-- Inline splash CSS — renders BEFORE any JS loads -->
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Manrope',system-ui,-apple-system,sans-serif;overflow-x:hidden;background:#FFFFFF}
+    body{font-family:'Manrope',system-ui,-apple-system,sans-serif;overflow-x:hidden;background:#FAF7F1}
 
     /* Inline splash — shown instantly before Angular boots */
     #app-splash {
       position: fixed;
       inset: 0;
       z-index: 9999;
-      background: #FFFFFF;
+      background: #FAF7F1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 18px;
+      gap: 16px;
       opacity: 1;
-      transition: opacity 0.5s ease;
+      transition: opacity 0.45s ease;
     }
     #app-splash.splash-out { opacity: 0; pointer-events: none; }
 
     #app-splash-name {
       font-family: 'Fraunces', Georgia, serif;
-      font-size: 34px;
-      font-weight: 400;
-      color: #111827;
-      letter-spacing: -0.02em;
+      font-size: 33px;
+      font-weight: 600;
+      color: #211A14;
+      letter-spacing: -0.015em;
       animation: splash_up 0.7s cubic-bezier(0.22,1,0.36,1) 0.05s both;
     }
-    #app-splash-flags {
-      display: flex;
-      gap: 10px;
-      font-size: 15px;
-      letter-spacing: 0.04em;
-      animation: splash_up 0.7s cubic-bezier(0.22,1,0.36,1) 0.18s both;
+    #app-splash-sub {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #9C6B15;
+      animation: splash_up 0.7s cubic-bezier(0.22,1,0.36,1) 0.16s both;
     }
     #app-splash-bar {
-      width: 56px;
+      width: 52px;
       height: 2px;
       border-radius: 99px;
-      background: #E5E7EB;
+      background: #E7DCCA;
       overflow: hidden;
-      animation: splash_up 0.6s ease 0.26s both;
+      margin-top: 4px;
+      animation: splash_up 0.6s ease 0.24s both;
     }
     #app-splash-bar::after {
       content: '';
       display: block;
       height: 100%;
       width: 0%;
-      background: #29B8D5;
+      background: #17513F;
       border-radius: 99px;
       animation: splash_prog 0.9s ease 0.2s forwards;
     }
-    @keyframes splash_up   { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+    @keyframes splash_up   { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
     @keyframes splash_prog { from { width: 0%; } to { width: 100%; } }
+
+    /* Scroll progress — compositor-only (scaleX), rAF-batched below */
+    #raj-progress {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10000;
+      height: 3px;
+      background: linear-gradient(90deg, #17513F, #2F7D63 55%, #E4A33B);
+      transform: scaleX(0); transform-origin: 0 50%;
+      pointer-events: none;
+      will-change: transform;
+    }
 
     /* Reserve space so content doesn't shift when Angular renders */
     app-root { display: block; min-height: 100vh; }
+
+    @media (prefers-reduced-motion: reduce) {
+      #app-splash, #app-splash-name, #app-splash-sub,
+      #app-splash-bar, #app-splash-bar::after { animation: none !important; }
+    }
   </style>
 </head>
 <body>
 
   <!-- Inline splash screen — visible IMMEDIATELY, before any JS executes -->
   <div id="app-splash" role="status" aria-label="Loading store">
-    <div id="app-splash-name">LAAVI STORE</div>
-    <div id="app-splash-flags"><span>🇮🇳</span><span>🇭🇰</span></div>
+    <div id="app-splash-name">Raj Grocery Store</div>
+    <div id="app-splash-sub">Indian Grocery &middot; Hong Kong</div>
     <div id="app-splash-bar"></div>
   </div>
 
   <app-root></app-root>
 
-  <!-- Service Worker -->
   <script>
+    // ── Service Worker ──
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('/sw.js').catch(function() {});
       });
     }
 
-    // Expose function for Angular to call when it's ready
+    // Exposed for Angular to call once the app has rendered
     window.__appHideSplash = function() {
       var el = document.getElementById('app-splash');
       if (!el) return;
       el.classList.add('splash-out');
       setTimeout(function() {
         if (el && el.parentNode) el.parentNode.removeChild(el);
-      }, 500);
+      }, 450);
     };
 
-    // Compatibility alias for any existing code referencing the old function name
+    // Compatibility alias for existing callers
     window.__tdHideSplash = window.__appHideSplash;
 
     // Hard failsafe — remove after 4 seconds no matter what
     setTimeout(function() {
       if (window.__appHideSplash) window.__appHideSplash();
     }, 4000);
-  </script>
-  <!-- AOS JS -->
-  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 
-  <!-- ═══════════ LAAVI PREMIUM ANIMATIONS ═══════════ -->
-  <style>
-    /* ── Scroll Progress Bar ── */
-    #laavi-progress {
-      position: fixed; top: 0; left: 0; z-index: 10000;
-      height: 3px; width: 0%; background: linear-gradient(90deg, #29B8D5, #1A5C35, #C5A028);
-      border-radius: 0 2px 2px 0;
-      transition: width 0.08s linear;
-      pointer-events: none;
-    }
-
-    /* ── Custom Cursor (Desktop only) ── */
-    @media (pointer: fine) {
-      body { cursor: none !important; }
-      body * { cursor: none !important; }
-
-      #laavi-cursor-ring {
-        position: fixed; top: 0; left: 0; z-index: 9998;
-        width: 36px; height: 36px;
-        border: 2px solid rgba(26,92,53,0.7);
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        transition: transform 0.12s cubic-bezier(0.22,1,0.36,1),
-                    width 0.25s cubic-bezier(0.22,1,0.36,1),
-                    height 0.25s cubic-bezier(0.22,1,0.36,1),
-                    border-color 0.25s, background 0.25s, opacity 0.3s;
-        will-change: transform;
-        mix-blend-mode: multiply;
-        opacity: 0;
-      }
-      #laavi-cursor-dot {
-        position: fixed; top: 0; left: 0; z-index: 9999;
-        width: 6px; height: 6px;
-        background: #1A5C35;
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        transition: width 0.2s, height 0.2s, background 0.2s, opacity 0.3s;
-        will-change: transform;
-        opacity: 0;
-      }
-      #laavi-cursor-ring.active {
-        width: 56px; height: 56px;
-        background: rgba(26,92,53,0.08);
-        border-color: #1A5C35;
-      }
-      #laavi-cursor-ring.clicking {
-        width: 28px; height: 28px;
-        background: rgba(26,92,53,0.18);
-      }
-      #laavi-cursor-ring.on-dark {
-        border-color: rgba(255,255,255,0.8);
-        mix-blend-mode: screen;
-      }
-      #laavi-cursor-ring.on-dark.active {
-        background: rgba(255,255,255,0.08);
-      }
-    }
-
-    /* ── Button Ripple ── */
-    .btn-ripple-wrap { position: relative; overflow: hidden; }
-    .ripple-circle {
-      position: absolute; border-radius: 50%;
-      background: rgba(255,255,255,0.35);
-      transform: scale(0); animation: ripple-out 0.6s linear;
-      pointer-events: none;
-    }
-    @keyframes ripple-out {
-      to { transform: scale(4); opacity: 0; }
-    }
-
-    /* ── Floating section divider sparkles ── */
-    @keyframes laavi-float {
-      0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
-      50% { transform: translateY(-12px) rotate(180deg); opacity: 1; }
-    }
-    .laavi-sparkle {
-      pointer-events: none;
-      animation: laavi-float var(--dur, 3s) ease-in-out var(--delay, 0s) infinite;
-    }
-
-    /* ── AOS custom overrides for more premium feel ── */
-    [data-aos] { backface-visibility: hidden; }
-  </style>
-
-  <script>
-    // ── Init AOS ──
-    document.addEventListener('DOMContentLoaded', function() {
-      if (typeof AOS !== 'undefined') {
-        AOS.init({
-          duration: 700,
-          easing: 'cubic-bezier(0.22,1,0.36,1)',
-          once: true,
-          offset: 60,
-          delay: 0,
-          disable: window.innerWidth < 768
-        });
-      }
-    });
-
-    // ── Scroll Progress Bar ──
-    var progressEl = document.createElement('div');
-    progressEl.id = 'laavi-progress';
-    document.body.insertBefore(progressEl, document.body.firstChild);
-    window.addEventListener('scroll', function() {
-      var scrollTop = window.scrollY || document.documentElement.scrollTop;
-      var docH = document.documentElement.scrollHeight - window.innerHeight;
-      progressEl.style.width = (docH > 0 ? (scrollTop / docH) * 100 : 0) + '%';
-    }, { passive: true });
-
-    // ── Custom Cursor (desktop only) ──
-    if (window.matchMedia('(pointer: fine)').matches) {
-      var ring = document.createElement('div');
-      var dot  = document.createElement('div');
-      ring.id = 'laavi-cursor-ring';
-      dot.id  = 'laavi-cursor-dot';
-      document.body.appendChild(ring);
-      document.body.appendChild(dot);
-
-      var mouseX = 0, mouseY = 0, ringX = 0, ringY = 0, rafId;
-
-      document.addEventListener('mousemove', function(e) {
-        mouseX = e.clientX; mouseY = e.clientY;
-        dot.style.left = mouseX + 'px';
-        dot.style.top  = mouseY + 'px';
-        dot.style.opacity = '1';
-        ring.style.opacity = '1';
-        if (!rafId) rafId = requestAnimationFrame(animateRing);
-      }, { passive: true });
-
-      function animateRing() {
-        ringX += (mouseX - ringX) * 0.14;
-        ringY += (mouseY - ringY) * 0.14;
-        ring.style.left = ringX + 'px';
-        ring.style.top  = ringY + 'px';
-        rafId = requestAnimationFrame(animateRing);
-      }
-
-      document.addEventListener('mouseleave', function() {
-        ring.style.opacity = '0'; dot.style.opacity = '0';
-      });
-      document.addEventListener('mouseenter', function() {
-        ring.style.opacity = '1'; dot.style.opacity = '1';
-      });
-
-      // Expand on interactive elements
-      document.addEventListener('mouseover', function(e) {
-        var t = e.target.closest('a, button, [role="button"], .hm-cat, .hm-pr, .hm-prod-card, .hm-hkq-feat, .hm-rev-card, label, input, textarea, select');
-        if (t) { ring.classList.add('active'); dot.style.width = '4px'; dot.style.height = '4px'; }
-      });
-      document.addEventListener('mouseout', function(e) {
-        var t = e.target.closest('a, button, [role="button"], .hm-cat, .hm-pr, .hm-prod-card, .hm-hkq-feat, .hm-rev-card, label, input, textarea, select');
-        if (t) { ring.classList.remove('active'); dot.style.width = '6px'; dot.style.height = '6px'; }
-      });
-
-      // Click pulse
-      document.addEventListener('mousedown', function() { ring.classList.add('clicking'); });
-      document.addEventListener('mouseup',   function() { ring.classList.remove('clicking'); });
-
-      // Dark section detection
-      var darkSections = [];
-      function detectDarkSections() {
-        darkSections = Array.from(document.querySelectorAll('.hm-rev-card, .hm-rev, section[style*="background: #"]'));
+    // ── Scroll progress bar ──
+    // rAF-batched and transform-driven so it never touches layout.
+    // The rest of the site's motion is handled by the native scroll-story
+    // directive engine in app/shared/directives.
+    (function() {
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var bar = document.createElement('div');
+      bar.id = 'raj-progress';
+      document.body.insertBefore(bar, document.body.firstChild);
+      var ticking = false;
+      function paint() {
+        ticking = false;
+        var doc = document.documentElement;
+        var max = doc.scrollHeight - window.innerHeight;
+        var p = max > 0 ? (window.scrollY || doc.scrollTop) / max : 0;
+        bar.style.transform = 'scaleX(' + (p < 0 ? 0 : p > 1 ? 1 : p).toFixed(4) + ')';
       }
       window.addEventListener('scroll', function() {
-        var inDark = darkSections.some(function(el) {
-          var r = el.getBoundingClientRect();
-          return mouseY >= r.top && mouseY <= r.bottom && mouseX >= r.left && mouseX <= r.right;
-        });
-        if (inDark) ring.classList.add('on-dark');
-        else ring.classList.remove('on-dark');
+        if (!ticking) { ticking = true; requestAnimationFrame(paint); }
       }, { passive: true });
-      setTimeout(detectDarkSections, 2000);
-    }
-
-    // ── Ripple effect on buttons ──
-    document.addEventListener('click', function(e) {
-      var btn = e.target.closest('button, .btn, a.btn, [data-ripple]');
-      if (!btn) return;
-      btn.style.position = btn.style.position || 'relative';
-      btn.style.overflow = 'hidden';
-      var r = document.createElement('span');
-      var d = Math.max(btn.clientWidth, btn.clientHeight) * 2;
-      var rect = btn.getBoundingClientRect();
-      r.className = 'ripple-circle';
-      r.style.cssText = 'width:' + d + 'px;height:' + d + 'px;left:' + (e.clientX - rect.left - d/2) + 'px;top:' + (e.clientY - rect.top - d/2) + 'px';
-      btn.appendChild(r);
-      setTimeout(function() { r.remove(); }, 650);
-    });
+      paint();
+    })();
   </script>
 </body>
 </html>

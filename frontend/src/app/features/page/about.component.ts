@@ -13,7 +13,7 @@ import { SeoService } from '../../core/services/seo.service';
     <div class="container">
       <nav class="ab-crumbs"><a routerLink="/">Home</a><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>About Us</span></nav>
       <span class="ab-eyebrow">Our Story</span>
-      <h1>{{ settings.get('site_name','LAAVI STORE') }}</h1>
+      <h1>{{ settings.get('site_name','Raj Grocery Store') }}</h1>
       <p>{{ settings.get('site_tagline', 'Indian Grocery Store in Hong Kong') }}</p>
     </div>
     <div class="ab-hero-deco" aria-hidden="true"></div>
@@ -36,9 +36,9 @@ import { SeoService } from '../../core/services/seo.service';
       </div>
       <div class="ab-story-img">
         <div class="ab-img-card">
-          <span class="ab-img-letter">{{ settings.get('site_name','LAAVI')[0] }}</span>
+          <span class="ab-img-letter">{{ settings.get('site_name','Raj Grocery Store')[0] }}</span>
           <div class="ab-img-overlay">
-            <strong>{{ settings.get('site_name','LAAVI STORE') }}</strong>
+            <strong>{{ settings.get('site_name','Raj Grocery Store') }}</strong>
             <span>Est. {{ settings.get('founded_year','2018') }}</span>
           </div>
         </div>
@@ -242,6 +242,6 @@ export class AboutComponent {
   ];
 
   constructor(public settings: SettingsService, seo: SeoService) {
-    seo.setMeta({ title: 'About Us | LAAVI STORE', description: 'Learn about our story, values, and commitment to bringing authentic Indian groceries to your door in Hong Kong.' });
+    seo.setMeta({ title: 'About Us', description: 'Learn about our story, values, and commitment to bringing authentic Indian groceries to your door in Hong Kong.' });
   }
 }

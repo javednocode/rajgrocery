@@ -188,7 +188,7 @@ export class FaqComponent {
         { q: 'Will I receive a receipt?', a: 'Yes — a full order confirmation and receipt is sent to your email address immediately after placing your order.' },
       ],
     };
-    seo.setMeta({ title: 'FAQ | LAAVI STORE', description: 'Find answers to common questions about ordering, delivery, products, returns, and payment.' });
+    seo.setMeta({ title: 'FAQ', description: 'Find answers to common questions about ordering, delivery, products, returns, and payment.' });
   }
 
   currentCategory() { return this.categories.find(c => c.id === this.activeCategory()); }

@@ -367,14 +367,14 @@ export class SearchComponent implements OnInit {
 
       if (sale) {
         this.seo.setMeta({
-          title: 'Hot Deals & Offers | LAAVI STORE',
-          description: 'Explore the latest sale products and special offers at LAAVI STORE.'
+          title: 'Hot Deals & Offers',
+          description: 'Explore the latest sale products and special offers.'
         });
         this.fetchSale();
       } else {
         this.seo.setMeta({
-          title: t ? `"${t}" — Search | LAAVI STORE` : 'Search | LAAVI STORE',
-          description: 'Search Indian grocery products at LAAVI STORE.'
+          title: t ? `"${t}" — Search` : 'Search',
+          description: 'Search Indian groceries, spices, snacks and fresh vegetables.'
         });
         if (!t) { this.results.set([]); return; }
         this.fetchQuery(t);

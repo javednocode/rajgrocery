@@ -36,31 +36,36 @@ export class SettingsService {
   }
 
   defaultSettings() {
+    // NOTE: these are FALLBACKS ONLY — used when the settings API is
+    // unreachable or a key has never been saved. Anything the admin sets
+    // in the panel wins. Business specifics (email, phone, address, hours)
+    // are deliberately left EMPTY rather than invented: the header, footer
+    // and contact page all hide those rows when the value is blank.
     return {
-      site_name: 'LAAVI STORE',
+      site_name: 'Raj Grocery Store',
       site_tagline: 'Indian Grocery Store in Hong Kong',
-      site_description: 'LAAVI STORE is your local Indian grocery store in Hong Kong — authentic staples, spices, snacks and household essentials delivered to your door.',
+      site_description: 'Raj Grocery Store is your Indian grocery store in Hong Kong — spices, staples, snacks, fresh vegetables and household essentials delivered to your door.',
       site_url: '',
       site_logo: '',
       site_favicon: '/favicon.ico',
-      site_email: 'hello@laavi.hk',
+      site_email: '',
       site_phone: '',
-      site_address: 'Tseung Kwan O, Hong Kong',
-      contact_email: 'hello@laavi.hk',
-      contact_address: 'Tseung Kwan O, Hong Kong',
-      contact_hours: 'Mon–Sat: 10am–8pm',
+      site_address: '',
+      contact_email: '',
+      contact_address: '',
+      contact_hours: '',
       contact_phone: '',
       contact_map_embed: '',
       business_city: 'Hong Kong',
-      business_region: 'New Territories',
+      business_region: '',
       business_country: 'Hong Kong',
       store_country: 'Hong Kong',
       currency_symbol: 'HK$',
       currency_code: 'HKD',
-      header_offer_text: 'Wide Indian Grocery Selection — Shop Online',
+      header_offer_text: 'Indian groceries & fresh vegetables — delivered across Hong Kong',
       hero_eyebrow: 'Indian Grocery in Hong Kong',
       hero_title: 'Your Favourite Indian Groceries, All in One Place.',
-      hero_subtitle: 'Shop everyday Indian groceries, pantry essentials, snacks, beverages and household favourites from LAAVI STORE.',
+      hero_subtitle: 'Shop everyday Indian groceries, pantry staples, snacks, beverages and fresh vegetables from Raj Grocery Store.',
       hero_media_badge: 'Indian Grocery Selection',
       hero_media_caption_title: 'Fresh stock, weekly',
       hero_media_caption_meta: 'Packed with care',
@@ -106,7 +111,7 @@ export class SettingsService {
       promo_3_image: '/uploads/promos/indian-snacks.jpg',
       promo_3_badge: 'New Arrivals',
       promise_label: 'Our Promise',
-      promise_title: 'Why Shop at LAAVI STORE',
+      promise_title: 'Why Shop at Raj Grocery Store',
       promise_text: 'Wide Indian grocery selection, easy online ordering, secure checkout and authentic brands — all delivered to your door in Hong Kong.',
       why_1_title: 'Indian Grocery Selection',
       why_1_text: 'A wide range of authentic Indian groceries, spices, snacks and household essentials.',
@@ -135,13 +140,13 @@ export class SettingsService {
       review_5_text: 'Finally a store where spices, snacks, pickles and staples all arrive together. Great variety!',
       review_6_name: 'Amit V.',
       review_6_location: 'Yuen Long, HK',
-      review_6_text: 'The inventory is fresh and the brand selection keeps getting better. LAAVI is my go-to grocery store.',
-      footer_about: 'Your local Indian grocery store in Hong Kong — authentic spices, staples, snacks and household essentials delivered to your door.',
-      footer_copyright: '© 2026 LAAVI STORE. All rights reserved.',
+      review_6_text: 'The inventory is fresh and the brand selection keeps getting better. This is my go-to grocery store.',
+      footer_about: 'Your Indian grocery store in Hong Kong — spices, staples, snacks, fresh vegetables and household essentials delivered to your door.',
+      footer_copyright: '© 2026 Raj Grocery Store. All rights reserved.',
       newsletter_desc: 'New arrivals, seasonal recipes and special offers — a short letter, once a week.',
-      meta_title: 'LAAVI STORE | Indian Grocery Store in Hong Kong',
-      meta_description: 'Shop LAAVI STORE — your local Indian grocery store in Hong Kong. Authentic spices, rice, atta, dals, snacks and household essentials delivered to your door.',
-      meta_keywords: 'Indian grocery Hong Kong, Indian store HK, Indian spices Hong Kong, LAAVI STORE, Indian food online HK, masala Hong Kong',
+      meta_title: 'Raj Grocery Store | Indian Grocery Store in Hong Kong',
+      meta_description: 'Shop Raj Grocery Store — your Indian grocery store in Hong Kong. Spices, rice, atta, dals, snacks, fresh vegetables and household essentials delivered to your door.',
+      meta_keywords: 'Indian grocery Hong Kong, Indian store HK, Indian spices Hong Kong, Raj Grocery Store, Indian vegetables Hong Kong, Indian food online HK, masala Hong Kong',
       payment_online_url: '',
       shipping_free_above: '50',
       shipping_charge: '5',
@@ -196,7 +201,7 @@ export class SettingsService {
   }
 
   private applyDocumentBranding(settings: any) {
-    const siteName = settings.site_name || 'LAAVI STORE';
+    const siteName = settings.site_name || 'Raj Grocery Store';
     const favicon = this.resolveAssetUrl(settings.site_favicon, '/favicon.ico');
     this.document.title = settings.meta_title || siteName;
     this.setLinkHref("link[rel='icon']", favicon);
@@ -233,7 +238,10 @@ export class SettingsService {
       ['asian', 'spices'].join('[\\s\\S]*?'),
       ['bite', 'basket'].join('\\s*'),
       'indian\\s*ma[r]?ket',
-      'kale\\s*gida'
+      'kale\\s*gida',
+      // Previous brand on this codebase — matches "LAAVI STORE",
+      // "Laavi", "laavistore" and laavi.hk addresses alike.
+      'laavi(?:\\s*store)?'
     ].join('|'), 'i');
 
     const replacements: Record<string, string> = {

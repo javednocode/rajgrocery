@@ -271,7 +271,7 @@ import { environment } from '../../../environments/environment';
               </button>
             </div>
 
-            <!-- Trust strip — LAAVI-safe claims only -->
+            <!-- Trust strip — verifiable claims only -->
             <div class="pd-trust" aria-label="Shopping assurance">
               <div class="pd-trust-item">
                 <span class="pd-trust-icon">

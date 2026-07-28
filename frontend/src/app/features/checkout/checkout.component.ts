@@ -838,7 +838,7 @@ export class CheckoutComponent implements OnInit {
     private router: Router,
     seo: SeoService
   ) {
-    seo.setMeta({ title: 'Checkout | LAAVI STORE', description: 'Complete your grocery order securely.' });
+    seo.setMeta({ title: 'Checkout', description: 'Complete your grocery order securely.' });
   }
 
   ngOnInit() {
@@ -846,7 +846,7 @@ export class CheckoutComponent implements OnInit {
   }
 
   // currency_symbol is configured via SettingsService (DB → API → settings signal).
-  // Fallback is 'HK$' — LAAVI STORE operates in Hong Kong.
+  // Fallback is 'HK$' — Raj Grocery Store operates in Hong Kong.
   get cur() { return this.settings.get('currency_symbol', 'HK$'); }
 
   get freeAbove() { return parseFloat(this.settings.get('shipping_free_above', '50')) || 0; }
