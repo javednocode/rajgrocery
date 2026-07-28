@@ -25,7 +25,7 @@ import { ApiService } from '../../../core/services/api.service';
         <div class="ft-brand ft-reveal-item" style="--stagger: 0s">
           <a routerLink="/" class="ft-mark" [attr.aria-label]="settings.get('site_name','Raj Grocery Store') + ' — home'">
             @if (logoUrl()) {
-              <img [src]="logoUrl()" [alt]="settings.get('site_name', 'Raj Grocery Store')" class="ft-logo" loading="lazy" />
+              <img [src]="logoUrl()" [alt]="settings.get('site_name', 'Raj Grocery Store')" class="ft-logo" loading="lazy" (error)="logoFailed.set(true)" />
             } @else {
               <span class="ft-wordmark">
                 <span class="ft-wordmark-main">{{ settings.get('site_name', 'Raj Grocery Store') }}</span>
@@ -476,7 +476,10 @@ export class FooterComponent implements OnInit, OnDestroy {
     return raw.replace(/^[^A-Za-z0-9]*\d{4}\s*/, '') || `${this.settings.get('site_name', 'Raj Grocery Store')}. All rights reserved.`;
   }
 
+  logoFailed = signal(false);
+
   logoUrl(): string {
+    if (this.logoFailed()) return '';
     const raw = this.settings.get('site_logo', '');
     if (!raw) return '';
     try { return this.settings.versionedAssetUrl(raw, ''); } catch { return ''; }

@@ -41,7 +41,7 @@ import { environment } from '../../../../environments/environment';
 
         <a routerLink="/" class="kgh-logo" [attr.aria-label]="settings.get('site_name','Raj Grocery Store') + ' — home'">
           @if (logoUrl()) {
-            <img [src]="logoUrl()" [alt]="settings.get('site_name','Raj Grocery Store')" class="kgh-logo-img">
+            <img [src]="logoUrl()" [alt]="settings.get('site_name','Raj Grocery Store')" class="kgh-logo-img" (error)="logoFailed.set(true)">
           } @else {
             <span class="kgh-word">
               <span class="kgh-word-main">{{ settings.get('site_name','Raj Grocery Store') }}</span>
@@ -735,7 +735,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return path ? this.media(path) : '';
   }
 
+  /** Set when the configured logo file 404s, so the wordmark takes over
+   *  instead of rendering a broken image. */
+  logoFailed = signal(false);
+
   logoUrl(): string {
+    if (this.logoFailed()) return '';
     const raw = this.settings.get('site_logo', '');
     if (!raw) return '';
     try { return this.settings.versionedAssetUrl(raw, ''); } catch { return ''; }
