@@ -5,7 +5,6 @@ import { CartService } from '../../core/services/cart.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { SeoService } from '../../core/services/seo.service';
 import { ApiService } from '../../core/services/api.service';
-import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
 
 @Component({
   selector: 'app-cart',
@@ -15,122 +14,224 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
   <section class="cp">
     <div class="container">
 
-      <!-- Header -->
+      <!-- Page heading -->
       <div class="cp-head">
-        <h1>Shopping Basket
-          @if (cart.itemCount() > 0) {
-            <span class="cp-count">{{ cart.itemCount() }} {{ cart.itemCount() === 1 ? 'item' : 'items' }}</span>
-          }
-        </h1>
-        <a routerLink="/categories" class="cp-back">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="cp-head-left">
+          <h1 class="cp-title">
+            Shopping Basket
+            @if (cart.itemCount() > 0) {
+              <span class="cp-badge">{{ cart.itemCount() }} {{ cart.itemCount() === 1 ? 'item' : 'items' }}</span>
+            }
+          </h1>
+        </div>
+        <a routerLink="/categories" class="cp-continue">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
           Continue Shopping
         </a>
       </div>
 
-      <!-- Empty state -->
+      <!-- ═══ EMPTY STATE ═══ -->
       @if (cart.items().length === 0) {
         <div class="cp-empty">
-          <div class="cp-empty-icon">🛒</div>
-          <h2>Your basket is empty</h2>
-          <p>Looks like you haven't added anything yet.<br>Explore our authentic Indian & Asian groceries.</p>
+          <div class="cp-empty-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
+                stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2 class="cp-empty-title">Your basket is empty</h2>
+          <p class="cp-empty-text">
+            Add your favourite Indian groceries to get started.<br>
+            Fresh spices, rice, dal, snacks and more.
+          </p>
           <div class="cp-empty-btns">
-            <a routerLink="/categories" class="btn btn-primary">Browse Categories</a>
-            <a routerLink="/" class="btn btn-outline-dark">Go to Home</a>
+            <a routerLink="/categories" class="btn btn-primary">Start Shopping</a>
+            <a routerLink="/" class="btn btn-outline">Go to Home</a>
           </div>
           <div class="cp-empty-trust">
-            <span>🔒 Secure checkout</span>
-            <span>🚚 Fast delivery</span>
-            <span>🏆 Premium quality</span>
+            <span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.7"/>
+                <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+              </svg>
+              Secure Checkout
+            </span>
+            <span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="1.7"/>
+                <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="1.7"/>
+              </svg>
+              Local HK Store
+            </span>
+            <span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.7"/>
+                <polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Easy Online Ordering
+            </span>
           </div>
         </div>
 
+      <!-- ═══ CART WITH ITEMS ═══ -->
       } @else {
         <div class="cp-grid">
 
-          <!-- Items List -->
-          <div class="cp-items">
-            <div class="cp-items-head">
-              <span>Product</span>
-              <span>Qty</span>
-              <span>Total</span>
-            </div>
-
-            @for (it of cart.items(); track it.id) {
-              <div class="cp-item">
-                <a [routerLink]="['/product', it.slug]" class="cp-item-img">
-                  @if (it.image) {
-                    <img [src]="it.image" [alt]="it.name" loading="lazy" />
-                  } @else {
-                    <span class="cp-item-ph">🛍️</span>
-                  }
-                </a>
-                <div class="cp-item-info">
-                  <a [routerLink]="['/product', it.slug]" class="cp-item-name">{{ it.name }}</a>
-                  @if (it.unit) {
-                    <span class="cp-item-variant">{{ it.unit }}</span>
-                  }
-                  <span class="cp-item-unit-price">{{ cur }}{{ (it.salePrice ?? it.price).toFixed(2) }} each</span>
-                  <button class="cp-remove-mob" (click)="cart.removeItem(it.id)">× Remove</button>
-                </div>
-                <div class="cp-qty">
-                  <button (click)="cart.updateQuantity(it.id, it.quantity - 1)" aria-label="Decrease">−</button>
-                  <span>{{ it.quantity }}</span>
-                  <button (click)="cart.updateQuantity(it.id, it.quantity + 1)" aria-label="Increase">+</button>
-                </div>
-                <div class="cp-item-total">
-                  {{ cur }}{{ ((it.salePrice ?? it.price) * it.quantity).toFixed(2) }}
-                </div>
-                <button class="cp-remove" (click)="cart.removeItem(it.id)" aria-label="Remove item">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                </button>
+          <!-- Left: items list -->
+          <div class="cp-items-col">
+            <div class="cp-items-card">
+              <!-- Table header (desktop only) -->
+              <div class="cp-items-head" aria-hidden="true">
+                <span>Product</span>
+                <span class="cp-head-qty">Quantity</span>
+                <span class="cp-head-total">Total</span>
+                <span></span>
               </div>
-            }
 
-            <!-- Clear cart -->
-            <div class="cp-actions-row">
-              <button class="cp-clear" (click)="cart.clearCart()">Clear basket</button>
+              <!-- Item rows -->
+              @for (it of cart.items(); track it.id) {
+                <div class="cp-item">
+
+                  <!-- Image -->
+                  <a [routerLink]="['/product', it.slug]" class="cp-item-img"
+                     [attr.aria-label]="'View ' + it.name">
+                    @if (it.image) {
+                      <img [src]="it.image" [alt]="it.name" loading="lazy" />
+                    } @else {
+                      <div class="cp-item-ph">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
+                            stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                          <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                      </div>
+                    }
+                  </a>
+
+                  <!-- Info -->
+                  <div class="cp-item-info">
+                    <a [routerLink]="['/product', it.slug]" class="cp-item-name">{{ it.name }}</a>
+                    @if (it.unit && it.unit !== 'piece') {
+                      <span class="cp-item-variant">{{ it.unit }}</span>
+                    }
+                    <span class="cp-item-unit-price">{{ cur }}{{ (it.salePrice ?? it.price).toFixed(2) }} each</span>
+                    <!-- Mobile remove -->
+                    <button class="cp-remove-mob" (click)="cart.removeItem(it.id)"
+                      [attr.aria-label]="'Remove ' + it.name + ' from basket'">
+                      Remove
+                    </button>
+                  </div>
+
+                  <!-- Quantity -->
+                  <div class="cp-qty" role="group" [attr.aria-label]="'Quantity for ' + it.name">
+                    <button class="cp-qty-btn"
+                      (click)="cart.updateQuantity(it.id, it.quantity - 1)"
+                      [attr.aria-label]="'Decrease quantity of ' + it.name">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                      </svg>
+                    </button>
+                    <span class="cp-qty-val" aria-live="polite">{{ it.quantity }}</span>
+                    <button class="cp-qty-btn"
+                      (click)="cart.updateQuantity(it.id, it.quantity + 1)"
+                      [attr.aria-label]="'Increase quantity of ' + it.name">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- Line total -->
+                  <div class="cp-item-total" aria-label="Item total">
+                    {{ cur }}{{ ((it.salePrice ?? it.price) * it.quantity).toFixed(2) }}
+                  </div>
+
+                  <!-- Remove (desktop) -->
+                  <button class="cp-remove"
+                    (click)="cart.removeItem(it.id)"
+                    [attr.aria-label]="'Remove ' + it.name + ' from basket'">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+              }
+
+              <!-- Footer: clear cart -->
+              <div class="cp-items-footer">
+                <button class="cp-clear-btn" (click)="cart.clearCart()">Clear basket</button>
+              </div>
             </div>
           </div>
 
-          <!-- Order Summary -->
-          <div class="cp-summary">
+          <!-- Right: order summary -->
+          <div class="cp-summary-col">
             <div class="cp-summary-card">
-              <h2>Order Summary</h2>
+              <h2 class="cp-summary-title">Order Summary</h2>
 
-              <div class="cp-summary-row">
-                <span>Subtotal ({{ cart.itemCount() }} items)</span>
+              <!-- Subtotal -->
+              <div class="cp-sum-row">
+                <span>Subtotal <span class="cp-sum-qty">({{ cart.itemCount() }} {{ cart.itemCount() === 1 ? 'item' : 'items' }})</span></span>
                 <span>{{ cur }}{{ cart.subtotal().toFixed(2) }}</span>
               </div>
 
               <!-- Coupon -->
               @if (!couponApplied()) {
                 <div class="cp-coupon">
-                  <input [(ngModel)]="couponCode" placeholder="Coupon code…" class="cp-coupon-input" aria-label="Coupon code" />
-                  <button (click)="applyCoupon()" class="cp-coupon-btn" [disabled]="!couponCode.trim()">Apply</button>
+                  <div class="cp-coupon-field">
+                    <input [(ngModel)]="couponCode"
+                      placeholder="Coupon or promo code"
+                      class="cp-coupon-input"
+                      aria-label="Enter coupon code"
+                      [attr.aria-describedby]="couponError() ? 'coupon-error' : null" />
+                    <button (click)="applyCoupon()" class="cp-coupon-btn"
+                      [disabled]="!couponCode.trim() || applyingCoupon()"
+                      type="button">
+                      @if (applyingCoupon()) {
+                        <span class="cp-spinner" aria-label="Applying coupon"></span>
+                      } @else {
+                        Apply
+                      }
+                    </button>
+                  </div>
+                  @if (couponError()) {
+                    <p class="cp-coupon-err" id="coupon-error" role="alert">{{ couponError() }}</p>
+                  }
                 </div>
-                @if (couponError()) {
-                  <p class="cp-coupon-err">{{ couponError() }}</p>
-                }
               } @else {
-                <div class="cp-coupon-applied">
-                  <span>🎉 Coupon "{{ couponCode }}" applied</span>
-                  <button (click)="removeCoupon()" class="cp-coupon-remove">×</button>
+                <div class="cp-coupon-applied" role="status" aria-live="polite">
+                  <div class="cp-coupon-applied-left">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <path d="M5 13l4 4 10-11" stroke="currentColor" stroke-width="2.4"
+                        stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Coupon <strong>{{ couponCode }}</strong> applied</span>
+                  </div>
+                  <button (click)="removeCoupon()" class="cp-coupon-remove" aria-label="Remove coupon" type="button">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                    </svg>
+                  </button>
                 </div>
               }
 
+              <!-- Discount -->
               @if (couponDiscount() > 0) {
-                <div class="cp-summary-row cp-summary-disc">
-                  <span>Discount</span>
+                <div class="cp-sum-row cp-sum-disc">
+                  <span>Coupon Discount</span>
                   <span>−{{ cur }}{{ couponDiscount().toFixed(2) }}</span>
                 </div>
               }
 
-              <!-- Shipping -->
-              <div class="cp-summary-row">
+              <!-- Delivery -->
+              <div class="cp-sum-row">
                 <span>Delivery</span>
-                <span class="cp-shipping-val">
-                  @if (cart.subtotal() >= freeAbove()) {
+                <span class="cp-del-val">
+                  @if (cart.subtotal() - couponDiscount() >= freeAbove()) {
                     <span class="cp-free-badge">FREE</span>
                   } @else {
                     {{ cur }}{{ shippingCharge().toFixed(2) }}
@@ -138,149 +239,376 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
                 </span>
               </div>
 
-              @if (cart.subtotal() < freeAbove()) {
-                <p class="cp-free-hint">
-                  Add {{ cur }}{{ (freeAbove() - cart.subtotal()).toFixed(2) }} more for free delivery!
-                </p>
+              <!-- Free delivery nudge -->
+              @if (cart.subtotal() - couponDiscount() < freeAbove() && freeAbove() > 0) {
+                <div class="cp-free-nudge" role="note">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z"
+                      fill="currentColor"/>
+                  </svg>
+                  Add {{ cur }}{{ (freeAbove() - (cart.subtotal() - couponDiscount())).toFixed(2) }} more for free delivery
+                </div>
               }
 
+              <!-- Divider + total -->
               <div class="cp-divider"></div>
 
-              <div class="cp-summary-row cp-total-row">
+              <div class="cp-sum-row cp-sum-total">
                 <strong>Total</strong>
-                <strong>{{ cur }}{{ grandTotal().toFixed(2) }}</strong>
+                <strong class="cp-total-val">{{ cur }}{{ grandTotal().toFixed(2) }}</strong>
               </div>
 
+              <!-- Checkout CTA -->
               <a routerLink="/checkout" class="cp-checkout-btn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" stroke="currentColor" stroke-width="2"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" stroke="currentColor" stroke-width="2"/>
+                </svg>
                 Proceed to Checkout
               </a>
 
-              <div class="cp-trust-row">
-                <span>🔒 Secure</span>
-                <span>💳 All cards</span>
-                <span>🚚 Fast delivery</span>
+              <!-- Trust strip -->
+              <div class="cp-trust">
+                <span class="cp-trust-item">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                    <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.7"/>
+                    <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                  </svg>
+                  Secure Checkout
+                </span>
+                <span class="cp-trust-item">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="1.7"/>
+                    <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="1.7"/>
+                  </svg>
+                  Local HK Store
+                </span>
+                <span class="cp-trust-item">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.7"/>
+                    <polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Easy Ordering
+                </span>
               </div>
             </div>
           </div>
+
         </div>
       }
     </div>
   </section>
   `,
+
   styles: [`
-  .container { max-width: 1300px; margin: 0 auto; padding: 0 24px; width: 100%; }
-  @media(min-width:1200px){.container{padding:0 48px}}
-  .cp { padding: 40px 0 60px; background: #FFFFFF; min-height: 60vh; }
+  /* ── Wrapper ── */
+  .cp { padding: 44px 0 72px; background: var(--kg-warm); min-height: 60vh; }
 
-  /* HEAD */
-  .cp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 12px; }
-  .cp-head h1 { font-family: 'Fraunces', Georgia, serif; font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 400; color: #111827; display: flex; align-items: center; gap: 12px; }
-  .cp-count { font-family: 'Manrope', sans-serif; font-size: 15px; font-weight: 700; background: #E6F3F8; color: #1E88A8; padding: 4px 12px; border-radius: 999px; }
-  .cp-back { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; color: #6B7280; font-family: 'Manrope', sans-serif; transition: color .2s; }
-  .cp-back:hover { color: #1E88A8; }
+  /* ── Page heading ── */
+  .cp-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 36px; gap: 14px; flex-wrap: wrap;
+  }
+  .cp-head-left { display: flex; align-items: center; gap: 14px; }
+  .cp-title {
+    font-family: var(--font-sans);
+    font-size: clamp(1.4rem, 2.8vw, 2rem);
+    font-weight: 800; color: var(--kg-ink);
+    display: flex; align-items: center; gap: 12px;
+    letter-spacing: -0.02em; margin: 0;
+  }
+  .cp-badge {
+    font-size: 13px; font-weight: 700;
+    background: var(--kg-forest-bg); color: var(--kg-forest-dk);
+    padding: 3px 12px; border-radius: var(--r-full);
+    border: 1px solid var(--kg-forest-bg2);
+  }
+  .cp-continue {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13.5px; font-weight: 700; color: var(--kg-muted);
+    text-decoration: none; transition: color .2s;
+    font-family: var(--font-sans);
+  }
+  .cp-continue:hover { color: var(--kg-forest); }
 
-  /* EMPTY */
-  .cp-empty { text-align: center; padding: 80px 20px; max-width: 500px; margin: 0 auto; }
-  .cp-empty-icon { font-size: 4rem; margin-bottom: 16px; }
-  .cp-empty h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.8rem; font-weight: 400; color: #111827; margin-bottom: 10px; }
-  .cp-empty p { font-size: 15px; color: #6B7280; margin-bottom: 28px; line-height: 1.7; }
-  .cp-empty-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 32px; }
-  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 999px; font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 700; transition: all .25s; cursor: pointer; border: 2px solid transparent; text-decoration: none; }
-  .btn-primary { background: #1E88A8; color: #fff; border-color: #1E88A8; box-shadow: 0 4px 14px rgba(30,136,168,.22); }
-  .btn-primary:hover { background: #16708C; transform: translateY(-1px); }
-  .btn-outline-dark { background: transparent; color: #111827; border-color: #E5E7EB; }
-  .btn-outline-dark:hover { border-color: #111827; }
-  .cp-empty-trust { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
-  .cp-empty-trust span { font-size: 13px; font-weight: 700; color: #9CA3AF; font-family: 'Manrope', sans-serif; }
+  /* ── Empty state ── */
+  .cp-empty {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 20px; padding: 72px 24px; text-align: center; max-width: 500px; margin: 0 auto;
+  }
+  .cp-empty-icon {
+    width: 80px; height: 80px; border-radius: var(--r-xl);
+    background: var(--kg-paper); color: var(--kg-faint);
+    display: grid; place-items: center;
+    border: 1.5px solid var(--kg-line); box-shadow: var(--shadow-xs);
+  }
+  .cp-empty-title { font-size: 1.5rem; font-weight: 800; color: var(--kg-ink); margin: 0; }
+  .cp-empty-text { font-size: 14.5px; color: var(--kg-muted); margin: 0; line-height: 1.75; }
+  .cp-empty-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .cp-empty-trust {
+    display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;
+    padding-top: 8px; border-top: 1px solid var(--kg-line-lt); width: 100%;
+  }
+  .cp-empty-trust span {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12.5px; font-weight: 700; color: var(--kg-faint);
+    font-family: var(--font-sans);
+  }
+  .cp-empty-trust svg { color: var(--kg-forest-lt); }
 
-  /* GRID */
+  /* ── Main grid ── */
   .cp-grid { display: grid; grid-template-columns: 1fr 380px; gap: 28px; align-items: start; }
 
-  /* ITEMS */
-  .cp-items { background: #fff; border: 1.5px solid #E5E7EB; border-radius: 20px; overflow: hidden; }
-  .cp-items-head { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; padding: 14px 20px; background: #F7FAFC; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #9CA3AF; font-family: 'Manrope', sans-serif; }
-  .cp-item { display: grid; grid-template-columns: 80px 1fr auto 80px 36px; gap: 14px; align-items: center; padding: 16px 20px; border-bottom: 1px solid #F1F3F6; }
-  .cp-item:last-child { border-bottom: none; }
-  .cp-item-img { width: 80px; height: 80px; border-radius: 10px; background: #F7FAFC; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .cp-item-img img { width: 100%; height: 100%; object-fit: contain; }
-  .cp-item-ph { font-size: 2rem; }
-  .cp-item-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-  .cp-item-name { font-size: 14.5px; font-weight: 700; color: #111827; font-family: 'Manrope', sans-serif; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-  .cp-item-name:hover { color: #1E88A8; }
-  .cp-item-variant { font-size: 12px; color: #9CA3AF; }
-  .cp-item-unit-price { font-size: 12.5px; color: #6B7280; }
-  .cp-remove-mob { display: none; font-size: 12px; color: #DC2626; font-weight: 700; cursor: pointer; background: none; border: none; text-align: left; padding: 0; font-family: 'Manrope', sans-serif; }
-  .cp-qty { display: flex; align-items: center; gap: 0; border: 1.5px solid #E5E7EB; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
-  .cp-qty button { width: 34px; height: 38px; display: grid; place-items: center; font-size: 16px; font-weight: 700; color: #111827; cursor: pointer; background: #fff; border: none; transition: background .2s; }
-  .cp-qty button:hover { background: #E6F3F8; color: #1E88A8; }
-  .cp-qty span { width: 38px; text-align: center; font-size: 14px; font-weight: 800; color: #111827; font-family: 'Manrope', sans-serif; }
-  .cp-item-total { font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 800; color: #1E88A8; text-align: right; }
-  .cp-remove { width: 32px; height: 32px; border-radius: 8px; background: #E6F3F8; border: none; color: #1E88A8; display: grid; place-items: center; cursor: pointer; transition: all .2s; flex-shrink: 0; }
-  .cp-remove:hover { background: #FEE9E7; color: #DC2626; }
-  .cp-actions-row { padding: 14px 20px; display: flex; justify-content: flex-end; }
-  .cp-clear { font-size: 13px; font-weight: 700; color: #9CA3AF; cursor: pointer; background: none; border: none; font-family: 'Manrope', sans-serif; transition: color .2s; }
-  .cp-clear:hover { color: #DC2626; }
+  /* ── Items card ── */
+  .cp-items-card {
+    background: var(--kg-paper); border: 1.5px solid var(--kg-line);
+    border-radius: 14px; overflow: hidden;
+  }
+  .cp-items-head {
+    display: grid; grid-template-columns: 80px 1fr 130px 90px 40px;
+    gap: 12px; padding: 12px 20px;
+    background: var(--kg-warm); border-bottom: 1px solid var(--kg-line-lt);
+    font-size: 10.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--kg-faint); font-family: var(--font-sans);
+  }
+  .cp-head-qty, .cp-head-total { text-align: center; }
 
-  /* SUMMARY */
-  .cp-summary { position: sticky; top: calc(var(--header-height,156px) + 20px); }
-  .cp-summary-card { background: #fff; border: 1.5px solid #E5E7EB; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
-  .cp-summary-card h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.3rem; font-weight: 400; color: #111827; margin-bottom: 4px; }
-  .cp-summary-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: #6B7280; font-family: 'Manrope', sans-serif; }
-  .cp-summary-disc { color: #29B8D5; }
-  .cp-shipping-val { font-weight: 700; }
-  .cp-free-badge { background: #E9F7FB; color: #29B8D5; font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; }
-  .cp-free-hint { font-size: 12.5px; color: #1E88A8; background: #E6F3F8; padding: 8px 12px; border-radius: 8px; margin: 0; font-family: 'Manrope', sans-serif; }
-  .cp-divider { height: 1px; background: #F1F3F6; }
-  .cp-total-row { font-size: 17px; }
+  /* Item row */
+  .cp-item {
+    display: grid; grid-template-columns: 80px 1fr 130px 90px 40px;
+    gap: 12px; align-items: center; padding: 16px 20px;
+    border-bottom: 1px solid var(--kg-line-lt); transition: background .2s;
+  }
+  .cp-item:last-of-type { border-bottom: none; }
+  .cp-item:hover { background: var(--kg-warm); }
+
+  /* Image */
+  .cp-item-img {
+    width: 80px; height: 80px; border-radius: var(--r);
+    background: var(--kg-warm); overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; border: 1.5px solid var(--kg-line-lt);
+    transition: border-color .2s;
+  }
+  .cp-item-img:hover { border-color: var(--kg-forest-lt); }
+  .cp-item-img img { width: 100%; height: 100%; object-fit: contain; }
+  .cp-item-ph { color: var(--kg-faint); display: grid; place-items: center; width: 100%; height: 100%; }
+
+  /* Info */
+  .cp-item-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .cp-item-name {
+    font-size: 14px; font-weight: 700; color: var(--kg-ink);
+    font-family: var(--font-sans); line-height: 1.3;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    text-decoration: none; transition: color .2s;
+  }
+  .cp-item-name:hover { color: var(--kg-forest); }
+  .cp-item-variant { font-size: 11.5px; color: var(--kg-faint); font-weight: 600; }
+  .cp-item-unit-price { font-size: 12px; color: var(--kg-muted); }
+  .cp-remove-mob {
+    display: none; font-size: 11.5px; color: var(--kg-clay); font-weight: 700;
+    cursor: pointer; background: none; border: none; padding: 0;
+    font-family: var(--font-sans); transition: opacity .2s; text-align: left;
+    margin-top: 2px;
+  }
+  .cp-remove-mob:hover { opacity: .75; }
+
+  /* Quantity */
+  .cp-qty {
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--kg-line-warm); border-radius: var(--r-lg); overflow: hidden;
+    flex-shrink: 0; background: var(--kg-paper);
+  }
+  .cp-qty-btn {
+    width: 34px; height: 38px; display: grid; place-items: center;
+    color: var(--kg-ink); cursor: pointer; background: none;
+    border: none; transition: background .18s, color .18s;
+  }
+  .cp-qty-btn:hover { background: var(--kg-forest-bg); color: var(--kg-forest); }
+  .cp-qty-val {
+    min-width: 34px; text-align: center; font-size: 14px; font-weight: 800;
+    color: var(--kg-ink); border-left: 1.5px solid var(--kg-line-lt);
+    border-right: 1.5px solid var(--kg-line-lt); padding: 0 4px;
+    font-family: var(--font-sans);
+  }
+
+  /* Line total */
+  .cp-item-total {
+    font-family: var(--font-sans); font-size: 15px; font-weight: 800;
+    color: var(--kg-ink); text-align: right;
+  }
+
+  /* Remove (desktop) */
+  .cp-remove {
+    width: 32px; height: 32px; border-radius: var(--r);
+    background: var(--kg-warm); border: 1.5px solid var(--kg-line);
+    color: var(--kg-faint); display: grid; place-items: center;
+    cursor: pointer; transition: all .2s; flex-shrink: 0;
+  }
+  .cp-remove:hover { background: var(--kg-clay-bg); color: var(--kg-clay); border-color: var(--kg-clay); }
+
+  /* Items footer */
+  .cp-items-footer {
+    padding: 12px 20px; border-top: 1px solid var(--kg-line-lt);
+    display: flex; justify-content: flex-end;
+  }
+  .cp-clear-btn {
+    font-size: 12.5px; font-weight: 700; color: var(--kg-faint);
+    cursor: pointer; background: none; border: none;
+    font-family: var(--font-sans); transition: color .2s;
+  }
+  .cp-clear-btn:hover { color: var(--kg-clay); }
+
+  /* ── Summary card ── */
+  .cp-summary-col { position: sticky; top: calc(var(--header-height) + 20px); }
+  .cp-summary-card {
+    background: var(--kg-paper); border: 1.5px solid var(--kg-line);
+    border-radius: 14px; padding: 24px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .cp-summary-title {
+    font-family: var(--font-sans); font-size: 16px; font-weight: 800;
+    color: var(--kg-ink); margin: 0; letter-spacing: -0.01em;
+  }
+  .cp-sum-row {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13.5px; color: var(--kg-muted); font-family: var(--font-sans);
+    gap: 8px;
+  }
+  .cp-sum-qty { color: var(--kg-faint); }
+  .cp-sum-disc { color: var(--kg-forest-dk); }
+  .cp-del-val { font-weight: 700; }
+  .cp-free-badge {
+    background: var(--kg-forest-bg); color: var(--kg-forest-dk);
+    font-size: 11px; font-weight: 800; padding: 2px 9px; border-radius: var(--r-full);
+    font-family: var(--font-sans); letter-spacing: .04em;
+  }
 
   /* Coupon */
-  .cp-coupon { display: flex; border: 1.5px solid #E5E7EB; border-radius: 10px; overflow: hidden; }
-  .cp-coupon-input { flex: 1; border: none; outline: none; padding: 10px 14px; font-size: 13.5px; color: #111827; font-family: 'Manrope', sans-serif; }
-  .cp-coupon-btn { background: #1E88A8; color: #fff; border: none; padding: 10px 16px; font-size: 13px; font-weight: 800; cursor: pointer; font-family: 'Manrope', sans-serif; transition: background .2s; flex-shrink: 0; }
-  .cp-coupon-btn:hover:not(:disabled) { background: #16708C; }
-  .cp-coupon-btn:disabled { opacity: .5; cursor: not-allowed; }
-  .cp-coupon-err { font-size: 12.5px; color: #DC2626; margin: 0; }
-  .cp-coupon-applied { display: flex; align-items: center; justify-content: space-between; background: #E9F7FB; padding: 10px 14px; border-radius: 10px; font-size: 13px; color: #29B8D5; font-weight: 700; font-family: 'Manrope', sans-serif; }
-  .cp-coupon-remove { background: none; border: none; font-size: 18px; color: #29B8D5; cursor: pointer; line-height: 1; }
-
-  .cp-checkout-btn {
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    background: #1E88A8; color: #fff;
-    border-radius: 14px; padding: 15px; text-decoration: none;
-    font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 800;
-    box-shadow: 0 6px 20px rgba(30,136,168,.3); transition: all .25s;
+  .cp-coupon { display: flex; flex-direction: column; gap: 7px; }
+  .cp-coupon-field {
+    display: flex; border: 1.5px solid var(--kg-line-warm); border-radius: var(--r);
+    overflow: hidden; transition: border-color .2s;
   }
-  .cp-checkout-btn:hover { background: #16708C; transform: translateY(-1px); box-shadow: 0 10px 28px rgba(30,136,168,.4); }
-  .cp-trust-row { display: flex; justify-content: center; gap: 16px; }
-  .cp-trust-row span { font-size: 12px; color: #9CA3AF; font-family: 'Manrope', sans-serif; font-weight: 700; }
+  .cp-coupon-field:focus-within { border-color: var(--kg-forest); box-shadow: 0 0 0 3px var(--kg-forest-bg); }
+  .cp-coupon-input {
+    flex: 1; border: none; outline: none; padding: 9px 12px;
+    font-size: 13px; color: var(--kg-ink); background: transparent;
+    font-family: var(--font-sans); min-width: 0;
+  }
+  .cp-coupon-input::placeholder { color: var(--kg-faint); }
+  .cp-coupon-btn {
+    background: var(--kg-forest); color: #FFFFFF; border: none;
+    padding: 9px 16px; font-size: 12.5px; font-weight: 800; cursor: pointer;
+    font-family: var(--font-sans); transition: background .2s; flex-shrink: 0;
+    display: flex; align-items: center;
+  }
+  .cp-coupon-btn:hover:not(:disabled) { background: var(--kg-forest-dk); }
+  .cp-coupon-btn:disabled { opacity: .55; cursor: not-allowed; }
+  .cp-coupon-err { font-size: 12px; color: var(--kg-clay); margin: 0; font-family: var(--font-sans); }
 
-  @media (max-width: 900px) {
+  /* Applied coupon pill */
+  .cp-coupon-applied {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--kg-forest-bg); border: 1px solid var(--kg-forest-bg2);
+    padding: 9px 12px; border-radius: var(--r); gap: 8px;
+  }
+  .cp-coupon-applied-left {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12.5px; color: var(--kg-forest-dk); font-weight: 700; font-family: var(--font-sans);
+  }
+  .cp-coupon-applied-left svg { color: var(--kg-forest); flex-shrink: 0; }
+  .cp-coupon-applied-left strong { font-weight: 800; }
+  .cp-coupon-remove {
+    display: grid; place-items: center; width: 24px; height: 24px;
+    border-radius: var(--r-sm); background: rgba(27,76,140,.12); border: none;
+    color: var(--kg-forest-dk); cursor: pointer; flex-shrink: 0; transition: all .2s;
+  }
+  .cp-coupon-remove:hover { background: var(--kg-clay-bg); color: var(--kg-clay); }
+
+  /* Free delivery nudge */
+  .cp-free-nudge {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; color: var(--kg-terra-dk); font-weight: 700;
+    background: var(--kg-terra-bg); padding: 8px 12px; border-radius: var(--r);
+    font-family: var(--font-sans);
+  }
+  .cp-free-nudge svg { color: var(--kg-terra); flex-shrink: 0; }
+
+  /* Divider + total */
+  .cp-divider { height: 1px; background: var(--kg-line-lt); }
+  .cp-sum-total { font-size: 16px; align-items: center; }
+  .cp-sum-total strong { color: var(--kg-ink); font-size: 16px; }
+  .cp-total-val { font-size: 20px; color: var(--kg-ink); letter-spacing: -0.01em; }
+
+  /* Checkout button */
+  .cp-checkout-btn {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    background: var(--kg-forest); color: #FFFFFF;
+    border-radius: var(--r-xl); padding: 15px 24px; text-decoration: none;
+    font-family: var(--font-sans); font-size: 15.5px; font-weight: 800;
+    box-shadow: var(--shadow-forest); transition: all .28s;
+    letter-spacing: .01em;
+  }
+  .cp-checkout-btn:hover {
+    background: var(--kg-forest-dk); transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(27,76,140,.32);
+  }
+
+  /* Trust strip */
+  .cp-trust {
+    display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+    padding-top: 4px; border-top: 1px solid var(--kg-line-lt);
+  }
+  .cp-trust-item {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11.5px; color: var(--kg-faint); font-weight: 700; font-family: var(--font-sans);
+  }
+  .cp-trust-item svg { color: var(--kg-forest-lt); }
+
+  /* Spinner (coupon) */
+  .cp-spinner {
+    display: inline-block; width: 13px; height: 13px;
+    border: 2px solid rgba(255,255,255,.35); border-top-color: #FFFFFF;
+    border-radius: 50%; animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Responsive ── */
+  @media (max-width: 1000px) {
+    .cp-grid { grid-template-columns: 1fr 340px; gap: 22px; }
+  }
+  @media (max-width: 860px) {
     .cp-grid { grid-template-columns: 1fr; }
-    .cp-summary { position: static; }
+    .cp-summary-col { position: static; }
     .cp-items-head { display: none; }
     .cp-item { grid-template-columns: 68px 1fr auto; gap: 12px; }
     .cp-item-total { display: none; }
     .cp-remove { display: none; }
     .cp-remove-mob { display: block; }
+    .cp-qty { justify-content: flex-start; }
+    .cp-head-qty, .cp-head-total { display: none; }
+    .cp-cp { padding: 28px 0 56px; }
   }
   @media (max-width: 640px) {
-    .cp { padding: 20px 0 40px; }
-    .container { padding: 0 14px; }
-    .cp-head { margin-bottom: 20px; }
-    .cp-head h1 { font-size: 1.4rem; }
-    .cp-checkout-btn { font-size: 14px; padding: 13px; }
-    .cp-item { padding: 12px 0; gap: 10px; }
-    .cp-item-img { width: 60px; height: 60px; border-radius: 8px; }
-    .cp-item-name { font-size: 13.5px; }
-    .cp-qty button { width: 30px; height: 34px; font-size: 14px; }
-    .cp-qty span { width: 30px; font-size: 13px; }
-    .cp-summary-card { padding: 18px 14px; }
-    .cp-coupon-input { padding: 9px 12px; font-size: 12.5px; }
-    .cp-coupon-btn { padding: 9px 14px; font-size: 12px; }
-    .cp-items { border-radius: 14px; }
-    .cp-actions-row { padding: 10px 14px; }
-    .cp-items-head { padding: 10px 14px; }
+    .cp { padding: 24px 0 56px; }
+    .cp-head { margin-bottom: 22px; }
+    .cp-item { padding: 14px 14px; gap: 10px; }
+    .cp-item-img { width: 64px; height: 64px; }
+    .cp-item-name { font-size: 13px; }
+    .cp-item-unit-price { font-size: 11px; }
+    .cp-qty-btn { width: 30px; height: 34px; }
+    .cp-qty-val { min-width: 28px; font-size: 13px; }
+    .cp-summary-card { padding: 18px 16px; gap: 12px; }
+    .cp-coupon-input { padding: 8px 10px; font-size: 12.5px; }
+    .cp-coupon-btn { padding: 8px 14px; font-size: 12px; }
+    .cp-checkout-btn { font-size: 14.5px; padding: 13px 20px; }
+    .cp-items-footer { padding: 10px 14px; }
+    .cp-empty { padding: 48px 16px; }
+    .cp-empty-trust { gap: 12px; }
+  }
+  @media (max-width: 400px) {
+    .cp-trust { flex-direction: column; align-items: center; gap: 8px; }
   }
   `]
 })
@@ -289,6 +617,7 @@ export class CartComponent implements OnInit {
   couponApplied = signal(false);
   couponDiscount = signal(0);
   couponError = signal('');
+  applyingCoupon = signal(false);
 
   constructor(
     public cart: CartService,
@@ -298,23 +627,30 @@ export class CartComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.seo.setMeta({ title: 'Shopping Basket', description: 'Review your selected items and proceed to checkout.' });
+    this.seo.setMeta({
+      title: 'Shopping Basket | LAAVI STORE',
+      description: 'Review your selected Indian groceries and proceed to checkout.'
+    });
   }
 
-  get cur() { return this.settings.get('currency_symbol', '€'); }
+  // currency_symbol is configured via SettingsService (DB → API → settings signal).
+  // Fallback is 'HK$' — LAAVI STORE operates in Hong Kong.
+  get cur() { return this.settings.get('currency_symbol', 'HK$'); }
 
   freeAbove(): number { return +(this.settings.get('shipping_free_above', '50') || 50); }
   shippingCharge(): number { return +(this.settings.get('shipping_charge', '5') || 5); }
 
   grandTotal(): number {
-    const subtotal = this.cart.subtotal() - this.couponDiscount();
-    const shipping = subtotal >= this.freeAbove() ? 0 : this.shippingCharge();
-    return Math.max(0, subtotal) + shipping;
+    const afterDiscount = this.cart.subtotal() - this.couponDiscount();
+    const shipping = afterDiscount >= this.freeAbove() ? 0 : this.shippingCharge();
+    return Math.max(0, afterDiscount) + shipping;
   }
 
   applyCoupon() {
     const code = this.couponCode.trim();
     if (!code) return;
+    this.applyingCoupon.set(true);
+    this.couponError.set('');
     this.api.validateCoupon(code, this.cart.subtotal()).subscribe({
       next: (r: any) => {
         if (r.success && r.data) {
@@ -323,10 +659,14 @@ export class CartComponent implements OnInit {
           this.couponApplied.set(true);
           this.couponError.set('');
         } else {
-          this.couponError.set(r.message || 'Invalid coupon code');
+          this.couponError.set(r.message || 'Invalid coupon code. Please try another.');
         }
+        this.applyingCoupon.set(false);
       },
-      error: () => this.couponError.set('Could not validate coupon. Please try again.')
+      error: () => {
+        this.couponError.set('Could not validate coupon. Please try again.');
+        this.applyingCoupon.set(false);
+      }
     });
   }
 

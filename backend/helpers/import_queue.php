@@ -33,7 +33,6 @@ function pm_ensure_schema(PDO $db): void {
         source_url VARCHAR(500) DEFAULT NULL,
         import_type VARCHAR(50) DEFAULT 'entire',
         duplicate_strategy ENUM('skip','update','copy') DEFAULT 'skip',
-        country_id INT DEFAULT NULL,
         status ENUM('pending','running','completed','failed','rolled_back') DEFAULT 'pending',
         total INT DEFAULT 0,
         processed INT DEFAULT 0,
@@ -48,14 +47,8 @@ function pm_ensure_schema(PDO $db): void {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         KEY idx_status (status),
-        KEY idx_created_at (created_at),
-        KEY idx_country_id (country_id)
+        KEY idx_created_at (created_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
-    // Add country_id to existing import_jobs tables (safe if column already exists)
-    if (!pm_has_column($db, 'import_jobs', 'country_id')) {
-        $db->exec("ALTER TABLE import_jobs ADD COLUMN country_id INT DEFAULT NULL AFTER duplicate_strategy, ADD KEY idx_country_id (country_id)");
-    }
 
     $db->exec("CREATE TABLE IF NOT EXISTS import_logs (
         id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -74,7 +67,6 @@ function pm_ensure_schema(PDO $db): void {
         job_id INT NOT NULL,
         batch_id VARCHAR(64) NOT NULL,
         product_id INT DEFAULT NULL,
-        country_id INT DEFAULT NULL,
         source_url VARCHAR(500) DEFAULT NULL,
         source_sku VARCHAR(150) DEFAULT NULL,
         source_name VARCHAR(255) DEFAULT NULL,
@@ -86,14 +78,8 @@ function pm_ensure_schema(PDO $db): void {
         KEY idx_job_id (job_id),
         KEY idx_batch_id (batch_id),
         KEY idx_product_id (product_id),
-        KEY idx_source_sku (source_sku),
-        KEY idx_country_id (country_id)
+        KEY idx_source_sku (source_sku)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
-    // Add country_id to existing import_job_items tables
-    if (!pm_has_column($db, 'import_job_items', 'country_id')) {
-        $db->exec("ALTER TABLE import_job_items ADD COLUMN country_id INT DEFAULT NULL AFTER product_id, ADD KEY idx_country_id (country_id)");
-    }
 
     $db->exec("CREATE TABLE IF NOT EXISTS import_column_mappings (
         id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -135,50 +121,34 @@ function pm_read_payload(string $path): array {
     return is_array($data) ? $data : [];
 }
 
-function pm_create_job(PDO $db, string $method, ?string $sourceUrl, string $importType, string $duplicate, array $products, array $options = [], ?int $countryId = null): array {
+function pm_create_job(PDO $db, string $method, ?string $sourceUrl, string $importType, string $duplicate, array $products, array $options = []): array {
     pm_ensure_schema($db);
     $batchId = 'batch_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4));
     $payloadFile = pm_write_payload($batchId, $products);
     $options['payload_file'] = $payloadFile;
     $options['created_from'] = $method;
-    if ($countryId) $options['country_id'] = $countryId;
 
     $stmt = $db->prepare("INSERT INTO import_jobs
-        (batch_id, method, source_url, import_type, duplicate_strategy, country_id, status, total, options_json)
-        VALUES (:b,:m,:u,:t,:d,:cid,'pending',:total,:o)");
+        (batch_id, method, source_url, import_type, duplicate_strategy, status, total, options_json)
+        VALUES (:b,:m,:u,:t,:d,'pending',:total,:o)");
     $stmt->execute([
         ':b' => $batchId,
         ':m' => $method,
         ':u' => $sourceUrl,
         ':t' => $importType,
         ':d' => $duplicate,
-        ':cid' => $countryId,
         ':total' => count($products),
         ':o' => json_encode($options, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
     ]);
     $jobId = (int)$db->lastInsertId();
 
-    // Log with country name for clarity
-    $countryName = '';
-    if ($countryId) {
-        $cn = $db->prepare("SELECT name FROM countries WHERE id = :id");
-        $cn->execute([':id' => $countryId]);
-        $countryName = $cn->fetchColumn() ?: '';
-    }
-    $logMsg = 'Import job created. Products queued: ' . count($products);
-    if ($countryName) $logMsg .= ' | Target country: ' . $countryName;
-    pm_log($db, $jobId, $batchId, 'info', $logMsg);
+    pm_log($db, $jobId, $batchId, 'info', 'Import job created. Products queued: ' . count($products));
     return pm_get_job($db, $jobId);
 }
 
 function pm_get_job(PDO $db, int $jobId): array {
     pm_ensure_schema($db);
-    $stmt = $db->prepare(
-        "SELECT j.*, c.name AS country_name, c.code AS country_code, c.flag AS country_flag
-         FROM import_jobs j
-         LEFT JOIN countries c ON j.country_id = c.id
-         WHERE j.id = :id"
-    );
+    $stmt = $db->prepare("SELECT * FROM import_jobs WHERE id = :id");
     $stmt->execute([':id' => $jobId]);
     $job = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$job) throw new RuntimeException('Import job not found');
@@ -190,12 +160,7 @@ function pm_get_job(PDO $db, int $jobId): array {
 
 function pm_list_jobs(PDO $db, int $limit = 50): array {
     pm_ensure_schema($db);
-    $stmt = $db->prepare(
-        "SELECT j.*, c.name AS country_name, c.code AS country_code, c.flag AS country_flag
-         FROM import_jobs j
-         LEFT JOIN countries c ON j.country_id = c.id
-         ORDER BY j.created_at DESC LIMIT :lim"
-    );
+    $stmt = $db->prepare("SELECT * FROM import_jobs ORDER BY created_at DESC LIMIT :lim");
     $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -265,60 +230,39 @@ function pm_unique_slug(PDO $db, string $name, ?int $excludeId = null): string {
     }
 }
 
-function pm_find_existing_product(PDO $db, array $p, ?int $countryId = null): ?int {
+function pm_find_existing_product(PDO $db, array $p): ?int {
     $hasSite = pm_has_column($db, 'products', 'site_id');
     $siteSql = $hasSite ? " AND p.site_id = :site" : "";
     $siteParam = $hasSite ? [':site' => pm_site_id()] : [];
 
-    // When country_id is provided, scope duplicate detection to that country only
-    $countrySql = '';
-    $countryJoin = '';
-    $countryParam = [];
-    if ($countryId) {
-        $countryJoin = " INNER JOIN product_countries pc_dup ON pc_dup.product_id = p.id";
-        $countrySql = " AND pc_dup.country_id = :dup_cid";
-        $countryParam = [':dup_cid' => $countryId];
-    }
-
     if ($p['sku'] !== '') {
-        $stmt = $db->prepare("SELECT p.id FROM products p $countryJoin WHERE p.sku = :sku $siteSql $countrySql LIMIT 1");
-        $stmt->execute([':sku' => $p['sku']] + $siteParam + $countryParam);
+        $stmt = $db->prepare("SELECT p.id FROM products p WHERE p.sku = :sku $siteSql LIMIT 1");
+        $stmt->execute([':sku' => $p['sku']] + $siteParam);
         $id = $stmt->fetchColumn();
         if ($id) return (int)$id;
     }
 
     if ($p['source_url'] !== '') {
-        // For source_url lookup, also scope by country if provided.
         // IMPORTANT: verify the product actually still exists — it may have been deleted since last import.
-        if ($countryId) {
-            $stmt = $db->prepare(
-                "SELECT iji.product_id FROM import_job_items iji
-                 INNER JOIN products p2 ON p2.id = iji.product_id
-                 WHERE iji.source_url = :url AND iji.product_id IS NOT NULL AND iji.country_id = :cid
-                 ORDER BY iji.id DESC LIMIT 1"
-            );
-            $stmt->execute([':url' => $p['source_url'], ':cid' => $countryId]);
-        } else {
-            $stmt = $db->prepare(
-                "SELECT iji.product_id FROM import_job_items iji
-                 INNER JOIN products p2 ON p2.id = iji.product_id
-                 WHERE iji.source_url = :url AND iji.product_id IS NOT NULL
-                 ORDER BY iji.id DESC LIMIT 1"
-            );
-            $stmt->execute([':url' => $p['source_url']]);
-        }
+        $stmt = $db->prepare(
+            "SELECT iji.product_id FROM import_job_items iji
+             INNER JOIN products p2 ON p2.id = iji.product_id
+             WHERE iji.source_url = :url AND iji.product_id IS NOT NULL
+             ORDER BY iji.id DESC LIMIT 1"
+        );
+        $stmt->execute([':url' => $p['source_url']]);
         $id = $stmt->fetchColumn();
         if ($id) return (int)$id;
         // Note: if no join match, product was deleted — fall through to treat as new import
     }
 
-    $stmt = $db->prepare("SELECT p.id FROM products p $countryJoin WHERE p.name = :name $siteSql $countrySql LIMIT 1");
-    $stmt->execute([':name' => $p['name']] + $siteParam + $countryParam);
+    $stmt = $db->prepare("SELECT p.id FROM products p WHERE p.name = :name $siteSql LIMIT 1");
+    $stmt->execute([':name' => $p['name']] + $siteParam);
     $id = $stmt->fetchColumn();
     return $id ? (int)$id : null;
 }
 
-function pm_resolve_categories(PDO $db, array $categories, ?int $countryId = null): array {
+function pm_resolve_categories(PDO $db, array $categories): array {
     $ids = [];
     $hasSite = pm_has_column($db, 'categories', 'site_id');
     foreach ($categories as $path) {
@@ -329,36 +273,16 @@ function pm_resolve_categories(PDO $db, array $categories, ?int $countryId = nul
             if ($name === '') continue;
             $slug = generateSlug($name);
 
-            // When country is specified, look for categories already linked to this country
-            $catId = null;
-            if ($countryId) {
-                $sql = "SELECT c.id FROM categories c
-                        INNER JOIN category_countries cc ON cc.category_id = c.id
-                        WHERE c.slug = :slug AND cc.country_id = :cid";
-                $params = [':slug' => $slug, ':cid' => $countryId];
-                if ($hasSite) {
-                    $sql .= " AND c.site_id = :site";
-                    $params[':site'] = pm_site_id();
-                }
-                $sql .= " LIMIT 1";
-                $stmt = $db->prepare($sql);
-                $stmt->execute($params);
-                $catId = $stmt->fetchColumn();
+            $sql = "SELECT id FROM categories WHERE slug = :slug";
+            $params = [':slug' => $slug];
+            if ($hasSite) {
+                $sql .= " AND site_id = :site";
+                $params[':site'] = pm_site_id();
             }
-
-            // Fallback: look for category without country scope
-            if (!$catId) {
-                $sql = "SELECT id FROM categories WHERE slug = :slug";
-                $params = [':slug' => $slug];
-                if ($hasSite) {
-                    $sql .= " AND site_id = :site";
-                    $params[':site'] = pm_site_id();
-                }
-                $sql .= " LIMIT 1";
-                $stmt = $db->prepare($sql);
-                $stmt->execute($params);
-                $catId = $stmt->fetchColumn();
-            }
+            $sql .= " LIMIT 1";
+            $stmt = $db->prepare($sql);
+            $stmt->execute($params);
+            $catId = $stmt->fetchColumn();
 
             if (!$catId) {
                 // Create the category
@@ -372,12 +296,6 @@ function pm_resolve_categories(PDO $db, array $categories, ?int $countryId = nul
                 }
                 $db->prepare("INSERT INTO categories (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ")")->execute($data);
                 $catId = (int)$db->lastInsertId();
-            }
-
-            // Link category to country if not already linked
-            if ($countryId && $catId) {
-                $db->prepare("INSERT IGNORE INTO category_countries (category_id, country_id) VALUES (:cat, :cid)")
-                   ->execute([':cat' => (int)$catId, ':cid' => $countryId]);
             }
 
             $parentId = (int)$catId;
@@ -500,30 +418,96 @@ function pm_generate_image_variants(string $source, string $base): array {
     return $variants;
 }
 
-function pm_import_product(PDO $db, int $jobId, string $batchId, array $raw, string $duplicateStrategy, ?int $countryId = null): array {
+/**
+ * Delete a locally stored product image plus the _thumb/_medium/_large
+ * variants generated for it. Remote fallback URLs own no files — no-op.
+ */
+function pm_delete_image_files(string $publicPath): void {
+    if ($publicPath === '' || preg_match('#^https?://#i', $publicPath)) return;
+    if (function_exists('deleteImage')) deleteImage($publicPath); // also clears legacy thumb_ copies
+    $full = __DIR__ . '/../' . ltrim($publicPath, '/');
+    if (is_file($full)) @unlink($full);
+    $dir  = dirname($full);
+    $stem = pathinfo($full, PATHINFO_FILENAME);
+    foreach (['thumb', 'medium', 'large'] as $v) {
+        $f = $dir . '/' . $stem . '_' . $v . '.webp';
+        if (is_file($f)) @unlink($f);
+    }
+}
+
+/**
+ * One-shot repair for rows whose image file vanished (older import runs
+ * deleted re-referenced files — see pm_import_product). The generated
+ * variants survived those deletions, so point each broken row at the
+ * largest variant still on disk. Rows with nothing on disk are counted
+ * as missing: a re-import with "Update Existing" re-downloads them.
+ */
+function pm_repair_missing_images(PDO $db): array {
+    $rows = $db->query("SELECT id, image_path FROM product_images WHERE image_path LIKE '/uploads/%'")
+               ->fetchAll(PDO::FETCH_ASSOC);
+    $healthy = 0; $repaired = 0; $missing = 0;
+    $upd = $db->prepare("UPDATE product_images SET image_path = :p WHERE id = :id");
+    foreach ($rows as $row) {
+        $public = (string)$row['image_path'];
+        $full = __DIR__ . '/../' . ltrim($public, '/');
+        if (is_file($full)) { $healthy++; continue; }
+        $stem = pathinfo($full, PATHINFO_FILENAME);
+        $dir = dirname($full);
+        $publicDir = rtrim(dirname($public), '/');
+        $fixed = false;
+        foreach (['large', 'medium', 'thumb'] as $v) {
+            if (is_file($dir . '/' . $stem . '_' . $v . '.webp')) {
+                $upd->execute([':p' => $publicDir . '/' . $stem . '_' . $v . '.webp', ':id' => $row['id']]);
+                $repaired++; $fixed = true;
+                break;
+            }
+        }
+        if (!$fixed) $missing++;
+    }
+    if (function_exists('cacheClearPattern')) {
+        cacheClearPattern('products_');
+        cacheClearPattern('cat_products_');
+    }
+    return ['checked' => count($rows), 'healthy' => $healthy, 'repaired' => $repaired, 'missing' => $missing];
+}
+
+function pm_import_product(PDO $db, int $jobId, string $batchId, array $raw, string $duplicateStrategy): array {
     if (!empty($raw['_scrape']) && !empty($raw['source_url'])) {
-        $html = pm_http_get((string)$raw['source_url'], 20);
-        if (!$html) throw new RuntimeException('Could not fetch product page');
-        $raw = pm_extract_product_from_html((string)$raw['source_url'], $html);
+        // Use retry version here — import runs in chunks with dedicated time budget
+        $fetchUrl = (string)$raw['source_url'];
+        $html = pm_http_get_with_retry($fetchUrl, 25);
+        if (!$html) throw new RuntimeException('Could not fetch product page after 3 attempts: ' . $fetchUrl);
+        $raw = pm_extract_product_from_html($fetchUrl, $html);
     }
 
     $p = pm_normalize_product($raw);
     if ($p['name'] === '') throw new RuntimeException('Product name missing');
 
-    $existingId = pm_find_existing_product($db, $p, $countryId);
+    $existingId = pm_find_existing_product($db, $p);
     if ($existingId && $duplicateStrategy === 'skip') {
-        pm_record_item($db, $jobId, $batchId, null, $p, 'skipped', 'ok', null, [], $countryId);
+        pm_record_item($db, $jobId, $batchId, null, $p, 'skipped', 'ok', null, []);
         return ['action' => 'skipped', 'name' => $p['name']];
     }
 
     $downloadedImages = [];
+    $fallbackUrls     = [];
     foreach (array_slice($p['images'], 0, 8) as $imageUrl) {
         $downloaded = pm_download_image($imageUrl, $p['name']);
-        if ($downloaded) $downloadedImages[] = $downloaded;
+        if ($downloaded) {
+            $downloadedImages[] = $downloaded;
+        } elseif ($imageUrl && filter_var(trim($imageUrl), FILTER_VALIDATE_URL)) {
+            // Download failed — store original URL as fallback so image still shows
+            $fallbackUrls[] = trim($imageUrl);
+        }
     }
+    // Use local paths if any downloaded; otherwise fall back to original URLs
     $imagePaths = array_values(array_filter(array_map(fn($img) => $img['path'] ?? null, $downloadedImages)));
+    if (empty($imagePaths) && !empty($fallbackUrls)) {
+        $imagePaths = $fallbackUrls;
+    }
 
-    $catIds = pm_resolve_categories($db, $p['categories'], $countryId);
+
+    $catIds = pm_resolve_categories($db, $p['categories']);
     $hasSite = pm_has_column($db, 'products', 'site_id');
     $copy = $existingId && $duplicateStrategy === 'copy';
     $targetId = ($existingId && !$copy) ? $existingId : null;
@@ -579,12 +563,6 @@ function pm_import_product(PDO $db, int $jobId, string $batchId, array $raw, str
         $action = 'imported';
     }
 
-    // Link product to country
-    if ($countryId && $productId) {
-        $db->prepare("INSERT IGNORE INTO product_countries (product_id, country_id) VALUES (:p, :cid)")
-           ->execute([':p' => $productId, ':cid' => $countryId]);
-    }
-
     if ($catIds) {
         $db->prepare("DELETE FROM product_categories WHERE product_id = :p")->execute([':p' => $productId]);
         $stmt = $db->prepare("INSERT IGNORE INTO product_categories (product_id, category_id) VALUES (:p,:c)");
@@ -593,10 +571,18 @@ function pm_import_product(PDO $db, int $jobId, string $batchId, array $raw, str
 
     if ($imagePaths) {
         if ($action === 'updated') {
+            // Re-imports produce the SAME deterministic filename for the same
+            // source URL (slug + md5(url)). Deleting old files blindly here
+            // used to unlink the very files the new rows were about to
+            // reference — every "Update Existing" run broke previously healthy
+            // images. Only remove files the new import no longer uses.
+            $keep = array_flip($imagePaths);
             $old = $db->prepare("SELECT image_path FROM product_images WHERE product_id = :p");
             $old->execute([':p' => $productId]);
             while ($img = $old->fetch(PDO::FETCH_ASSOC)) {
-                if (function_exists('deleteImage')) deleteImage($img['image_path']);
+                $oldPath = trim((string)$img['image_path']);
+                if ($oldPath === '' || isset($keep[$oldPath])) continue;
+                pm_delete_image_files($oldPath);
             }
             $db->prepare("DELETE FROM product_images WHERE product_id = :p")->execute([':p' => $productId]);
         }
@@ -606,19 +592,18 @@ function pm_import_product(PDO $db, int $jobId, string $batchId, array $raw, str
         }
     }
 
-    pm_record_item($db, $jobId, $batchId, $productId, $p, $action, 'ok', null, $downloadedImages, $countryId);
+    pm_record_item($db, $jobId, $batchId, $productId, $p, $action, 'ok', null, $downloadedImages);
     return ['action' => $action, 'product_id' => $productId, 'name' => $p['name']];
 }
 
-function pm_record_item(PDO $db, int $jobId, string $batchId, ?int $productId, array $p, string $action, string $status, ?string $error = null, array $images = [], ?int $countryId = null): void {
+function pm_record_item(PDO $db, int $jobId, string $batchId, ?int $productId, array $p, string $action, string $status, ?string $error = null, array $images = []): void {
     $stmt = $db->prepare("INSERT INTO import_job_items
-        (job_id,batch_id,product_id,country_id,source_url,source_sku,source_name,action,status,error,image_paths_json)
-        VALUES (:j,:b,:p,:cid,:url,:sku,:name,:a,:s,:e,:imgs)");
+        (job_id,batch_id,product_id,source_url,source_sku,source_name,action,status,error,image_paths_json)
+        VALUES (:j,:b,:p,:url,:sku,:name,:a,:s,:e,:imgs)");
     $stmt->execute([
         ':j' => $jobId,
         ':b' => $batchId,
         ':p' => $productId,
-        ':cid' => $countryId,
         ':url' => $p['source_url'] ?: null,
         ':sku' => $p['sku'] ?: null,
         ':name' => $p['name'] ?: null,
@@ -636,7 +621,6 @@ function pm_process_job(PDO $db, int $jobId, int $limit = 25): array {
     $products = pm_read_payload($job['options']['payload_file'] ?? '');
     $offset = (int)$job['processed'];
     $chunk = array_slice($products, $offset, max(1, min($limit, 100)));
-    $countryId = !empty($job['country_id']) ? (int)$job['country_id'] : null;
 
     if ($job['status'] === 'pending') {
         $db->prepare("UPDATE import_jobs SET status='running', started_at=COALESCE(started_at, NOW()) WHERE id=:id")->execute([':id' => $jobId]);
@@ -646,7 +630,7 @@ function pm_process_job(PDO $db, int $jobId, int $limit = 25): array {
     $stats = ['processed' => 0, 'imported' => 0, 'updated' => 0, 'skipped' => 0, 'failed' => 0];
     foreach ($chunk as $raw) {
         try {
-            $result = pm_import_product($db, $jobId, $job['batch_id'], $raw, $job['duplicate_strategy'], $countryId);
+            $result = pm_import_product($db, $jobId, $job['batch_id'], $raw, $job['duplicate_strategy']);
             $action = $result['action'] ?? 'skipped';
             $stats[$action === 'imported' ? 'imported' : ($action === 'updated' ? 'updated' : 'skipped')]++;
             $name = $result['name'] ?? $raw['name'] ?? $raw['title'] ?? $raw['source_url'] ?? 'Product';
@@ -654,7 +638,7 @@ function pm_process_job(PDO $db, int $jobId, int $limit = 25): array {
         } catch (Throwable $e) {
             $stats['failed']++;
             $p = pm_normalize_product($raw);
-            pm_record_item($db, $jobId, $job['batch_id'], null, $p, 'failed', 'error', $e->getMessage(), [], $countryId);
+            pm_record_item($db, $jobId, $job['batch_id'], null, $p, 'failed', 'error', $e->getMessage(), []);
             pm_log($db, $jobId, $job['batch_id'], 'error', 'Failed: ' . (($raw['name'] ?? $raw['title'] ?? $raw['source_url'] ?? 'row')) . ' - ' . $e->getMessage());
         }
         $stats['processed']++;
@@ -701,9 +685,12 @@ function pm_rollback_job(PDO $db, int $jobId): array {
         $imgs = $db->prepare("SELECT image_path FROM product_images WHERE product_id=:p");
         $imgs->execute([':p' => $pid]);
         while ($img = $imgs->fetch(PDO::FETCH_ASSOC)) {
-            if (function_exists('deleteImage')) deleteImage($img['image_path']);
+            pm_delete_image_files(trim((string)$img['image_path']));
         }
-        $db->prepare("DELETE FROM products WHERE id=:id")->execute([':id' => $pid]);
+        // Clean pivot rows BEFORE deleting the product
+        $db->prepare("DELETE FROM product_categories WHERE product_id=:id")->execute([':id' => $pid]);
+        $db->prepare("DELETE FROM product_images     WHERE product_id=:id")->execute([':id' => $pid]);
+        $db->prepare("DELETE FROM products           WHERE id=:id")->execute([':id' => $pid]);
     }
     $db->prepare("UPDATE import_jobs SET status='rolled_back', finished_at=NOW() WHERE id=:id")->execute([':id' => $jobId]);
     pm_log($db, $jobId, $job['batch_id'], 'warning', 'Rollback completed. Products removed: ' . count($ids));

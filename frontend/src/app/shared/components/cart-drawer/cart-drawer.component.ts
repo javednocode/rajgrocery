@@ -19,9 +19,11 @@ import { SettingsService } from '../../../core/services/settings.service';
 
     @if (cart.items().length === 0) {
       <div class="cd-empty">
-        <span class="cd-empty-glyph">✦</span>
+        <span class="cd-empty-glyph">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M6 7h14l-1.5 9.5a2 2 0 0 1-2 1.5H9a2 2 0 0 1-2-1.7L5.3 4.6A2 2 0 0 0 3.3 3H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10" cy="21" r="1.3" fill="currentColor"/><circle cx="17" cy="21" r="1.3" fill="currentColor"/></svg>
+        </span>
         <p class="cd-empty-title">Your basket is empty</p>
-        <p class="cd-empty-sub">Fill it with flavours from three worlds.</p>
+        <p class="cd-empty-sub">Add some Indian grocery favourites to get started.</p>
         <button class="cd-go" (click)="cart.closeCart()">Start shopping</button>
       </div>
     } @else {
@@ -76,32 +78,30 @@ import { SettingsService } from '../../../core/services/settings.service';
   styles: [`
   .cd-overlay {
     position: fixed; inset: 0; z-index: 1200;
-    background: rgba(17,24,39,.4);
-    -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+    background: rgba(20,20,18,.4);
     opacity: 0; visibility: hidden;
-    transition: opacity .4s, visibility .4s;
+    transition: opacity .3s, visibility .3s;
   }
   .cd-overlay.open { opacity: 1; visibility: visible; }
   .cd {
     position: fixed; top: 0; right: 0; bottom: 0; z-index: 1201;
-    width: min(430px, 94vw);
+    width: min(420px, 94vw);
     background: var(--kg-cream);
     display: flex; flex-direction: column;
     transform: translateX(calc(100% + 40px));
-    transition: transform .55s var(--ease);
-    box-shadow: -30px 0 80px rgba(17,24,39,.25);
-    border-radius: 24px 0 0 24px;
+    transition: transform .4s var(--ease);
+    box-shadow: -24px 0 60px rgba(20,20,18,.2);
   }
   .cd.open { transform: none; }
 
   .cd-head {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 26px 28px 20px;
+    padding: 22px 24px 18px;
     border-bottom: 1px solid var(--kg-line);
   }
   .cd-head h3 {
-    font-family: var(--font-serif); font-size: 22px; font-weight: 450;
-    letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-sans); font-size: 18px; font-weight: 800;
+    letter-spacing: -0.005em; display: flex; align-items: center; gap: 10px;
   }
   .cd-count {
     display: inline-grid; place-items: center;
@@ -122,29 +122,32 @@ import { SettingsService } from '../../../core/services/settings.service';
     align-items: center; justify-content: center; gap: 6px;
     padding: 0 32px; text-align: center;
   }
-  .cd-empty-glyph { font-family: var(--font-serif); font-size: 40px; color: var(--kg-line-warm); margin-bottom: 8px; }
-  .cd-empty-title { font-family: var(--font-serif); font-size: 20px; color: var(--kg-ink); }
+  .cd-empty-glyph {
+    width: 68px; height: 68px; border-radius: 999px;
+    display: grid; place-items: center;
+    background: var(--kg-warm); color: var(--kg-faint); margin-bottom: 10px;
+  }
+  .cd-empty-title { font-family: var(--font-sans); font-weight: 800; font-size: 18px; color: var(--kg-ink); }
   .cd-empty-sub { font-size: 14px; color: var(--kg-muted); margin-bottom: 20px; }
 
-  .cd-items { flex: 1; overflow-y: auto; padding: 8px 28px; }
+  .cd-items { flex: 1; overflow-y: auto; padding: 8px 24px; }
   .cd-item {
-    display: flex; gap: 15px; padding: 18px 0;
+    display: flex; gap: 14px; padding: 16px 0;
     border-bottom: 1px solid var(--kg-line-lt);
     position: relative;
-    animation: fadeUp .4s var(--ease) both;
   }
   .cd-img {
-    width: 74px; height: 74px; border-radius: 16px;
+    width: 68px; height: 68px; border-radius: var(--r);
     background: var(--kg-sand); overflow: hidden; flex-shrink: 0;
     display: grid; place-items: center;
+    border: 1px solid var(--kg-line);
   }
-  .cd-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease); }
-  .cd-item:hover .cd-img img { transform: scale(1.06); }
-  .cd-img b { font-family: var(--font-serif); font-size: 26px; font-weight: 400; font-style: italic; color: var(--kg-faint); }
+  .cd-img img { width: 100%; height: 100%; object-fit: cover; }
+  .cd-img b { font-size: 22px; font-weight: 800; color: var(--kg-faint); }
   .cd-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .cd-name {
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-    font-family: var(--font-serif); font-size: 15.5px; font-weight: 500; line-height: 1.35;
+    font-family: var(--font-sans); font-size: 14px; font-weight: 700; line-height: 1.35;
     color: var(--kg-ink); margin-bottom: 2px; padding-right: 22px;
     transition: color .2s;
   }
@@ -173,10 +176,9 @@ import { SettingsService } from '../../../core/services/settings.service';
   .cd-rm:hover { color: var(--kg-clay); background: var(--kg-clay-bg); }
 
   .cd-foot {
-    padding: 20px 28px calc(22px + env(safe-area-inset-bottom));
+    padding: 18px 24px calc(20px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--kg-line);
     background: var(--kg-paper);
-    border-radius: 0 0 0 24px;
   }
   .cd-free { font-size: 13px; color: var(--kg-muted); margin-bottom: 16px; }
   .cd-free strong { color: var(--kg-ink); }
@@ -196,7 +198,7 @@ import { SettingsService } from '../../../core/services/settings.service';
     font-family: var(--font-sans); font-size: 14.5px; font-weight: 800;
     transition: background .25s, transform .25s, box-shadow .25s; cursor: pointer;
   }
-  .cd-go:hover { background: var(--kg-forest-dk); transform: translateY(-2px); box-shadow: 0 14px 30px rgba(41,184,213,.3); }
+  .cd-go:hover { background: var(--kg-forest-dk); transform: translateY(-1px); box-shadow: var(--shadow-forest); }
   .cd-view {
     display: block; text-align: center; margin-top: 13px;
     font-size: 13px; font-weight: 700; color: var(--kg-muted);
@@ -207,6 +209,6 @@ import { SettingsService } from '../../../core/services/settings.service';
 })
 export class CartDrawerComponent {
   constructor(public cart: CartService, private settings: SettingsService) {}
-  get cur() { return this.settings.get('currency_symbol', '€'); }
+  get cur() { return this.settings.get('currency_symbol', 'HK$'); }
   get freeAbove() { return parseFloat(this.settings.get('shipping_free_above', '50')) || 0; }
 }

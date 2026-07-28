@@ -3,7 +3,6 @@
 <div class="toolbar">
     <div>
         <h3 style="font-size:16px;margin:0;">Featured Brands</h3>
-        <p style="font-size:12px;color:var(--admin-text-muted);margin:4px 0 0;">Add brands with logos for the homepage scrolling carousel.</p>
     </div>
     <button class="btn btn-primary" onclick="saveBrands()">Save Brands</button>
 </div>
@@ -40,19 +39,13 @@ async function loadBrands() {
     try {
         const res = await api('/settings');
         const s = res.data || {};
-        
+
         document.getElementById('featured_brands_label').value = s['featured_brands_label'] || '';
         document.getElementById('featured_brands_title').value = s['featured_brands_title'] || '';
-        
-        // Load JSON brands or fallback to empty
-        if (s['featured_brands_data']) {
-            try {
-                brands = JSON.parse(s['featured_brands_data']);
-            } catch(e) { brands = []; }
-        } else {
-            brands = [];
-        }
-        
+
+        const raw = s['featured_brands_data'] || '';
+        try { brands = raw ? JSON.parse(raw) : []; } catch(e) { brands = []; }
+
         renderBrands();
     } catch(e) {
         showAlert('Could not load brand settings', 'danger');
@@ -142,11 +135,11 @@ async function saveBrands() {
     const fd = new FormData();
     fd.append('featured_brands_label', document.getElementById('featured_brands_label').value);
     fd.append('featured_brands_title', document.getElementById('featured_brands_title').value);
-    fd.append('featured_brands_data', JSON.stringify(brands));
-    
+    fd.append('featured_brands_data',  JSON.stringify(brands));
+
     try {
         await api('/settings', 'POST', fd, true);
-        showAlert('Featured brands saved successfully!', 'success');
+        showAlert('Brands saved!', 'success');
         renderBrands();
     } catch(e) {
         showAlert('Error: ' + e.message, 'danger');

@@ -7,9 +7,7 @@
 
 function getDashboardStats($db) {
     try {
-        // Country filter — admin can pass ?country_id=N to scope the dashboard
-        $countryId = (int)($_GET['country_id'] ?? 0);
-        $cacheKey = 'dashboard_stats' . ($countryId ? '_c' . $countryId : '');
+        $cacheKey = 'dashboard_stats';
         $cached = cacheGet($cacheKey);
         if ($cached !== null) {
             successResponse($cached);
@@ -18,14 +16,6 @@ function getDashboardStats($db) {
 
         $today = date('Y-m-d');
         $monthStart = date('Y-m-01');
-
-        // Country join for scoping products/categories to a specific country
-        $productCountryJoin = $countryId
-            ? "INNER JOIN product_countries pc_dash ON pc_dash.product_id = p.id AND pc_dash.country_id = $countryId"
-            : "";
-        $catCountryJoin = $countryId
-            ? "INNER JOIN category_countries cc_dash ON cc_dash.category_id = c.id AND cc_dash.country_id = $countryId"
-            : "";
 
         // ── Single query for all order aggregates ────────────────────────
         $orderStats = $db->query("
@@ -39,26 +29,13 @@ function getDashboardStats($db) {
             FROM orders
         ")->fetch();
 
-    // ── Product/customer/category counts — scoped by country if selected ─
-    $productCountSql = $countryId
-        ? "SELECT COUNT(DISTINCT p.id) FROM products p INNER JOIN product_countries pc_cnt ON pc_cnt.product_id = p.id AND pc_cnt.country_id = $countryId"
-        : "SELECT COUNT(*) FROM products";
-    $catCountSql = $countryId
-        ? "SELECT COUNT(DISTINCT c.id) FROM categories c INNER JOIN category_countries cc_cnt ON cc_cnt.category_id = c.id AND cc_cnt.country_id = $countryId"
-        : "SELECT COUNT(*) FROM categories";
-    $lowStockSql = $countryId
-        ? "SELECT COUNT(DISTINCT p.id) FROM products p INNER JOIN product_countries pc_ls ON pc_ls.product_id = p.id AND pc_ls.country_id = $countryId WHERE p.stock <= p.low_stock_threshold AND p.stock > 0 AND p.is_active = 1"
-        : "SELECT COUNT(*) FROM products WHERE stock <= low_stock_threshold AND stock > 0 AND is_active = 1";
-    $oosSql = $countryId
-        ? "SELECT COUNT(DISTINCT p.id) FROM products p INNER JOIN product_countries pc_oos ON pc_oos.product_id = p.id AND pc_oos.country_id = $countryId WHERE p.stock = 0 AND p.is_active = 1"
-        : "SELECT COUNT(*) FROM products WHERE stock = 0 AND is_active = 1";
-
+    // ── Product/customer/category counts ──────────────────────────────
     $counts = [
-        'total_products'   => (int)$db->query($productCountSql)->fetchColumn(),
+        'total_products'   => (int)$db->query("SELECT COUNT(*) FROM products")->fetchColumn(),
         'total_customers'  => (int)$db->query("SELECT COUNT(*) FROM customers")->fetchColumn(),
-        'total_categories' => (int)$db->query($catCountSql)->fetchColumn(),
-        'low_stock'        => (int)$db->query($lowStockSql)->fetchColumn(),
-        'out_of_stock'     => (int)$db->query($oosSql)->fetchColumn(),
+        'total_categories' => (int)$db->query("SELECT COUNT(*) FROM categories")->fetchColumn(),
+        'low_stock'        => (int)$db->query("SELECT COUNT(*) FROM products WHERE stock <= low_stock_threshold AND stock > 0 AND is_active = 1")->fetchColumn(),
+        'out_of_stock'     => (int)$db->query("SELECT COUNT(*) FROM products WHERE stock = 0 AND is_active = 1")->fetchColumn(),
     ];
 
     // ── Order status breakdown ────────────────────────────────────────
@@ -70,14 +47,11 @@ function getDashboardStats($db) {
         FROM orders ORDER BY created_at DESC LIMIT 10
     ")->fetchAll();
 
-    // ── Top products — scoped by country ─────────────────────────────
-    $topProductsJoin = $countryId
-        ? "INNER JOIN product_countries pc_top ON pc_top.product_id = p.id AND pc_top.country_id = $countryId"
-        : "";
+    // ── Top products ───────────────────────────────────────────────────
     $topProducts = $db->query("
         SELECT p.id, p.name, p.slug, p.sales_count, p.price,
             (SELECT image_path FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image
-        FROM products p $topProductsJoin
+        FROM products p
         WHERE p.is_active = 1
         ORDER BY p.sales_count DESC LIMIT 5
     ")->fetchAll();

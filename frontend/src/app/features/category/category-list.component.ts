@@ -1,69 +1,96 @@
-import { Component, OnInit, signal, effect, untracked } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { SeoService } from '../../core/services/seo.service';
-import { ScrollAnimateDirective } from '../../shared/directives/scroll-animate.directive';
-import { CountryService } from '../../core/services/country.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-category-list',
   standalone: true,
-  imports: [RouterLink, ScrollAnimateDirective],
+  imports: [RouterLink],
   template: `
-  <!-- Page Hero -->
-  <section class="cl-hero">
+  <!-- Page header -->
+  <header class="cl-header">
     <div class="container">
       <nav class="cl-crumbs" aria-label="Breadcrumb">
         <a routerLink="/">Home</a>
-        <i>/</i>
-        <span>All Categories</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+          <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span aria-current="page">All Categories</span>
       </nav>
-      <h1 class="cl-hero-title">Shop by Category</h1>
-      <p class="cl-hero-sub">{{ country.current().flag }} Every aisle of the {{ country.current().name }} marketplace</p>
+      <h1 class="cl-heading">Shop by Category</h1>
+      <p class="cl-sub">Everything you need for your Indian kitchen, in one place.</p>
     </div>
-    <div class="cl-hero-wave"></div>
-  </section>
+  </header>
 
-  <!-- Categories Grid -->
-  <section class="section cl-body">
+  <!-- Grid body -->
+  <section class="cl-body">
     <div class="container">
 
       @if (loading()) {
+        <!-- Skeleton -->
         <div class="cl-grid">
           @for (s of [1,2,3,4,5,6,7,8,9,10,11,12]; track s) {
-            <div class="cl-card cl-skel skeleton"></div>
+            <div class="skeleton cl-skel"></div>
           }
         </div>
+
       } @else if (categories().length === 0) {
-        <div class="empty-state">
-          
-          <h3>No categories yet</h3>
-          <p>Categories will appear here once added from the admin panel.</p>
+        <!-- Empty state -->
+        <div class="cl-empty">
+          <div class="cl-empty-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
+                stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2 class="cl-empty-title">Categories coming soon</h2>
+          <p class="cl-empty-text">
+            Our store categories are being set up. Check back shortly or browse all products.
+          </p>
+          <a routerLink="/" class="btn btn-primary">Back to Home</a>
         </div>
+
       } @else {
-        <!-- Filter chips -->
-        <div class="cl-filter-row">
-          <span class="cl-total">{{ categories().length }} categories</span>
+        <!-- Count + grid -->
+        <div class="cl-toolbar">
+          <span class="cl-count">{{ categories().length }} {{ categories().length === 1 ? 'category' : 'categories' }}</span>
         </div>
         <div class="cl-grid">
           @for (c of categories(); track c.id; let i = $index) {
-            <a class="cl-card" [class.cl-card-noimg]="!c.image" [routerLink]="['/category', c.slug]"
-               appScrollAnimate animationType="fade-up" [animationDelay]="((i % 4) * 0.07) + 's'">
-              @if (c.image) {
-                <img class="cl-img" [src]="media(c.image)" [alt]="c.name" loading="lazy" (error)="hideImg($event)" />
-              }
-              <span class="cl-veil" aria-hidden="true"></span>
-              <span class="cl-info">
+            <a class="cl-card" [class.cl-card-noimg]="!c.image"
+               [routerLink]="['/category', c.slug]"
+               [attr.aria-label]="c.name + (c.product_count > 0 ? ' — ' + c.product_count + ' products' : '')">
+
+              <!-- Image or fallback -->
+              <div class="cl-card-media">
+                @if (c.image) {
+                  <img class="cl-img" [src]="media(c.image)" [alt]="c.name"
+                       loading="lazy" (error)="hideImg($event)" />
+                } @else {
+                  <span class="cl-emoji" aria-hidden="true">{{ catEmoji(i) }}</span>
+                }
+                <div class="cl-veil"></div>
+              </div>
+
+              <!-- Info -->
+              <div class="cl-info">
                 <strong class="cl-name">{{ c.name }}</strong>
                 @if (c.product_count > 0) {
-                  <em class="cl-count">{{ c.product_count }} {{ c.product_count === 1 ? 'product' : 'products' }}</em>
+                  <em class="cl-count-badge">{{ c.product_count }} {{ c.product_count === 1 ? 'product' : 'products' }}</em>
                 } @else if (c.description) {
-                  <em class="cl-count">{{ c.description }}</em>
+                  <em class="cl-count-badge">{{ c.description }}</em>
                 }
-              </span>
+              </div>
+
+              <!-- Arrow -->
               <span class="cl-arrow" aria-hidden="true">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M7 17L17 7M9 7h8v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
               </span>
             </a>
           }
@@ -72,103 +99,164 @@ import { environment } from '../../../environments/environment';
     </div>
   </section>
   `,
+
   styles: [`
-  .cl-hero {
-    background: #1F2937;
-    padding: 52px 0 70px; position: relative; overflow: hidden;
+  /* ── Header ── */
+  .cl-header {
+    background: var(--kg-dark);
+    padding: 48px 0 52px;
+    position: relative; overflow: hidden;
   }
-  .cl-hero::before {
+  .cl-header::before {
     content: '';
     position: absolute; inset: 0;
-    background: linear-gradient(90deg, rgba(30,136,168,.15) 0%, transparent 70%);
+    background: radial-gradient(ellipse 70% 120% at 10% 50%, rgba(27,76,140,.35) 0%, transparent 70%);
+    pointer-events: none;
   }
-  .container { max-width: 1300px; margin: 0 auto; padding: 0 24px; width: 100%; }
-  @media(min-width:1200px){.container{padding:0 48px}}
-  .cl-crumbs { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,.45); margin-bottom: 16px; position: relative; }
-  .cl-crumbs a { color: rgba(255,255,255,.65); transition: color .2s; }
-  .cl-crumbs a:hover { color: #1E88A8; }
-  .cl-crumbs i { font-style: normal; opacity: .4; }
-  .cl-hero-title {
-    font-family: 'Fraunces', Georgia, serif;
-    font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 400;
-    color: #fff; margin-bottom: 10px; position: relative;
-  }
-  .cl-hero-sub { font-size: 16px; color: rgba(255,255,255,.6); margin: 0; position: relative; }
-  .cl-hero-wave {
-    position: absolute; bottom: -2px; left: 0; right: 0; height: 40px;
-    background: linear-gradient(180deg, transparent 0%, var(--bg,#FFFFFF) 100%);
-  }
+  .cl-header .container { position: relative; z-index: 1; }
 
-  .cl-body { background: var(--bg,#FFFFFF); }
-  .cl-filter-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-  .cl-total { font-size: 14px; color: #6B7280; font-family: 'Manrope', sans-serif; }
+  /* ── Breadcrumb ── */
+  .cl-crumbs {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12.5px; color: rgba(255,255,255,.45);
+    margin-bottom: 18px;
+  }
+  .cl-crumbs a { color: rgba(255,255,255,.7); transition: color .2s; text-decoration: none; }
+  .cl-crumbs a:hover { color: var(--kg-forest-lt); }
+  .cl-crumbs svg { opacity: .4; flex-shrink: 0; }
+  .cl-crumbs span { color: rgba(255,255,255,.85); font-weight: 600; }
 
+  /* ── Hero text ── */
+  .cl-heading {
+    font-family: var(--font-sans); font-size: clamp(1.7rem, 3.5vw, 2.6rem);
+    font-weight: 800; color: #FFFFFF; margin-bottom: 10px; letter-spacing: -0.02em;
+    line-height: 1.15; position: relative;
+  }
+  .cl-sub { font-size: 15px; color: rgba(255,255,255,.62); margin: 0; line-height: 1.65; }
+
+  /* ── Body ── */
+  .cl-body { padding: 48px 0 80px; background: var(--kg-warm); }
+  .cl-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+  .cl-count { font-size: 13px; color: var(--kg-muted); font-weight: 700; font-family: var(--font-sans); }
+
+  /* ── Grid ── */
   .cl-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
   }
 
+  /* ── Category card ── */
   .cl-card {
-    position: relative; display: block;
-    aspect-ratio: 1 / 1.18;
-    border-radius: 20px; overflow: hidden;
-    background: var(--kg-sand, #F7FAFC);
-    box-shadow: 0 1px 3px rgba(17,24,39,.05);
+    position: relative; display: flex; flex-direction: column;
+    border-radius: 12px; overflow: hidden;
+    background: var(--kg-paper);
+    border: 1px solid var(--kg-line-lt);
     text-decoration: none;
-    transition: transform .5s cubic-bezier(0.22,1,0.36,1), box-shadow .5s cubic-bezier(0.22,1,0.36,1);
+    transition: box-shadow .35s var(--ease), border-color .25s, transform .35s var(--ease);
+    box-shadow: var(--shadow-xs);
   }
-  .cl-card:hover { transform: translateY(-6px); box-shadow: 0 22px 48px rgba(17,24,39,.14); }
+  .cl-card:hover {
+    box-shadow: var(--shadow);
+    border-color: var(--kg-line-warm);
+    transform: translateY(-4px);
+  }
+
+  /* Media area */
+  .cl-card-media {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--kg-warm);
+    display: flex; align-items: center; justify-content: center;
+  }
   .cl-img {
     position: absolute; inset: 0;
     width: 100%; height: 100%; object-fit: cover;
-    transition: transform .9s cubic-bezier(0.22,1,0.36,1);
+    transition: transform .7s var(--ease);
   }
-  .cl-card:hover .cl-img { transform: scale(1.06); }
+  .cl-card:hover .cl-img { transform: scale(1.05); }
   .cl-veil {
-    position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(17,24,39,.62) 0%, rgba(17,24,39,.14) 38%, transparent 60%);
+    position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(to top, rgba(18,56,33,.5) 0%, rgba(18,56,33,.1) 40%, transparent 65%);
+    opacity: 0; transition: opacity .35s;
   }
+  .cl-card:hover .cl-veil { opacity: 1; }
+  .cl-emoji {
+    font-size: 36px; line-height: 1;
+    position: relative; z-index: 1;
+    transition: transform .35s var(--ease);
+  }
+  .cl-card:hover .cl-emoji { transform: scale(1.12); }
+
+  /* Info row */
   .cl-info {
-    position: absolute; left: 20px; right: 58px; bottom: 18px;
+    padding: 13px 14px 12px;
     display: flex; flex-direction: column; gap: 3px;
+    flex: 1;
   }
   .cl-name {
-    font-family: 'Fraunces', Georgia, serif; font-size: 19px; font-weight: 450;
-    color: #FFFFFF; letter-spacing: -0.01em; line-height: 1.22;
-  }
-  .cl-count {
-    font-style: normal; font-family: 'Manrope', sans-serif;
-    font-size: 12px; font-weight: 600; color: rgba(255,255,255,.75);
+    font-family: var(--font-sans); font-size: 14px; font-weight: 800;
+    color: var(--kg-ink); line-height: 1.3; letter-spacing: -0.01em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .cl-arrow {
-    position: absolute; right: 16px; bottom: 16px;
-    width: 36px; height: 36px; border-radius: 999px;
-    display: grid; place-items: center;
-    background: #FFFFFF; color: #111827;
-    opacity: 0; transform: translateY(10px);
-    transition: opacity .35s, transform .35s, background .25s, color .25s;
-  }
-  .cl-card:hover .cl-arrow { opacity: 1; transform: translateY(0); }
-  .cl-arrow:hover { background: #29B8D5; color: #FFFFFF; }
-  .cl-card-noimg { border: 1px solid #E5E7EB; background: #F7FAFC; }
-  .cl-card-noimg .cl-veil { display: none; }
-  .cl-card-noimg .cl-name { color: #111827; }
-  .cl-card-noimg .cl-count { color: #6B7280; }
-  .cl-card-noimg .cl-arrow { background: #EEF2F6; }
-  .cl-skel { aspect-ratio: 1 / 1.18; border-radius: 20px; }
-  @media (max-width: 640px) {
-    .cl-grid { grid-template-columns: repeat(2,1fr); gap: 11px; }
-    .cl-card { border-radius: 16px; aspect-ratio: 1 / 1.1; }
-    .cl-info { left: 14px; right: 46px; bottom: 13px; }
-    .cl-name { font-size: 15.5px; }
-    .cl-count { font-size: 11px; }
-    .cl-arrow { width: 30px; height: 30px; right: 11px; bottom: 11px; opacity: 1; transform: none; }
+  .cl-count-badge {
+    font-style: normal; font-family: var(--font-sans);
+    font-size: 11.5px; font-weight: 600; color: var(--kg-muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  @media (max-width: 640px) {
-    .cl-hero { padding: 26px 0 40px; }
+  /* Arrow pill */
+  .cl-arrow {
+    position: absolute; right: 12px; bottom: 12px;
+    width: 28px; height: 28px; border-radius: var(--r-full);
+    display: grid; place-items: center;
+    background: var(--kg-forest-bg); color: var(--kg-forest);
+    opacity: 0; transform: translateY(6px);
+    transition: opacity .3s, transform .3s, background .25s, color .25s;
+  }
+  .cl-card:hover .cl-arrow {
+    opacity: 1; transform: translateY(0);
+    background: var(--kg-forest); color: #FFFFFF;
+  }
+
+  /* No-image variant */
+  .cl-card-noimg .cl-card-media { background: var(--kg-sand-2); }
+  .cl-card-noimg .cl-veil { display: none; }
+
+  /* ── Skeleton ── */
+  .cl-skel { aspect-ratio: 1 / 1.15; border-radius: 14px; }
+
+  /* ── Empty state ── */
+  .cl-empty {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; padding: 80px 24px; text-align: center; max-width: 480px; margin: 0 auto;
+  }
+  .cl-empty-icon {
+    width: 72px; height: 72px; border-radius: var(--r-xl);
+    background: var(--kg-forest-bg); color: var(--kg-forest);
+    display: grid; place-items: center;
+  }
+  .cl-empty-title { font-size: 1.3rem; font-weight: 800; color: var(--kg-ink); margin: 0; }
+  .cl-empty-text { font-size: 15px; color: var(--kg-muted); margin: 0; line-height: 1.7; }
+
+  /* ── Responsive ── */
+  @media (max-width: 1100px) {
+    .cl-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 760px) {
+    .cl-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .cl-header { padding: 28px 0 32px; }
+  }
+  @media (max-width: 480px) {
+    .cl-card { border-radius: 10px; }
+    .cl-name { font-size: 13px; }
+    .cl-count-badge { font-size: 10.5px; }
+    .cl-emoji { font-size: 30px; }
+    .cl-arrow { display: none; }
+    .cl-card:hover { transform: none; }
+    .cl-body { padding: 28px 0 56px; }
+    .cl-toolbar { margin-bottom: 16px; }
   }
   `]
 })
@@ -177,27 +265,33 @@ export class CategoryListComponent implements OnInit {
   loading = signal(true);
   mediaUrl = (environment as any).mediaUrl || '';
 
-  constructor(private api: ApiService, private seo: SeoService, public country: CountryService) {
-    effect(() => {
-      const code = this.country.code();
-      this.country.ready();
-      untracked(() => this.fetch(code));
-    });
-  }
+  private readonly emojiList = ['🌶️','🍚','🫘','🍟','🍵','🧈','🥗','🏡','🧄','🌿','🧂','🫙','🥜','🍋','🥛'];
+  catEmoji(i: number) { return this.emojiList[i % this.emojiList.length]; }
+
+  constructor(private api: ApiService, private seo: SeoService) {}
 
   ngOnInit() {
-    this.seo.setMeta({ title: 'Shop All Categories', description: 'Browse every category across our international marketplace.' });
+    this.seo.setMeta({
+      title: 'Shop All Categories | LAAVI STORE',
+      description: 'Browse all Indian grocery categories at LAAVI STORE — spices, rice, dal, snacks, beverages and more.'
+    });
+    this.fetch();
   }
 
-  fetch(code: string) {
+  fetch() {
     this.loading.set(true);
-    this.api.getCategories(code).subscribe({
-      next: (r: any) => { if (r.success) this.categories.set(r.data || []); this.loading.set(false); },
+    this.api.getCategories().subscribe({
+      next: (r: any) => {
+        if (r.success) this.categories.set(r.data || []);
+        this.loading.set(false);
+      },
       error: () => this.loading.set(false)
     });
   }
 
-  media(p: string) { if (!p) return ''; return p.startsWith('http') ? p : this.mediaUrl + p; }
-
+  media(p: string) {
+    if (!p) return '';
+    return p.startsWith('http') ? p : this.mediaUrl + p;
+  }
   hideImg(e: Event) { (e.target as HTMLImageElement).style.display = 'none'; }
 }

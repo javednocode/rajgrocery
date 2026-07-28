@@ -54,7 +54,6 @@
 <div class="toolbar">
     <div>
         <h3 style="font-size:16px;margin:0;">Trending Products</h3>
-        <p style="font-size:12px;color:var(--admin-text-muted);margin:4px 0 0;">Add or remove products from the "Trending Now" section on the homepage</p>
     </div>
     <button class="btn btn-outline" onclick="clearAllTrending()" style="color:#ef4444;border-color:rgba(239,68,68,0.4);">Clear All Trending</button>
 </div>
@@ -88,20 +87,17 @@
 </div>
 
 <script>
-let trendingProducts = [];
+let trendingProducts    = [];
 let nonTrendingProducts = [];
 
 async function loadAll() {
     try {
-        // Load trending
-        const tr = await api('/products/trending?limit=50');
+        const tr  = await api('/products/trending?limit=200');
         trendingProducts = tr.data || [];
 
-        // Load all products
         const all = await api('/products?per_page=2000&admin=1');
         const allProds = all.data || [];
 
-        // Separate non-trending
         const trendingIds = new Set(trendingProducts.map(p => p.id));
         nonTrendingProducts = allProds.filter(p => !trendingIds.has(p.id));
 
@@ -148,9 +144,7 @@ function renderTrending() {
 function renderAll(filter = '') {
     const el = document.getElementById('allPanel');
     const term = filter.toLowerCase();
-    const list = term
-        ? nonTrendingProducts.filter(p => p.name.toLowerCase().includes(term))
-        : nonTrendingProducts;
+    const list = term ? nonTrendingProducts.filter(p => p.name.toLowerCase().includes(term)) : nonTrendingProducts;
     document.getElementById('allCount').textContent = nonTrendingProducts.length;
     if (!list.length) {
         el.innerHTML = `<div class="empty-state">${term ? 'No products match your search' : 'All products are trending! '}</div>`;
@@ -164,24 +158,16 @@ function filterAll(val) { renderAll(val); }
 async function toggleTrending(productId, makeTrending) {
     const btn = document.querySelector(`#row_${productId} button`);
     if (btn) { btn.disabled = true; btn.textContent = '...'; }
-
     try {
-        // Use product update endpoint — PATCH is not available, use the products edit API
-        await apiPatch(`/products/${productId}/trending`, { is_trending: makeTrending ? 1 : 0 });
+        const body = { is_trending: makeTrending ? 1 : 0 };
+        await apiPatch(`/products/${productId}/trending`, body);
 
-        // Move product between arrays
         if (makeTrending) {
             const idx = nonTrendingProducts.findIndex(p => p.id === productId);
-            if (idx >= 0) {
-                const [moved] = nonTrendingProducts.splice(idx, 1);
-                trendingProducts.push(moved);
-            }
+            if (idx >= 0) { const [moved] = nonTrendingProducts.splice(idx, 1); trendingProducts.push(moved); }
         } else {
             const idx = trendingProducts.findIndex(p => p.id === productId);
-            if (idx >= 0) {
-                const [moved] = trendingProducts.splice(idx, 1);
-                nonTrendingProducts.unshift(moved);
-            }
+            if (idx >= 0) { const [moved] = trendingProducts.splice(idx, 1); nonTrendingProducts.unshift(moved); }
         }
 
         renderTrending();
@@ -207,15 +193,11 @@ async function clearAllTrending() {
     }
 }
 
-// Thin wrapper around the admin `api()` helper for PATCH-style calls
 async function apiPatch(endpoint, body) {
     const token = localStorage.getItem('admin_token');
     const res = await fetch(`/api${endpoint}`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ ...body, _method: 'PATCH' })
     });
     const json = await res.json();

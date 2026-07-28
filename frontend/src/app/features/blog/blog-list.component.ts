@@ -1,6 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
 import { SeoService } from '../../core/services/seo.service';
 import { environment } from '../../../environments/environment';
@@ -8,12 +7,12 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-blog-list',
   standalone: true,
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink],
   template: `
   <!-- Hero -->
   <section class="bl-hero">
     <div class="container">
-      <span class="bl-eyebrow">Our Blog</span>
+      <nav class="bl-crumbs"><a routerLink="/">Home</a><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Blog</span></nav>
       <h1>Recipes & Stories</h1>
       <p>Discover authentic Indian recipes, cooking tips, and cultural stories from our community.</p>
     </div>
@@ -25,12 +24,11 @@ import { environment } from '../../../environments/environment';
       @if (loading()) {
         <div class="bl-grid">
           @for (s of [1,2,3,4,5,6]; track s) {
-            <div class="skeleton" style="height:360px;border-radius:16px"></div>
+            <div class="skeleton bl-skel"></div>
           }
         </div>
       } @else if (posts().length === 0) {
         <div class="empty-state">
-          <div style="font-size:3rem;margin-bottom:16px">📖</div>
           <h3>No articles yet</h3>
           <p>Check back soon for recipes and stories.</p>
         </div>
@@ -42,7 +40,7 @@ import { environment } from '../../../environments/environment';
               @if (first.featured_image) {
                 <img [src]="media(first.featured_image)" [alt]="first.title" loading="eager" fetchpriority="high" />
               } @else {
-                <div class="bl-feat-ph">📖</div>
+                <span class="bl-feat-ph">{{ (first.title || '?')[0] }}</span>
               }
             </div>
             <div class="bl-feat-body">
@@ -50,10 +48,10 @@ import { environment } from '../../../environments/environment';
               <h2 class="bl-feat-title">{{ first.title }}</h2>
               @if (first.excerpt) { <p class="bl-feat-exc">{{ first.excerpt }}</p> }
               <div class="bl-meta">
-                @if (first.published_at) { <span>📅 {{ formatDate(first.published_at) }}</span> }
-                @if (first.read_time) { <span>⏱ {{ first.read_time }} min read</span> }
+                @if (first.published_at) { <span>{{ formatDate(first.published_at) }}</span> }
+                @if (first.read_time) { <span>{{ first.read_time }} min read</span> }
               </div>
-              <span class="bl-read-link">Read article →</span>
+              <span class="bl-read-link">Read article<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             </div>
           </a>
         }
@@ -67,7 +65,7 @@ import { environment } from '../../../environments/environment';
                   @if (p.featured_image) {
                     <img [src]="media(p.featured_image)" [alt]="p.title" loading="lazy" />
                   } @else {
-                    <div class="bl-card-ph">📖</div>
+                    <span class="bl-card-ph">{{ (p.title || '?')[0] }}</span>
                   }
                 </div>
                 <div class="bl-card-body">
@@ -78,7 +76,7 @@ import { environment } from '../../../environments/environment';
                     @if (p.published_at) { <span>{{ formatDate(p.published_at) }}</span> }
                     @if (p.read_time) { <span>{{ p.read_time }} min</span> }
                   </div>
-                  <span class="bl-read-link">Read more →</span>
+                  <span class="bl-read-link">Read more<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 </div>
               </a>
             }
@@ -89,60 +87,69 @@ import { environment } from '../../../environments/environment';
   </section>
   `,
   styles: [`
-  .container { max-width: 1300px; margin: 0 auto; padding: 0 24px; width: 100%; }
-  @media(min-width:1200px){.container{padding:0 48px}}
-  .skeleton { background: linear-gradient(90deg,#EEF2F6 25%,#F7FAFC 50%,#EEF2F6 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+  .container { max-width: 1360px; margin: 0 auto; padding: 0 24px; width: 100%; }
+  @media(min-width:768px){.container{padding:0 40px}}
+  @media(min-width:1200px){.container{padding:0 56px}}
+  .skeleton { background: linear-gradient(90deg, var(--kg-sand-2) 25%, var(--kg-warm) 50%, var(--kg-sand-2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
   @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
   /* HERO */
   .bl-hero {
-    background: #1F2937;
-    padding: 52px 0 56px;
+    background: var(--kg-dark);
+    padding: 48px 0 52px;
+    position: relative; overflow: hidden;
   }
-  .bl-eyebrow { display: inline-block; font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #1E88A8; margin-bottom: 12px; }
-  .bl-hero h1 { font-family: 'Fraunces', Georgia, serif; font-size: clamp(2rem, 4vw, 3rem); font-weight: 400; color: #fff; margin-bottom: 10px; }
-  .bl-hero p { font-size: 16px; color: rgba(255,255,255,.65); max-width: 540px; margin: 0; line-height: 1.7; }
+  .bl-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 140% at 20% 60%, rgba(74,127,212,.2) 0%, transparent 70%); pointer-events: none; }
+  .bl-hero .container { position: relative; z-index: 1; }
+  .bl-crumbs { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: rgba(255,255,255,.38); margin-bottom: 16px; }
+  .bl-crumbs a { color: rgba(255,255,255,.6); transition: color .2s; }
+  .bl-crumbs a:hover { color: var(--kg-forest-lt); }
+  .bl-crumbs svg { opacity: .35; flex-shrink: 0; }
+  .bl-hero h1 { font-family: var(--font-sans); font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: var(--kg-cream); margin-bottom: 8px; letter-spacing: -0.02em; }
+  .bl-hero p { font-size: 15px; color: rgba(255,255,255,.55); max-width: 520px; margin: 0; line-height: 1.7; }
 
   /* BODY */
-  .bl-body { padding: 48px 0 64px; background: #FFFFFF; }
+  .bl-body { padding: 48px 0 72px; background: var(--kg-cream); }
 
   /* TAGS */
-  .bl-tag { display: inline-block; font-family: 'Manrope', sans-serif; font-size: 10.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #1E88A8; margin-bottom: 10px; }
+  .bl-tag { display: inline-block; font-family: var(--font-sans); font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--kg-forest); margin-bottom: 10px; }
 
   /* FEATURED */
   .bl-featured {
     display: grid; grid-template-columns: 1fr 1fr; gap: 0;
-    background: #fff; border: 1.5px solid #E5E7EB;
-    border-radius: 24px; overflow: hidden;
+    background: var(--kg-paper); border: 1px solid var(--kg-line-lt);
+    border-radius: 16px; overflow: hidden;
     text-decoration: none; margin-bottom: 40px;
-    transition: all .3s; min-height: 360px;
+    transition: all .35s var(--ease); min-height: 360px;
   }
-  .bl-featured:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(17,24,39,.12); border-color: rgba(30,136,168,.25); }
-  .bl-feat-img { position: relative; overflow: hidden; background: #F7FAFC; display: flex; align-items: center; justify-content: center; min-height: 360px; }
-  .bl-feat-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; transition: transform .5s; }
-  .bl-featured:hover .bl-feat-img img { transform: scale(1.05); }
-  .bl-feat-ph { font-size: 4rem; }
-  .bl-feat-body { padding: 40px; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
-  .bl-feat-title { font-family: 'Fraunces', Georgia, serif; font-size: clamp(1.3rem, 2.5vw, 2rem); font-weight: 400; color: #111827; line-height: 1.25; }
-  .bl-feat-exc { font-size: 15px; color: #6B7280; line-height: 1.7; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; margin: 0; }
-  .bl-meta { display: flex; gap: 14px; font-size: 12.5px; color: #9CA3AF; font-family: 'Manrope', sans-serif; }
-  .bl-read-link { font-size: 14px; font-weight: 800; color: #1E88A8; font-family: 'Manrope', sans-serif; margin-top: 4px; }
+  .bl-featured:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--kg-line-warm); }
+  .bl-feat-img { position: relative; overflow: hidden; background: var(--kg-warm); display: flex; align-items: center; justify-content: center; min-height: 360px; }
+  .bl-feat-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; transition: transform .6s var(--ease); }
+  .bl-featured:hover .bl-feat-img img { transform: scale(1.04); }
+  .bl-feat-ph { font-family: var(--font-sans); font-size: 5rem; font-weight: 800; color: var(--kg-line-warm); }
+  .bl-feat-body { padding: 36px; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+  .bl-feat-title { font-family: var(--font-sans); font-size: clamp(1.25rem, 2.5vw, 1.8rem); font-weight: 800; color: var(--kg-ink); line-height: 1.25; letter-spacing: -0.015em; }
+  .bl-feat-exc { font-size: 14.5px; color: var(--kg-muted); line-height: 1.7; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; margin: 0; }
+  .bl-meta { display: flex; gap: 14px; font-size: 12.5px; color: var(--kg-faint); font-family: var(--font-sans); }
+  .bl-read-link { font-size: 13px; font-weight: 800; color: var(--kg-forest); font-family: var(--font-sans); margin-top: 2px; display: inline-flex; align-items: center; gap: 6px; transition: gap .25s; }
+  .bl-card:hover .bl-read-link, .bl-featured:hover .bl-read-link { gap: 10px; color: var(--kg-terra); }
 
   /* GRID */
-  .bl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .bl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
   .bl-card {
-    background: #fff; border: 1.5px solid #E5E7EB; border-radius: 20px;
+    background: var(--kg-paper); border: 1px solid var(--kg-line-lt); border-radius: 14px;
     overflow: hidden; text-decoration: none; display: flex; flex-direction: column;
-    transition: all .3s;
+    transition: all .35s var(--ease);
   }
-  .bl-card:hover { transform: translateY(-5px); box-shadow: 0 14px 40px rgba(17,24,39,.1); border-color: rgba(30,136,168,.25); }
-  .bl-card-img { height: 220px; overflow: hidden; background: #F7FAFC; display: flex; align-items: center; justify-content: center; }
-  .bl-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+  .bl-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--kg-line-warm); }
+  .bl-card-img { height: 210px; overflow: hidden; background: var(--kg-warm); display: flex; align-items: center; justify-content: center; }
+  .bl-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease); }
   .bl-card:hover .bl-card-img img { transform: scale(1.05); }
-  .bl-card-ph { font-size: 3rem; }
-  .bl-card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
-  .bl-card-title { font-family: 'Fraunces', Georgia, serif; font-size: 1.15rem; font-weight: 400; color: #111827; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-  .bl-card-exc { font-size: 13.5px; color: #6B7280; line-height: 1.6; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; flex: 1; }
+  .bl-card-ph { font-family: var(--font-sans); font-size: 3rem; font-weight: 800; color: var(--kg-line-warm); }
+  .bl-card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .bl-card-title { font-family: var(--font-sans); font-size: 1.05rem; font-weight: 800; color: var(--kg-ink); line-height: 1.3; letter-spacing: -0.01em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .bl-card-exc { font-size: 13px; color: var(--kg-muted); line-height: 1.6; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; flex: 1; }
+  .bl-skel { height: 340px; border-radius: 14px; }
 
   @media (max-width: 900px) {
     .bl-featured { grid-template-columns: 1fr; }
@@ -151,12 +158,11 @@ import { environment } from '../../../environments/environment';
   }
   @media (max-width: 540px) {
     .bl-grid { grid-template-columns: 1fr; }
-    .bl-feat-body { padding: 24px; }
+    .bl-feat-body { padding: 22px; }
   }
-
   @media (max-width: 640px) {
-    .bl-hero { padding: 26px 0 30px; }
-    .bl-body { padding: 24px 0 40px; }
+    .bl-hero { padding: 28px 0 32px; }
+    .bl-body { padding: 28px 0 48px; }
   }
   `]
 })
@@ -168,7 +174,7 @@ export class BlogListComponent implements OnInit {
   constructor(private api: ApiService, private seo: SeoService) {}
 
   ngOnInit() {
-    this.seo.setMeta({ title: 'Blog & Recipes', description: 'Discover authentic Indian recipes, cooking tips, and more.' });
+    this.seo.setMeta({ title: 'Blog & Recipes | LAAVI STORE', description: 'Discover authentic Indian recipes, cooking tips, and more.' });
     this.api.getBlogs().subscribe({
       next: (r: any) => { if (r.success) this.posts.set(r.data || []); this.loading.set(false); },
       error: () => this.loading.set(false)

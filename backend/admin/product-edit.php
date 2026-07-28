@@ -282,14 +282,6 @@
             </div>
 
             <div class="card">
-                <div class="card-header"><h3>Countries</h3></div>
-                <div class="card-body">
-                    <p style="font-size:12px;color:var(--admin-text-muted);margin:0 0 10px;">Which marketplaces sell this product. A product can belong to several countries.</p>
-                    <div id="countryCheckboxes"></div>
-                </div>
-            </div>
-
-            <div class="card">
                 <div class="card-header"><h3>Images</h3></div>
                 <div class="card-body">
                     <div class="image-upload-area" onclick="document.getElementById('images').click()">
@@ -464,28 +456,6 @@ async function loadCategories() {
     } catch(e) {}
 }
 
-// ─── Countries (marketplace worlds) ───────────────────────────────────────
-async function loadCountryOptions() {
-    try {
-        const res = await api('/countries?all=1');
-        // Pre-check the active country when adding a new product
-        const activeCountry = getAdminCountry();
-        document.getElementById('countryCheckboxes').innerHTML = (res.data || []).map(c => {
-            const preChecked = (!productId && activeCountry && String(c.id) === String(activeCountry.id)) ? 'checked' : '';
-            return `<label class="form-check" style="margin-bottom:8px;display:flex;align-items:center;gap:6px;"><input type="checkbox" name="countries[]" value="${c.id}" class="cty-check" ${preChecked}> ${c.flag || ''} <strong>${c.name}</strong>${c.is_active==1?'':' <small style="color:var(--admin-text-muted)">(inactive)</small>'}</label>`;
-        }).join('') || '<span style="font-size:12px;color:var(--admin-text-muted)">No countries — add them under Countries.</span>';
-    } catch(e) {}
-}
-
-function validateCountries() {
-    const checked = document.querySelectorAll('.cty-check:checked');
-    if (checked.length === 0) {
-        alert('Please select at least one Country for this product.');
-        return false;
-    }
-    return true;
-}
-
 function flattenCategories(cats, prefix = '') {
     let result = [];
     cats.forEach(c => {
@@ -526,19 +496,21 @@ async function loadProduct() {
             if (cb) cb.checked = true;
         });
 
-        if (p.countries) p.countries.forEach(c => {
-            const cb = document.querySelector(`input[value="${c.id}"].cty-check`);
-            if (cb) cb.checked = true;
-        });
-
         if (p.images?.length) {
-            document.getElementById('existingImages').innerHTML = p.images.map(img =>
-                `<div class="preview-item" id="img-${img.id}">
-                    <img src="${img.image_path}" alt="${img.alt_text||''}">
+            document.getElementById('existingImages').innerHTML = p.images.map(img => {
+                // Handle: external URLs (http...), absolute paths (/uploads/...), relative paths
+                const src = img.image_path
+                    ? (img.image_path.startsWith('http') ? img.image_path
+                        : img.image_path.startsWith('/') ? img.image_path
+                        : '../' + img.image_path)
+                    : 'assets/placeholder-product.svg';
+                return `<div class="preview-item" id="img-${img.id}">
+                    <img src="${src}" alt="${img.alt_text||''}" onerror="this.src='assets/placeholder-product.svg'">
                     <button type="button" class="remove-btn" onclick="deleteProductImage(${img.id})">×</button>
-                </div>`
-            ).join('');
+                </div>`;
+            }).join('');
         }
+
 
         if (p.variations) renderVariations(p.variations);
         updateSeoPreview();
@@ -557,10 +529,6 @@ document.getElementById('productForm').addEventListener('submit', async function
     const cats = [...document.querySelectorAll('.cat-check:checked')].map(c => c.value);
     formData.delete('categories[]');
     formData.set('categories', JSON.stringify(cats));
-
-    const ctys = [...document.querySelectorAll('.cty-check:checked')].map(c => c.value);
-    formData.delete('countries[]');
-    formData.set('countries', JSON.stringify(ctys));
 
     try {
         // Always use POST — PHP doesn't populate $_FILES on PUT requests,
@@ -610,7 +578,7 @@ function renderVariations(variations) {
         <div class="variation-item" id="var-row-${v.id}">
             <div class="variation-thumb" onclick="editVariation(${v.id})" title="Click to edit">
                 ${v.image_path
-                    ? `<img src="${v.image_path}" alt="${v.name}"><div class="upload-hint"> Change</div>`
+                    ? `<img src="${v.image_path.startsWith('http') ? v.image_path : (v.image_path.startsWith('/') ? v.image_path : '../' + v.image_path)}" alt="${v.name}" onerror="this.src='assets/placeholder-product.svg'"><div class="upload-hint"> Change</div>`
                     : `<span></span><div class="upload-hint"> Add</div>`}
             </div>
             <div>
@@ -786,7 +754,7 @@ async function deleteProductImage(imageId) {
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────
-Promise.all([loadCategories(), loadCountryOptions()]).then(() => loadProduct());
+loadCategories().then(() => loadProduct());
 
 // ─── Quill rich-text editor (no API key needed) ────────
 if (typeof Quill !== 'undefined') {

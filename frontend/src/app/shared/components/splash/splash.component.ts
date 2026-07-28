@@ -7,8 +7,8 @@ import { SettingsService } from '../../../core/services/settings.service';
   template: `
   @if (show()) {
     <div class="sp" [class.out]="leaving()" aria-hidden="true">
-      <div class="sp-word">{{ settings.get('site_name', 'Kale Gida') }}</div>
-      <div class="sp-flags"><span>🇮🇳</span><span>🇫🇮</span><span>🇩🇪</span></div>
+      <div class="sp-word">{{ settings.get('site_name', 'LAAVI STORE') }}</div>
+      <div class="sp-flags"><span>🇮🇳</span><span>🇭🇰</span></div>
       <div class="sp-bar"><div class="sp-bar-fill"></div></div>
     </div>
   }
@@ -42,8 +42,7 @@ import { SettingsService } from '../../../core/services/settings.service';
     animation: spUp .7s cubic-bezier(0.22,1,0.36,1) .16s both;
   }
   .sp-flags span { animation: spBob 2.2s ease-in-out infinite; }
-  .sp-flags span:nth-child(2) { animation-delay: .25s; }
-  .sp-flags span:nth-child(3) { animation-delay: .5s; }
+  .sp-flags span:nth-child(2) { animation-delay: .3s; }
   @keyframes spBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 
   .sp-bar {
@@ -56,7 +55,7 @@ import { SettingsService } from '../../../core/services/settings.service';
   .sp-bar-fill {
     height: 100%;
     width: 0%;
-    background: #29B8D5;
+    background: #1B4C8C;
     border-radius: 99px;
     animation: spProg .85s ease .15s forwards;
   }

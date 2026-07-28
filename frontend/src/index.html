@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Kale Gida | Premium Groceries from India, Turkey &amp; Finland</title>
+  <title>LAAVI STORE | Indian Grocery Store in Hong Kong</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Kale Gida — a premium international grocery marketplace. Authentic flavours from India, Turkey and Finland, delivered fresh to your door.">
-  <meta name="keywords" content="international grocery, Indian groceries, Turkish groceries, Finnish groceries, premium food marketplace, Kale Gida">
-  <meta name="author" content="Kale Gida">
+  <meta name="description" content="LAAVI STORE — your local Indian grocery store in Hong Kong. Authentic spices, rice, atta, dals, snacks and household essentials delivered to your door.">
+  <meta name="keywords" content="Indian grocery Hong Kong, Indian store HK, Indian spices Hong Kong, LAAVI STORE, Indian food online HK">
+  <meta name="author" content="LAAVI STORE">
   <meta name="robots" content="index, follow">
 
   <!-- PWA / App branding — will be overridden by SettingsService at runtime -->
@@ -15,22 +15,22 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Kale Gida">
+  <meta name="apple-mobile-web-app-title" content="LAAVI STORE">
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/logo.svg">
 
   <!-- Open Graph — overridden dynamically by SettingsService -->
-  <meta property="og:title" content="Kale Gida">
-  <meta property="og:description" content="Premium groceries from India, Turkey and Finland — delivered fresh.">
+  <meta property="og:title" content="LAAVI STORE | Indian Grocery Store in Hong Kong">
+  <meta property="og:description" content="Your local Indian grocery store in Hong Kong — authentic spices, rice, atta, dals, snacks and more.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="">
   <meta property="og:image" content="/logo.svg">
-  <meta property="og:locale" content="en_FI">
+  <meta property="og:locale" content="en_HK">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Kale Gida">
-  <meta name="twitter:description" content="Premium groceries from India, Turkey and Finland — delivered fresh.">
+  <meta name="twitter:title" content="LAAVI STORE | Indian Grocery Store in Hong Kong">
+  <meta name="twitter:description" content="Your local Indian grocery store in Hong Kong.">
 
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="canonical" href="">
@@ -40,6 +40,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+
+  <!-- AOS - Animate On Scroll -->
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
 
   <!-- Preload critical assets -->
   <link rel="preload" href="/logo.svg" as="image" fetchpriority="high">
@@ -110,8 +113,8 @@
 
   <!-- Inline splash screen — visible IMMEDIATELY, before any JS executes -->
   <div id="app-splash" role="status" aria-label="Loading store">
-    <div id="app-splash-name">Kale Gida</div>
-    <div id="app-splash-flags"><span>🇮🇳</span><span>🇹🇷</span><span>🇫🇮</span></div>
+    <div id="app-splash-name">LAAVI STORE</div>
+    <div id="app-splash-flags"><span>🇮🇳</span><span>🇭🇰</span></div>
     <div id="app-splash-bar"></div>
   </div>
 
@@ -142,6 +145,200 @@
     setTimeout(function() {
       if (window.__appHideSplash) window.__appHideSplash();
     }, 4000);
+  </script>
+  <!-- AOS JS -->
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
+  <!-- ═══════════ LAAVI PREMIUM ANIMATIONS ═══════════ -->
+  <style>
+    /* ── Scroll Progress Bar ── */
+    #laavi-progress {
+      position: fixed; top: 0; left: 0; z-index: 10000;
+      height: 3px; width: 0%; background: linear-gradient(90deg, #29B8D5, #1A5C35, #C5A028);
+      border-radius: 0 2px 2px 0;
+      transition: width 0.08s linear;
+      pointer-events: none;
+    }
+
+    /* ── Custom Cursor (Desktop only) ── */
+    @media (pointer: fine) {
+      body { cursor: none !important; }
+      body * { cursor: none !important; }
+
+      #laavi-cursor-ring {
+        position: fixed; top: 0; left: 0; z-index: 9998;
+        width: 36px; height: 36px;
+        border: 2px solid rgba(26,92,53,0.7);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        transition: transform 0.12s cubic-bezier(0.22,1,0.36,1),
+                    width 0.25s cubic-bezier(0.22,1,0.36,1),
+                    height 0.25s cubic-bezier(0.22,1,0.36,1),
+                    border-color 0.25s, background 0.25s, opacity 0.3s;
+        will-change: transform;
+        mix-blend-mode: multiply;
+        opacity: 0;
+      }
+      #laavi-cursor-dot {
+        position: fixed; top: 0; left: 0; z-index: 9999;
+        width: 6px; height: 6px;
+        background: #1A5C35;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        transition: width 0.2s, height 0.2s, background 0.2s, opacity 0.3s;
+        will-change: transform;
+        opacity: 0;
+      }
+      #laavi-cursor-ring.active {
+        width: 56px; height: 56px;
+        background: rgba(26,92,53,0.08);
+        border-color: #1A5C35;
+      }
+      #laavi-cursor-ring.clicking {
+        width: 28px; height: 28px;
+        background: rgba(26,92,53,0.18);
+      }
+      #laavi-cursor-ring.on-dark {
+        border-color: rgba(255,255,255,0.8);
+        mix-blend-mode: screen;
+      }
+      #laavi-cursor-ring.on-dark.active {
+        background: rgba(255,255,255,0.08);
+      }
+    }
+
+    /* ── Button Ripple ── */
+    .btn-ripple-wrap { position: relative; overflow: hidden; }
+    .ripple-circle {
+      position: absolute; border-radius: 50%;
+      background: rgba(255,255,255,0.35);
+      transform: scale(0); animation: ripple-out 0.6s linear;
+      pointer-events: none;
+    }
+    @keyframes ripple-out {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* ── Floating section divider sparkles ── */
+    @keyframes laavi-float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
+      50% { transform: translateY(-12px) rotate(180deg); opacity: 1; }
+    }
+    .laavi-sparkle {
+      pointer-events: none;
+      animation: laavi-float var(--dur, 3s) ease-in-out var(--delay, 0s) infinite;
+    }
+
+    /* ── AOS custom overrides for more premium feel ── */
+    [data-aos] { backface-visibility: hidden; }
+  </style>
+
+  <script>
+    // ── Init AOS ──
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof AOS !== 'undefined') {
+        AOS.init({
+          duration: 700,
+          easing: 'cubic-bezier(0.22,1,0.36,1)',
+          once: true,
+          offset: 60,
+          delay: 0,
+          disable: window.innerWidth < 768
+        });
+      }
+    });
+
+    // ── Scroll Progress Bar ──
+    var progressEl = document.createElement('div');
+    progressEl.id = 'laavi-progress';
+    document.body.insertBefore(progressEl, document.body.firstChild);
+    window.addEventListener('scroll', function() {
+      var scrollTop = window.scrollY || document.documentElement.scrollTop;
+      var docH = document.documentElement.scrollHeight - window.innerHeight;
+      progressEl.style.width = (docH > 0 ? (scrollTop / docH) * 100 : 0) + '%';
+    }, { passive: true });
+
+    // ── Custom Cursor (desktop only) ──
+    if (window.matchMedia('(pointer: fine)').matches) {
+      var ring = document.createElement('div');
+      var dot  = document.createElement('div');
+      ring.id = 'laavi-cursor-ring';
+      dot.id  = 'laavi-cursor-dot';
+      document.body.appendChild(ring);
+      document.body.appendChild(dot);
+
+      var mouseX = 0, mouseY = 0, ringX = 0, ringY = 0, rafId;
+
+      document.addEventListener('mousemove', function(e) {
+        mouseX = e.clientX; mouseY = e.clientY;
+        dot.style.left = mouseX + 'px';
+        dot.style.top  = mouseY + 'px';
+        dot.style.opacity = '1';
+        ring.style.opacity = '1';
+        if (!rafId) rafId = requestAnimationFrame(animateRing);
+      }, { passive: true });
+
+      function animateRing() {
+        ringX += (mouseX - ringX) * 0.14;
+        ringY += (mouseY - ringY) * 0.14;
+        ring.style.left = ringX + 'px';
+        ring.style.top  = ringY + 'px';
+        rafId = requestAnimationFrame(animateRing);
+      }
+
+      document.addEventListener('mouseleave', function() {
+        ring.style.opacity = '0'; dot.style.opacity = '0';
+      });
+      document.addEventListener('mouseenter', function() {
+        ring.style.opacity = '1'; dot.style.opacity = '1';
+      });
+
+      // Expand on interactive elements
+      document.addEventListener('mouseover', function(e) {
+        var t = e.target.closest('a, button, [role="button"], .hm-cat, .hm-pr, .hm-prod-card, .hm-hkq-feat, .hm-rev-card, label, input, textarea, select');
+        if (t) { ring.classList.add('active'); dot.style.width = '4px'; dot.style.height = '4px'; }
+      });
+      document.addEventListener('mouseout', function(e) {
+        var t = e.target.closest('a, button, [role="button"], .hm-cat, .hm-pr, .hm-prod-card, .hm-hkq-feat, .hm-rev-card, label, input, textarea, select');
+        if (t) { ring.classList.remove('active'); dot.style.width = '6px'; dot.style.height = '6px'; }
+      });
+
+      // Click pulse
+      document.addEventListener('mousedown', function() { ring.classList.add('clicking'); });
+      document.addEventListener('mouseup',   function() { ring.classList.remove('clicking'); });
+
+      // Dark section detection
+      var darkSections = [];
+      function detectDarkSections() {
+        darkSections = Array.from(document.querySelectorAll('.hm-rev-card, .hm-rev, section[style*="background: #"]'));
+      }
+      window.addEventListener('scroll', function() {
+        var inDark = darkSections.some(function(el) {
+          var r = el.getBoundingClientRect();
+          return mouseY >= r.top && mouseY <= r.bottom && mouseX >= r.left && mouseX <= r.right;
+        });
+        if (inDark) ring.classList.add('on-dark');
+        else ring.classList.remove('on-dark');
+      }, { passive: true });
+      setTimeout(detectDarkSections, 2000);
+    }
+
+    // ── Ripple effect on buttons ──
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest('button, .btn, a.btn, [data-ripple]');
+      if (!btn) return;
+      btn.style.position = btn.style.position || 'relative';
+      btn.style.overflow = 'hidden';
+      var r = document.createElement('span');
+      var d = Math.max(btn.clientWidth, btn.clientHeight) * 2;
+      var rect = btn.getBoundingClientRect();
+      r.className = 'ripple-circle';
+      r.style.cssText = 'width:' + d + 'px;height:' + d + 'px;left:' + (e.clientX - rect.left - d/2) + 'px;top:' + (e.clientY - rect.top - d/2) + 'px';
+      btn.appendChild(r);
+      setTimeout(function() { r.remove(); }, 650);
+    });
   </script>
 </body>
 </html>

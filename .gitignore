@@ -15,6 +15,7 @@ php_server.pid
 # macOS
 .DS_Store
 __MACOSX/
+._*
 
 # IDE
 .vscode/

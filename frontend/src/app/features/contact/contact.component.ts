@@ -11,23 +11,18 @@ import { ApiService } from '../../core/services/api.service';
   standalone: true,
   imports: [FormsModule, RouterLink],
   template: `
-  <!-- Hero -->
   <section class="co-hero">
     <div class="container">
       <nav class="co-crumbs">
-        <a routerLink="/">Home</a><i>/</i><span>Contact</span>
+        <a routerLink="/">Home</a><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Contact</span>
       </nav>
-      <span class="co-eyebrow">Get in touch</span>
-      <h1>Contact <span class="co-saf">{{ settings.get('site_name', 'Us') }}</span></h1>
-      <p>Have a question, order issue, or wholesale enquiry?<br>We're here to help — typically reply within a few hours.</p>
+      <h1>Contact {{ settings.get('site_name', 'Us') }}</h1>
+      <p>Have a question, order issue, or wholesale enquiry? We're here to help — typically reply within a few hours.</p>
     </div>
   </section>
 
-  <!-- Body -->
   <section class="co-body">
     <div class="container co-layout">
-
-      <!-- FORM -->
       <div class="co-form-col">
         <div class="co-form-card">
           <h2>Send us a message</h2>
@@ -57,7 +52,7 @@ import { ApiService } from '../../core/services/api.service';
                 <input [(ngModel)]="form.email" name="email" type="email" placeholder="priya@example.com" required />
               </label>
               <label>Phone Number
-                <input [(ngModel)]="form.phone" name="phone" type="tel" placeholder="+358 40 000 0000" />
+                <input [(ngModel)]="form.phone" name="phone" type="tel" placeholder="+852 9XXX XXXX" />
               </label>
               <label>Subject *
                 <select [(ngModel)]="form.subject" name="subject" required>
@@ -87,57 +82,52 @@ import { ApiService } from '../../core/services/api.service';
         </div>
       </div>
 
-      <!-- INFO SIDEBAR -->
       <aside class="co-info-col">
-
         @if (settings.get('store_address') || settings.get('contact_address')) {
           <div class="co-info-card">
-            <div class="co-info-icon">📍</div>
+            <div class="co-info-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="var(--kg-forest)" stroke-width="1.8"/><circle cx="12" cy="10" r="3" stroke="var(--kg-forest)" stroke-width="1.8"/></svg>
+            </div>
             <div>
               <h4>Visit Us</h4>
               <p>{{ settings.get('store_address') || settings.get('contact_address') }}</p>
             </div>
           </div>
         }
-
         @if (settings.get('site_phone') || settings.get('contact_phone')) {
           <div class="co-info-card">
-            <div class="co-info-icon">📞</div>
+            <div class="co-info-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7 12.8 12.8 0 0 0 .7 2.8 2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5 12.8 12.8 0 0 0 2.8.7A2 2 0 0 1 22 16.9z" stroke="var(--kg-forest)" stroke-width="1.8"/></svg>
+            </div>
             <div>
               <h4>Call Us</h4>
               <p>{{ settings.get('site_phone') || settings.get('contact_phone') }}</p>
-              @if (settings.get('contact_hours')) {
-                <span>{{ settings.get('contact_hours') }}</span>
-              }
+              @if (settings.get('contact_hours')) { <span>{{ settings.get('contact_hours') }}</span> }
             </div>
           </div>
         }
-
         @if (settings.get('site_email') || settings.get('contact_email')) {
           <div class="co-info-card">
-            <div class="co-info-icon">✉️</div>
+            <div class="co-info-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="var(--kg-forest)" stroke-width="1.8"/><path d="M22 6l-10 7L2 6" stroke="var(--kg-forest)" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
             <div>
               <h4>Email Us</h4>
-              <a [href]="'mailto:' + (settings.get('site_email') || settings.get('contact_email'))">
-                {{ settings.get('site_email') || settings.get('contact_email') }}
-              </a>
+              <a [href]="'mailto:' + (settings.get('site_email') || settings.get('contact_email'))">{{ settings.get('site_email') || settings.get('contact_email') }}</a>
             </div>
           </div>
         }
-
         @if (settings.get('social_whatsapp')) {
           <div class="co-info-card">
-            <div class="co-info-icon">💬</div>
+            <div class="co-info-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--kg-forest)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+            </div>
             <div>
               <h4>WhatsApp</h4>
-              <a [href]="'https://wa.me/' + settings.get('social_whatsapp').replace(/\\D/g,'')" target="_blank" rel="noopener">
-                Chat with us
-              </a>
+              <a [href]="'https://wa.me/' + settings.get('social_whatsapp').replace(/\\D/g,'')" target="_blank" rel="noopener">Chat with us</a>
             </div>
           </div>
         }
-
-        <!-- Social Links -->
         @if (hasSocials()) {
           <div class="co-socials-block">
             <h4>Follow Us</h4>
@@ -152,94 +142,84 @@ import { ApiService } from '../../core/services/api.service';
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
                 </a>
               }
-              @if (settings.get('social_twitter')) {
-                <a [href]="settings.get('social_twitter')" target="_blank" rel="noopener" aria-label="X" class="co-soc">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                </a>
-              }
             </div>
           </div>
         }
-
-        <!-- Map -->
         @if (mapUrl()) {
           <div class="co-map-wrap">
             <iframe [src]="mapUrl()" width="100%" height="220" style="border:0;border-radius:12px;display:block" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Store location"></iframe>
           </div>
         }
       </aside>
-
     </div>
   </section>
   `,
   styles: [`
-  .container { max-width: 1300px; margin: 0 auto; padding: 0 24px; width: 100%; }
-  @media(min-width:1200px){.container{padding:0 48px}}
+  .container { max-width: 1360px; margin: 0 auto; padding: 0 24px; width: 100%; }
+  @media(min-width:768px){.container{padding:0 40px}}
+  @media(min-width:1200px){.container{padding:0 56px}}
 
   /* HERO */
-  .co-hero { background: #1F2937; padding: 48px 0 56px; position: relative; overflow: hidden; }
-  .co-crumbs { display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgba(255,255,255,.4); margin-bottom: 14px; }
-  .co-crumbs a { color: rgba(255,255,255,.65); transition: color .2s; }
-  .co-crumbs a:hover { color: #1E88A8; }
-  .co-crumbs i { font-style: normal; opacity: .35; }
-  .co-eyebrow { display: inline-block; font-family: 'Manrope', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #1E88A8; margin-bottom: 12px; }
-  .co-hero h1 { font-family: 'Fraunces', Georgia, serif; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 400; color: #fff; margin-bottom: 12px; }
-  .co-saf { color: #1E88A8; }
-  .co-hero p { font-size: 16px; color: rgba(255,255,255,.65); line-height: 1.7; }
+  .co-hero { background: var(--kg-dark); padding: 48px 0 56px; position: relative; overflow: hidden; }
+  .co-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 140% at 20% 60%, rgba(74,127,212,.2) 0%, transparent 70%); pointer-events: none; }
+  .co-hero .container { position: relative; z-index: 1; }
+  .co-crumbs { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: rgba(255,255,255,.38); margin-bottom: 16px; }
+  .co-crumbs a { color: rgba(255,255,255,.6); transition: color .2s; }
+  .co-crumbs a:hover { color: var(--kg-forest-lt); }
+  .co-crumbs svg { opacity: .35; flex-shrink: 0; }
+  .co-hero h1 { font-family: var(--font-sans); font-size: clamp(1.7rem, 3.5vw, 2.6rem); font-weight: 800; color: var(--kg-cream); margin-bottom: 10px; letter-spacing: -0.02em; }
+  .co-hero p { font-size: 15px; color: rgba(255,255,255,.55); max-width: 520px; line-height: 1.7; }
 
   /* BODY */
-  .co-body { padding: 48px 0 64px; background: #FFFFFF; }
+  .co-body { padding: 48px 0 64px; background: var(--kg-cream); }
   .co-layout { display: grid; grid-template-columns: 1fr 340px; gap: 36px; align-items: start; }
 
   /* FORM CARD */
-  .co-form-card { background: #fff; border: 1.5px solid #E5E7EB; border-radius: 20px; padding: 32px; }
-  .co-form-card h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.5rem; font-weight: 400; color: #111827; margin-bottom: 6px; }
-  .co-form-sub { font-size: 14px; color: #6B7280; margin-bottom: 24px; }
-
-  /* FORM FIELDS */
+  .co-form-card { background: var(--kg-paper); border: 1px solid var(--kg-line-lt); border-radius: 14px; padding: 32px; }
+  .co-form-card h2 { font-family: var(--font-sans); font-size: 1.35rem; font-weight: 800; color: var(--kg-ink); margin-bottom: 6px; letter-spacing: -0.01em; }
+  .co-form-sub { font-size: 14px; color: var(--kg-muted); margin-bottom: 24px; }
   .co-form { display: flex; flex-direction: column; gap: 16px; }
   .co-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .co-form label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: #111827; font-family: 'Manrope', sans-serif; }
+  .co-form label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--kg-ink); font-family: var(--font-sans); }
   .co-form input, .co-form select, .co-form textarea {
-    padding: 11px 14px; border: 1.5px solid #E5E7EB; border-radius: 10px;
-    font-size: 14px; font-family: 'Manrope', sans-serif; color: #111827;
-    transition: border-color .2s; outline: none; background: #fff;
+    padding: 11px 14px; border: 1px solid var(--kg-line); border-radius: var(--r);
+    font-size: 14px; font-family: var(--font-sans); color: var(--kg-ink);
+    transition: border-color .2s; outline: none; background: var(--kg-paper);
   }
-  .co-form input::placeholder, .co-form textarea::placeholder { color: #9CA3AF; }
-  .co-form input:focus, .co-form select:focus, .co-form textarea:focus { border-color: #1E88A8; box-shadow: 0 0 0 3px rgba(30,136,168,.1); }
+  .co-form input:focus, .co-form select:focus, .co-form textarea:focus { border-color: var(--kg-forest); box-shadow: 0 0 0 3px var(--kg-forest-bg); }
+  .co-form input::placeholder, .co-form textarea::placeholder { color: var(--kg-faint); }
   .co-form textarea { resize: vertical; min-height: 120px; }
-  .co-form select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23718096' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
+  .co-form select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2393A0B8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
   .co-form button {
     display: flex; align-items: center; justify-content: center; gap: 10px;
-    background: #1E88A8; color: #fff; border: none;
-    border-radius: 12px; padding: 15px;
-    font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 800;
-    cursor: pointer; transition: all .25s; box-shadow: 0 6px 20px rgba(30,136,168,.25);
+    background: var(--kg-forest); color: var(--kg-cream); border: none;
+    border-radius: var(--r-lg); padding: 15px;
+    font-family: var(--font-sans); font-size: 15px; font-weight: 800;
+    cursor: pointer; transition: all .25s; box-shadow: var(--shadow-forest);
   }
-  .co-form button:hover:not(:disabled) { background: #16708C; transform: translateY(-1px); }
+  .co-form button:hover:not(:disabled) { background: var(--kg-forest-dk); transform: translateY(-2px); }
   .co-form button:disabled { opacity: .6; cursor: not-allowed; }
-  .co-err { font-size: 13px; color: #DC2626; margin: 0; }
+  .co-err { font-size: 13px; color: var(--kg-clay); margin: 0; }
 
-  /* SUCCESS */
-  .co-success { display: flex; align-items: flex-start; gap: 14px; background: #E9F7FB; border: 1.5px solid rgba(41,184,213,.2); border-radius: 14px; padding: 20px; }
-  .co-success-icon { width: 44px; height: 44px; border-radius: 50%; background: #29B8D5; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .co-success strong { display: block; font-size: 16px; color: #111827; margin-bottom: 4px; font-family: 'Manrope', sans-serif; }
-  .co-success p { font-size: 14px; color: #6B7280; margin: 0; }
+  .co-success { display: flex; align-items: flex-start; gap: 14px; background: var(--kg-forest-bg); border: 1px solid var(--kg-forest-bg2); border-radius: 12px; padding: 20px; }
+  .co-success-icon { width: 44px; height: 44px; border-radius: var(--r-full); background: var(--kg-forest); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .co-success strong { display: block; font-size: 16px; color: var(--kg-ink); margin-bottom: 4px; font-family: var(--font-sans); }
+  .co-success p { font-size: 14px; color: var(--kg-muted); margin: 0; }
 
   /* INFO SIDEBAR */
-  .co-info-col { display: flex; flex-direction: column; gap: 14px; position: sticky; top: calc(var(--header-height,156px) + 20px); }
-  .co-info-card { display: flex; align-items: flex-start; gap: 14px; background: #fff; border: 1.5px solid #E5E7EB; border-radius: 14px; padding: 18px; }
-  .co-info-icon { font-size: 22px; flex-shrink: 0; }
-  .co-info-card h4 { font-size: 13px; font-weight: 800; color: #111827; margin-bottom: 4px; font-family: 'Manrope', sans-serif; }
-  .co-info-card p, .co-info-card a, .co-info-card span { font-size: 14px; color: #6B7280; margin: 0; line-height: 1.5; }
-  .co-info-card a { color: #1E88A8; font-weight: 700; }
-  .co-info-card a:hover { text-decoration: underline; }
-  .co-socials-block { background: #fff; border: 1.5px solid #E5E7EB; border-radius: 14px; padding: 18px; }
-  .co-socials-block h4 { font-size: 13px; font-weight: 800; color: #111827; margin-bottom: 12px; font-family: 'Manrope', sans-serif; }
+  .co-info-col { display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(var(--header-height) + 20px); }
+  .co-info-card { display: flex; align-items: flex-start; gap: 14px; background: var(--kg-paper); border: 1px solid var(--kg-line-lt); border-radius: 12px; padding: 18px; }
+  .co-info-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--kg-forest-bg); display: grid; place-items: center; flex-shrink: 0; }
+  .co-info-card h4 { font-size: 13px; font-weight: 800; color: var(--kg-ink); margin-bottom: 4px; font-family: var(--font-sans); }
+  .co-info-card p, .co-info-card a, .co-info-card span { font-size: 13.5px; color: var(--kg-muted); margin: 0; line-height: 1.5; }
+  .co-info-card a { color: var(--kg-forest); font-weight: 700; transition: color .2s; }
+  .co-info-card a:hover { color: var(--kg-forest-dk); }
+  .co-socials-block { background: var(--kg-paper); border: 1px solid var(--kg-line-lt); border-radius: 12px; padding: 18px; }
+  .co-socials-block h4 { font-size: 13px; font-weight: 800; color: var(--kg-ink); margin-bottom: 10px; font-family: var(--font-sans); }
   .co-socials { display: flex; gap: 8px; }
-  .co-soc { width: 38px; height: 38px; border-radius: 10px; background: #F7FAFC; border: 1.5px solid #E5E7EB; display: grid; place-items: center; color: #6B7280; transition: all .22s; }
-  .co-soc:hover { background: #1E88A8; border-color: #1E88A8; color: #fff; transform: translateY(-2px); }
-  .co-map-wrap { border-radius: 14px; overflow: hidden; }
+  .co-soc { width: 36px; height: 36px; border-radius: 8px; background: var(--kg-warm); border: 1px solid var(--kg-line); display: grid; place-items: center; color: var(--kg-muted); transition: all .22s; }
+  .co-soc:hover { background: var(--kg-forest); border-color: var(--kg-forest); color: var(--kg-cream); transform: translateY(-2px); }
+  .co-map-wrap { border-radius: 12px; overflow: hidden; }
 
   @media (max-width: 900px) {
     .co-layout { grid-template-columns: 1fr; }
@@ -248,8 +228,9 @@ import { ApiService } from '../../core/services/api.service';
   }
 
   @media (max-width: 640px) {
-    .co-hero { padding: 26px 0 30px; }
-    .co-body { padding: 24px 0 40px; }
+    .co-hero { padding: 28px 0 32px; }
+    .co-body { padding: 28px 0 44px; }
+    .co-form-card { padding: 20px 16px; }
   }
   `]
 })
@@ -262,7 +243,7 @@ export class ContactComponent implements OnInit {
   constructor(public settings: SettingsService, private seo: SeoService, private api: ApiService, private sanitizer: DomSanitizer) {}
 
   ngOnInit() {
-    this.seo.setMeta({ title: 'Contact Us', description: 'Get in touch with our customer support team.' });
+    this.seo.setMeta({ title: 'Contact Us | LAAVI STORE', description: 'Get in touch with our customer support team.' });
   }
 
   mapUrl(): SafeResourceUrl | null {
@@ -272,7 +253,7 @@ export class ContactComponent implements OnInit {
   }
 
   hasSocials(): boolean {
-    return !!(this.settings.get('social_facebook') || this.settings.get('social_instagram') || this.settings.get('social_twitter'));
+    return !!(this.settings.get('social_facebook') || this.settings.get('social_instagram'));
   }
 
   submit(e: Event) {

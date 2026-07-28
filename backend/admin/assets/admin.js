@@ -5,45 +5,8 @@
 const API_BASE = '/api';
 const ADMIN_BASE = '/admin';
 
-// ========== COUNTRY CONTEXT ==========
-// Persistent country selection — stored in localStorage, survives page navigation
-
-function getAdminCountry() {
-    try {
-        var stored = localStorage.getItem('admin_country');
-        return stored ? JSON.parse(stored) : null; // null = "All Countries"
-    } catch(e) { return null; }
-}
-
-function setAdminCountry(country) {
-    if (country) {
-        localStorage.setItem('admin_country', JSON.stringify(country));
-    } else {
-        localStorage.removeItem('admin_country');
-    }
-    window.location.reload();
-}
-
-function getCountryParam() {
-    var c = getAdminCountry();
-    return c ? '&country_id=' + c.id : '';
-}
-
-function getCountryParamQ() {
-    var c = getAdminCountry();
-    return c ? '?country_id=' + c.id : '';
-}
-
-function applyCountryToUrl(endpoint) {
-    var c = getAdminCountry();
-    if (!c) return endpoint;
-    var countryAware = ['/products', '/categories', '/dashboard', '/orders', '/inventory'];
-    var matches = countryAware.some(function(p){ return endpoint.startsWith(p); });
-    if (!matches) return endpoint;
-    var sep = endpoint.indexOf('?') >= 0 ? '&' : '?';
-    return endpoint + sep + 'country_id=' + c.id;
-}
-
+// Currency symbol — loaded from /api/settings on init; safe Unicode fallback for €
+let adminCurrencySymbol = '\u20AC';
 
 // Read token from localStorage OR cookie (set by login page)
 function getStoredToken() {
@@ -239,7 +202,26 @@ function removePreviewImage(btn, inputId, idx) {
 
 // ========== FORMAT HELPERS ==========
 function formatCurrency(amount) {
-    return '€' + parseFloat(amount).toLocaleString('en-IE', { minimumFractionDigits: 2 });
+    return adminCurrencySymbol + parseFloat(amount).toLocaleString('en-IE', { minimumFractionDigits: 2 });
+}
+
+// Load currency symbol from site settings (runs once after auth resolves)
+function loadAdminCurrencySymbol() {
+    var token = getStoredToken();
+    if (!token) return;
+    fetch(API_BASE + '/settings', {
+        headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(json) {
+        if (json && json.data && json.data.currency_symbol) {
+            // Fix common DB encoding corruption: â€ (latin1 mis-read of UTF-8 €)
+            var sym = json.data.currency_symbol;
+            if (sym === '\u00e2\u201a\u00ac' || sym === '\u00e2\u0082\u00ac') sym = '\u20AC';
+            adminCurrencySymbol = sym;
+        }
+    })
+    .catch(function() { /* keep default */ });
 }
 
 function formatDate(dateStr) {
@@ -256,11 +238,20 @@ function getStatusBadge(status) {
 }
 
 // ========== IMAGE URL HELPER ==========
-function imgUrl(path, fallback = 'uploads/placeholder.png') {
-    if (!path) path = fallback;
-    // Strip leading slash to avoid ..//-style double-slash
-    path = path.replace(/^\//, '');
-    return '../' + path;
+/**
+ * Resolve any image path to a usable <img src> value.
+ *   - External URLs  https://cdn.shopify.com/...   → used as-is
+ *   - Absolute paths /uploads/products/file.jpg    → used as-is
+ *   - Relative paths uploads/products/file.jpg     → prepend /
+ *   - empty / null                                 → placeholder
+ */
+function imgUrl(path) {
+    if (!path) return '/admin/assets/placeholder-product.svg';
+    const p = String(path).trim();
+    if (!p) return '/admin/assets/placeholder-product.svg';
+    if (p.startsWith('http://') || p.startsWith('https://')) return p;
+    if (p.startsWith('/')) return p;
+    return '/' + p;
 }
 
 // ========== SLUG GENERATOR ==========
@@ -279,12 +270,13 @@ function autoSlug(nameInput, slugInput) {
     }
 }
 
+
+
 // ========== SEO PREVIEW ==========
 function updateSeoPreview() {
     const title = document.getElementById('meta_title')?.value || document.getElementById('name')?.value || '';
-    const desc = document.getElementById('meta_description')?.value || '';
-    const slug = document.getElementById('slug')?.value || '';
-    
+    const desc  = document.getElementById('meta_description')?.value || '';
+    const slug  = document.getElementById('slug')?.value || '';
     const preview = document.getElementById('seoPreview');
     if (preview) {
         preview.innerHTML = `
@@ -299,7 +291,7 @@ function updateSeoPreview() {
 function confirmDelete(type, id, name) {
     if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
         api(`/${type}/${id}`, 'DELETE').then(() => {
-            showAlert(`${type.slice(0,-1)} deleted successfully`);
+            showAlert(`${type.slice(0, -1)} deleted successfully`);
             setTimeout(() => location.reload(), 500);
         });
     }
@@ -308,20 +300,23 @@ function confirmDelete(type, id, name) {
 // ========== INIT ==========
 document.addEventListener('DOMContentLoaded', () => {
     authToken = localStorage.getItem('admin_token') || '';
-    
-    // Set active nav
+
+    // Set active nav item
     const currentPage = window.location.pathname.split('/').pop();
     document.querySelectorAll('.sidebar-nav a').forEach(link => {
         if (link.getAttribute('href') === currentPage) link.classList.add('active');
     });
-    
-    // Admin user info
-    const user = JSON.parse(localStorage.getItem('admin_user') || '{}');
+
+    // Admin user avatar initial
+    const user   = JSON.parse(localStorage.getItem('admin_user') || '{}');
     const avatar = document.querySelector('.admin-avatar');
     if (avatar && user.name) avatar.textContent = user.name.charAt(0).toUpperCase();
+
+    // Load currency symbol from settings so formatCurrency uses the correct symbol
+    loadAdminCurrencySymbol();
 });
 
-// CSS animation
+// CSS slide-in animation
 const style = document.createElement('style');
 style.textContent = '@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}';
 document.head.appendChild(style);

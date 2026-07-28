@@ -227,13 +227,6 @@
           <label>Priority / Sort Order</label>
           <input type="number" id="bSort" class="form-control" value="0" min="0">
         </div>
-        <div class="form-group">
-          <label>Country</label>
-          <select id="bCountry" class="form-control">
-            <option value="">All countries</option>
-          </select>
-          <small style="color:var(--admin-text-muted);font-size:11.5px;">Show this banner only in one marketplace, or everywhere.</small>
-        </div>
       </div>
 
       <div class="section-divider">Scheduling</div>
@@ -325,7 +318,6 @@ function showModal(b = null) {
   document.getElementById('bStartsAt').value    = b?.starts_at ? b.starts_at.slice(0,16) : '';
   document.getElementById('bEndsAt').value      = b?.ends_at   ? b.ends_at.slice(0,16)   : '';
   document.getElementById('bActive').checked    = !b || b.is_active == 1;
-  document.getElementById('bCountry').value     = b?.country_id || '';
 
   // Reset file inputs
   ['bDesktopFile','bMobileFile','bVideoFile','bMobileVideoFile','bFallbackFile'].forEach(id => {
@@ -411,7 +403,6 @@ async function saveBanner() {
   fd.set('starts_at',    document.getElementById('bStartsAt').value);
   fd.set('ends_at',      document.getElementById('bEndsAt').value);
   fd.set('is_active',    document.getElementById('bActive').checked ? '1' : '0');
-  fd.set('country_id',   document.getElementById('bCountry').value);
   fd.set('position',     'hero');
 
   if (id) {
@@ -459,16 +450,7 @@ async function saveBanner() {
     }
     showAlert(id ? 'Slide updated!' : 'Slide created!');
     closeModal();
-    async function loadBannerCountryOptions() {
-  try {
-    const res = await api('/countries?all=1');
-    const sel = document.getElementById('bCountry');
-    sel.innerHTML = '<option value="">All countries</option>' + (res.data || []).map(c =>
-      `<option value="${c.id}">${c.flag || ''} ${c.name}</option>`).join('');
-  } catch(e) {}
-}
-loadBannerCountryOptions();
-loadBanners();
+    loadBanners();
   } catch(e) { showAlert('Error: ' + (e.message || 'Upload failed. Video may be too large (max 50MB).'), 'danger'); }
   saveBtn.textContent = 'Save Slide';
 }
@@ -485,13 +467,23 @@ function uploadWithProgress(fd) {
     });
     xhr.addEventListener('load', () => {
       try {
-        const res = JSON.parse(xhr.responseText);
+        const text = xhr.responseText;
+        const jsonStart = text.indexOf('{');
+        const jsonText = jsonStart >= 0 ? text.slice(jsonStart) : text;
+        let res;
+        try {
+          res = JSON.parse(jsonText);
+        } catch (parseErr) {
+          const clean = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 150);
+          reject(new Error(clean || 'Upload failed. Ensure file size is within limits.'));
+          return;
+        }
         if (xhr.status >= 200 && xhr.status < 300 && res.success !== false) {
           resolve(res);
         } else {
           reject(new Error(res.message || res.error || 'Upload failed'));
         }
-      } catch(e) { reject(new Error('Invalid server response')); }
+      } catch(e) { reject(new Error(e.message || 'Server error occurred during video upload')); }
     });
     xhr.addEventListener('error', () => reject(new Error('Network error. Check connection.')));
     xhr.addEventListener('timeout', () => reject(new Error('Upload timed out. Try a smaller file.')));

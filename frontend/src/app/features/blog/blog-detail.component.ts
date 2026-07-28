@@ -11,60 +11,44 @@ import { environment } from '../../../environments/environment';
   template: `
   @if (loading()) {
     <div class="container bd-load">
-      <div class="skeleton" style="height:420px;border-radius:20px;margin-bottom:40px"></div>
-      <div style="max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
+      <div class="skeleton bd-skel-cover"></div>
+      <div style="max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
         <div class="skeleton" style="height:14px;width:100px;border-radius:8px"></div>
-        <div class="skeleton" style="height:48px;border-radius:8px"></div>
-        <div class="skeleton" style="height:48px;width:70%;border-radius:8px"></div>
+        <div class="skeleton" style="height:44px;border-radius:8px"></div>
+        <div class="skeleton" style="height:44px;width:65%;border-radius:8px"></div>
         <div class="skeleton" style="height:14px;width:200px;border-radius:8px"></div>
-        <div class="skeleton" style="height:200px;border-radius:8px;margin-top:24px"></div>
+        <div class="skeleton" style="height:200px;border-radius:10px;margin-top:20px"></div>
       </div>
     </div>
   } @else if (post(); as p) {
-
-    <!-- Hero Image -->
     @if (p.featured_image) {
       <div class="bd-cover">
         <img [src]="media(p.featured_image)" [alt]="p.title" fetchpriority="high" />
         <div class="bd-cover-overlay"></div>
       </div>
     }
-
-    <!-- Article -->
     <article class="container bd-article">
-
       <nav class="bd-crumbs" aria-label="Breadcrumb">
-        <a routerLink="/">Home</a><i>/</i>
-        <a routerLink="/blog">Blog</a><i>/</i>
+        <a routerLink="/">Home</a><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <a routerLink="/blog">Blog</a><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>{{ p.title }}</span>
       </nav>
-
       <header class="bd-header">
         @if (p.category) { <span class="bd-tag">{{ p.category }}</span> }
         <h1 class="bd-title">{{ p.title }}</h1>
         <div class="bd-meta">
-          @if (p.author) { <span>✍️ {{ p.author }}</span> }
-          @if (p.published_at) { <span>📅 {{ formatDate(p.published_at) }}</span> }
-          @if (p.read_time) { <span>⏱ {{ p.read_time }} min read</span> }
+          @if (p.author) { <span>{{ p.author }}</span> }
+          @if (p.published_at) { <span>{{ formatDate(p.published_at) }}</span> }
+          @if (p.read_time) { <span>{{ p.read_time }} min read</span> }
         </div>
       </header>
-
-      @if (p.excerpt) {
-        <p class="bd-lede">{{ p.excerpt }}</p>
-      }
-
+      @if (p.excerpt) { <p class="bd-lede">{{ p.excerpt }}</p> }
       <div class="bd-body" [innerHTML]="p.content || p.body || '<p>Content coming soon.</p>'"></div>
-
-      <!-- Tags -->
       @if (p.tags?.length) {
         <div class="bd-tags">
-          @for (t of p.tags; track t) {
-            <span class="bd-tag-chip">{{ t }}</span>
-          }
+          @for (t of p.tags; track t) { <span class="bd-tag-chip">{{ t }}</span> }
         </div>
       }
-
-      <!-- Back -->
       <div class="bd-footer-nav">
         <a routerLink="/blog" class="bd-back">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -72,8 +56,6 @@ import { environment } from '../../../environments/environment';
         </a>
       </div>
     </article>
-
-    <!-- Related posts -->
     @if (related().length) {
       <section class="bd-related">
         <div class="container">
@@ -83,12 +65,12 @@ import { environment } from '../../../environments/environment';
               <a class="bd-rel-card" [routerLink]="['/blog', r.slug]">
                 <div class="bd-rel-img">
                   @if (r.featured_image) { <img [src]="media(r.featured_image)" [alt]="r.title" loading="lazy" /> }
-                  @else { <div class="bd-rel-ph">📖</div> }
+                  @else { <span class="bd-rel-ph">{{ (r.title || '?')[0] }}</span> }
                 </div>
                 <div class="bd-rel-body">
                   @if (r.category) { <span class="bd-tag">{{ r.category }}</span> }
                   <h3>{{ r.title }}</h3>
-                  <span class="bd-read-link">Read →</span>
+                  <span class="bd-read-link">Read<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 </div>
               </a>
             }
@@ -96,87 +78,89 @@ import { environment } from '../../../environments/environment';
         </div>
       </section>
     }
-
   } @else if (!loading()) {
-    <div class="container empty-state" style="padding:80px 0">
-      <div style="font-size:3rem;margin-bottom:16px">📄</div>
+    <div class="container empty-state" style="padding:72px 0">
       <h3>Article not found</h3>
       <p>This article may have been removed or the URL is incorrect.</p>
-      <a routerLink="/blog" class="bd-back" style="margin-top:20px;display:inline-flex">← Back to Blog</a>
+      <a routerLink="/blog" class="btn btn-outline" style="margin-top:16px">Back to Blog</a>
     </div>
   }
   `,
   styles: [`
-  .container { max-width: 1300px; margin: 0 auto; padding: 0 24px; width: 100%; }
-  @media(min-width:1200px){.container{padding:0 48px}}
-  .skeleton { background: linear-gradient(90deg,#EEF2F6 25%,#F7FAFC 50%,#EEF2F6 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+  .container { max-width: 1360px; margin: 0 auto; padding: 0 24px; width: 100%; }
+  @media(min-width:768px){.container{padding:0 40px}}
+  @media(min-width:1200px){.container{padding:0 56px}}
+  .skeleton { background: linear-gradient(90deg, var(--kg-sand-2) 25%, var(--kg-warm) 50%, var(--kg-sand-2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
   @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
   /* COVER */
-  .bd-cover { position: relative; height: 480px; overflow: hidden; }
+  .bd-cover { position: relative; height: 420px; overflow: hidden; }
   .bd-cover img { width: 100%; height: 100%; object-fit: cover; }
-  .bd-cover-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(17,24,39,.5) 0%, transparent 60%); }
-  .bd-load { padding: 40px 0 60px; }
+  .bd-cover-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(13,39,80,.45) 0%, transparent 60%); }
+  .bd-load { padding: 36px 0 56px; }
+  .bd-skel-cover { height: 380px; border-radius: 16px; margin-bottom: 36px; }
 
   /* ARTICLE */
-  .bd-article { max-width: 740px; margin: 0 auto; padding: 40px 24px 60px; }
-
-  /* BREADCRUMB */
-  .bd-crumbs { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #9CA3AF; margin-bottom: 24px; flex-wrap: wrap; }
-  .bd-crumbs a { color: #6B7280; transition: color .2s; }
-  .bd-crumbs a:hover { color: #1E88A8; }
-  .bd-crumbs i { font-style: normal; opacity: .4; }
+  .bd-article { max-width: 740px; margin: 0 auto; padding: 44px 24px 56px; }
+  .bd-crumbs { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--kg-faint); margin-bottom: 22px; flex-wrap: wrap; }
+  .bd-crumbs a { color: var(--kg-muted); transition: color .2s; font-weight: 600; }
+  .bd-crumbs a:hover { color: var(--kg-forest); }
+  .bd-crumbs svg { opacity: .4; flex-shrink: 0; }
 
   /* HEADER */
-  .bd-header { margin-bottom: 28px; }
-  .bd-tag { display: inline-block; font-family: 'Manrope', sans-serif; font-size: 10.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #1E88A8; margin-bottom: 12px; }
-  .bd-title { font-family: 'Fraunces', Georgia, serif; font-size: clamp(1.6rem, 4vw, 2.8rem); font-weight: 400; color: #111827; line-height: 1.2; margin-bottom: 18px; }
-  .bd-meta { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; color: #9CA3AF; font-family: 'Manrope', sans-serif; }
+  .bd-header { margin-bottom: 24px; }
+  .bd-tag { display: inline-block; font-family: var(--font-sans); font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--kg-forest); margin-bottom: 12px; }
+  .bd-title { font-family: var(--font-sans); font-size: clamp(1.5rem, 3.5vw, 2.4rem); font-weight: 800; color: var(--kg-ink); line-height: 1.18; margin-bottom: 16px; letter-spacing: -0.02em; }
+  .bd-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--kg-faint); font-family: var(--font-sans); }
 
   /* LEDE */
-  .bd-lede { font-size: 17px; color: #4A5568; line-height: 1.8; font-style: italic; border-left: 3px solid #1E88A8; padding-left: 20px; margin-bottom: 32px; }
+  .bd-lede { font-size: 17px; color: var(--kg-ink-2); line-height: 1.8; border-left: 3px solid var(--kg-forest); padding-left: 18px; margin-bottom: 32px; }
 
   /* BODY */
-  .bd-body { font-size: 16px; color: #4A5568; line-height: 1.9; }
-  .bd-body h2, .bd-body h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 400; color: #111827; margin: 32px 0 14px; }
-  .bd-body h2 { font-size: 1.5rem; }
-  .bd-body h3 { font-size: 1.2rem; }
-  .bd-body p { margin-bottom: 18px; }
-  .bd-body img { max-width: 100%; border-radius: 12px; margin: 24px 0; }
-  .bd-body ul, .bd-body ol { padding-left: 24px; margin-bottom: 18px; }
+  .bd-body { font-size: 15.5px; color: var(--kg-ink-2); line-height: 1.9; }
+  .bd-body h2, .bd-body h3 { font-family: var(--font-sans); font-weight: 800; color: var(--kg-ink); margin: 28px 0 14px; letter-spacing: -0.01em; }
+  .bd-body h2 { font-size: 1.45rem; }
+  .bd-body h3 { font-size: 1.15rem; }
+  .bd-body p { margin-bottom: 16px; }
+  .bd-body img { max-width: 100%; border-radius: 10px; margin: 20px 0; }
+  .bd-body ul, .bd-body ol { padding-left: 22px; margin-bottom: 16px; }
   .bd-body li { margin-bottom: 6px; }
-  .bd-body a { color: #1E88A8; text-decoration: underline; }
-  .bd-body blockquote { border-left: 3px solid #1E88A8; padding-left: 20px; margin: 24px 0; font-style: italic; color: #6B7280; }
+  .bd-body a { color: var(--kg-forest); font-weight: 700; }
+  .bd-body a:hover { color: var(--kg-forest-dk); }
+  .bd-body blockquote { border-left: 3px solid var(--kg-forest); padding-left: 18px; margin: 22px 0; color: var(--kg-muted); }
 
   /* TAGS */
-  .bd-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 40px; padding-top: 24px; border-top: 1px solid #E5E7EB; }
-  .bd-tag-chip { font-size: 13px; font-weight: 700; padding: 5px 14px; border-radius: 999px; border: 1.5px solid #E5E7EB; color: #6B7280; font-family: 'Manrope', sans-serif; }
+  .bd-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--kg-line-lt); }
+  .bd-tag-chip { font-size: 12.5px; font-weight: 700; padding: 5px 14px; border-radius: var(--r-full); border: 1px solid var(--kg-line); color: var(--kg-muted); font-family: var(--font-sans); }
 
   /* BACK */
-  .bd-footer-nav { margin-top: 40px; padding-top: 32px; border-top: 1px solid #E5E7EB; }
-  .bd-back { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #6B7280; transition: color .2s; font-family: 'Manrope', sans-serif; }
-  .bd-back:hover { color: #1E88A8; }
+  .bd-footer-nav { margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--kg-line-lt); }
+  .bd-back { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: var(--kg-muted); transition: color .2s; font-family: var(--font-sans); }
+  .bd-back:hover { color: var(--kg-forest); }
 
   /* RELATED */
-  .bd-related { padding: 56px 0; background: #F7FAFC; }
-  .bd-related h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.6rem; font-weight: 400; color: #111827; margin-bottom: 28px; }
+  .bd-related { padding: 56px 0; background: var(--kg-warm); }
+  .bd-related h2 { font-family: var(--font-sans); font-size: 1.45rem; font-weight: 800; color: var(--kg-ink); margin-bottom: 28px; letter-spacing: -0.01em; }
   .bd-related-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
-  .bd-rel-card { background: #fff; border: 1.5px solid #E5E7EB; border-radius: 16px; overflow: hidden; text-decoration: none; display: flex; flex-direction: column; transition: all .3s; }
-  .bd-rel-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(17,24,39,.1); }
-  .bd-rel-img { height: 180px; overflow: hidden; background: #F7FAFC; display: flex; align-items: center; justify-content: center; }
-  .bd-rel-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+  .bd-rel-card { background: var(--kg-paper); border: 1px solid var(--kg-line-lt); border-radius: 14px; overflow: hidden; text-decoration: none; display: flex; flex-direction: column; transition: all .35s var(--ease); }
+  .bd-rel-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+  .bd-rel-img { height: 170px; overflow: hidden; background: var(--kg-warm); display: flex; align-items: center; justify-content: center; }
+  .bd-rel-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease); }
   .bd-rel-card:hover .bd-rel-img img { transform: scale(1.05); }
-  .bd-rel-ph { font-size: 2.5rem; }
+  .bd-rel-ph { font-family: var(--font-sans); font-size: 2.5rem; font-weight: 800; color: var(--kg-line-warm); }
   .bd-rel-body { padding: 16px; }
-  .bd-rel-body h3 { font-family: 'Fraunces', Georgia, serif; font-size: 1rem; font-weight: 400; color: #111827; margin: 6px 0 10px; line-height: 1.3; }
-  .bd-read-link { font-size: 13px; font-weight: 700; color: #1E88A8; font-family: 'Manrope', sans-serif; }
+  .bd-rel-body h3 { font-family: var(--font-sans); font-size: .95rem; font-weight: 800; color: var(--kg-ink); margin: 4px 0 8px; line-height: 1.3; letter-spacing: -0.01em; }
+  .bd-read-link { font-size: 12px; font-weight: 800; color: var(--kg-forest); font-family: var(--font-sans); display: inline-flex; align-items: center; gap: 5px; transition: gap .25s; }
+  .bd-rel-card:hover .bd-read-link { gap: 8px; }
 
   @media (max-width: 768px) {
-    .bd-cover { height: 280px; }
-    .bd-related-grid { grid-template-columns: 1fr; }
-    .bd-article { padding: 32px 16px 48px; }
+    .bd-cover { height: 260px; }
+    .bd-related-grid { grid-template-columns: 1fr 1fr; }
+    .bd-article { padding: 28px 16px 44px; }
   }
-
+  @media (max-width: 540px) {
+    .bd-related-grid { grid-template-columns: 1fr; }
+  }
   @media (max-width: 640px) {
     .bd-related { padding: 32px 0; }
   }
@@ -198,7 +182,6 @@ export class BlogDetailComponent implements OnInit {
           if (r.success && r.data) {
             this.post.set(r.data);
             this.seo.setBlogMeta(r.data);
-            // Load related
             this.api.getBlogs().subscribe({
               next: (rel: any) => {
                 if (rel.success) {

@@ -53,23 +53,8 @@ function ensureVideoBannerColumns($db) {
     $migrated = true;
 }
 
-function ensureBannerCountryColumn($db) {
-    static $done = false;
-    if ($done) return;
-    if (function_exists('cacheGet') && cacheGet('banner_schema_v3') === '1') { $done = true; return; }
-    try {
-        $existing = $db->query("SHOW COLUMNS FROM banners")->fetchAll(PDO::FETCH_COLUMN);
-        if (!in_array('country_id', $existing)) {
-            $db->exec("ALTER TABLE banners ADD COLUMN country_id INT NULL AFTER position");
-        }
-        if (function_exists('cacheSet')) cacheSet('banner_schema_v3', '1', 86400 * 30);
-    } catch (Exception $e) { /* ignore */ }
-    $done = true;
-}
-
 function getBanners($db) {
     ensureVideoBannerColumns($db);
-    ensureBannerCountryColumn($db);
     $position = $_GET['position'] ?? 'hero';
     $all      = isset($_GET['all']) && $_GET['all'] == 1;
 
@@ -83,14 +68,6 @@ function getBanners($db) {
     if ($position && !$all) {
         $sql .= " AND position = :pos";
         $params[':pos'] = $position;
-    }
-
-    // Country-scoped banners: global banners (NULL) always show,
-    // country banners only inside their own marketplace.
-    if (!$all && isset($_GET['country']) && $_GET['country'] !== '') {
-        $countryId = resolveCountryId($db, $_GET['country']);
-        $sql .= " AND (country_id IS NULL OR country_id = :cty)";
-        $params[':cty'] = $countryId ?: -1;
     }
 
     $sql .= " ORDER BY sort_order ASC, id ASC";
@@ -183,11 +160,10 @@ function createBanner($db) {
         errorResponse('Desktop video is required for video banners', 400);
     }
 
-    ensureBannerCountryColumn($db);
     $stmt = $db->prepare("INSERT INTO banners
         (title, subtitle, image, mobile_image, media_type, video, mobile_video, fallback_image,
-         link, button_text, button_color, position, country_id, sort_order, is_active, starts_at, ends_at)
-        VALUES (:title,:sub,:img,:mobile,:mtype,:vid,:mobvid,:fallback,:link,:btn,:btncolor,:pos,:cty,:sort,:active,:starts,:ends)");
+         link, button_text, button_color, position, sort_order, is_active, starts_at, ends_at)
+        VALUES (:title,:sub,:img,:mobile,:mtype,:vid,:mobvid,:fallback,:link,:btn,:btncolor,:pos,:sort,:active,:starts,:ends)");
     $stmt->execute([
         ':title'    => $data['title']        ?? null,
         ':sub'      => $data['subtitle']     ?? null,
@@ -201,7 +177,6 @@ function createBanner($db) {
         ':btn'      => $data['button_text']  ?? null,
         ':btncolor' => $data['button_color'] ?? '#e06400',
         ':pos'      => $data['position']     ?? 'hero',
-        ':cty'      => !empty($data['country_id']) ? (int)$data['country_id'] : null,
         ':sort'     => (int)($data['sort_order'] ?? 0),
         ':active'   => (int)($data['is_active']  ?? 1),
         ':starts'   => !empty($data['starts_at']) ? $data['starts_at'] : null,
@@ -274,15 +249,11 @@ function updateBannerPost($db, $id, $data) {
     }
 
     try {
-        ensureBannerCountryColumn($db);
-        $countryId = array_key_exists('country_id', $data)
-            ? (!empty($data['country_id']) ? (int)$data['country_id'] : null)
-            : ($existing['country_id'] ?? null);
         $stmt = $db->prepare("UPDATE banners SET
             title=:title, subtitle=:sub, image=:img, mobile_image=:mobile,
             media_type=:mtype, video=:vid, mobile_video=:mobvid, fallback_image=:fallback,
             link=:link, button_text=:btn, button_color=:btncolor,
-            position=:pos, country_id=:cty, sort_order=:sort, is_active=:active,
+            position=:pos, sort_order=:sort, is_active=:active,
             starts_at=:starts, ends_at=:ends
             WHERE id=:id");
         $stmt->execute([
@@ -299,7 +270,6 @@ function updateBannerPost($db, $id, $data) {
             ':btn'      => $data['button_text']  ?? $existing['button_text'],
             ':btncolor' => $data['button_color'] ?? ($existing['button_color'] ?? '#e06400'),
             ':pos'      => $data['position']     ?? $existing['position'],
-            ':cty'      => $countryId,
             ':sort'     => (int)($data['sort_order'] ?? $existing['sort_order']),
             ':active'   => (int)($data['is_active']  ?? $existing['is_active']),
             ':starts'   => !empty($data['starts_at']) ? $data['starts_at'] : null,

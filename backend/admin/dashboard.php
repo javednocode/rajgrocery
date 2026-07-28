@@ -1,30 +1,6 @@
 <?php $pageTitle = 'Dashboard'; include 'includes/header.php'; ?>
 
-<style>
-.country-dash-banner {
-    display:flex;align-items:center;gap:12px;padding:12px 18px;border-radius:12px;margin-bottom:20px;
-    background:linear-gradient(135deg,rgba(37,99,235,.1),rgba(99,102,241,.07));
-    border:1.5px solid rgba(37,99,235,.2);
-}
-.cdb-flag { font-size:28px; }
-.cdb-title { font-size:18px;font-weight:800;color:var(--admin-text); }
-.cdb-subtitle { font-size:12px;color:var(--admin-text-muted);margin-top:2px; }
-.cdb-switch { margin-left:auto; }
-</style>
-
 <div id="dashboardContent">
-    <!-- Country context banner -->
-    <div id="countryDashBanner" class="country-dash-banner" style="display:none;">
-        <div class="cdb-flag" id="cdbFlag"></div>
-        <div>
-            <div class="cdb-title" id="cdbTitle">Store Dashboard</div>
-            <div class="cdb-subtitle" id="cdbSubtitle">Showing all countries</div>
-        </div>
-        <div class="cdb-switch">
-            <a href="javascript:void(0)" onclick="setAdminCountry(null)" class="btn btn-outline btn-sm">← All Countries</a>
-        </div>
-    </div>
-
     <div class="stat-grid" id="statCards">
         <div class="stat-card"><div class="stat-icon primary">OR</div><div class="stat-value" id="totalOrders">—</div><div class="stat-label">Total Orders</div></div>
         <div class="stat-card"><div class="stat-icon success">RV</div><div class="stat-value" id="totalRevenue">—</div><div class="stat-label">Total Revenue</div></div>
@@ -63,30 +39,8 @@
 
 <script>
 async function loadDashboard() {
-    const c = getAdminCountry();
-
-    // Update country banner
-    const banner = document.getElementById('countryDashBanner');
-    if (c) {
-        document.getElementById('cdbFlag').textContent = c.flag || '🌍';
-        document.getElementById('cdbTitle').textContent = c.name + ' Store Dashboard';
-        document.getElementById('cdbSubtitle').textContent = 'Showing data for ' + c.name + ' only';
-        document.getElementById('productsLabel').textContent = 'Products in ' + c.name;
-        document.getElementById('lowStockLabel').textContent = 'Low Stock (' + c.name + ')';
-        document.getElementById('oosLabel').textContent = 'Out of Stock (' + c.name + ')';
-        document.getElementById('topProductsTitle').textContent = 'Top Products — ' + c.name;
-        banner.style.display = 'flex';
-    } else {
-        banner.style.display = 'none';
-        document.getElementById('productsLabel').textContent = 'Products';
-        document.getElementById('lowStockLabel').textContent = 'Low Stock Items';
-        document.getElementById('oosLabel').textContent = 'Out of Stock';
-        document.getElementById('topProductsTitle').textContent = 'Top Products';
-    }
-
     try {
-        const url = '/dashboard/stats' + (c ? '?country_id=' + c.id : '');
-        const res = await api(url);
+        const res = await api('/dashboard/stats');
         const d = res.data;
 
         document.getElementById('totalOrders').textContent = d.total.orders;

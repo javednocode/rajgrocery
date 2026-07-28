@@ -3,7 +3,6 @@
 <div class="toolbar">
     <div>
         <h3 style="font-size:16px;margin:0;"> Homepage Hero Products</h3>
-        <p style="font-size:12px;color:var(--admin-text-muted);margin:4px 0 0;">Select products from your catalog to feature on the homepage</p>
     </div>
     <button class="btn btn-primary" onclick="showHeroModal()">+ Add Hero Product</button>
 </div>
@@ -95,7 +94,7 @@
 </div>
 
 <script>
-let allProducts = []; // cache for search
+let allProducts  = []; // cache for search
 
 async function loadHeroProducts() {
     try {

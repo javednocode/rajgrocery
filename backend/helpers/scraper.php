@@ -40,35 +40,86 @@ function pm_validate_public_url(string $url): string {
     return $url;
 }
 
+/**
+ * Rotate realistic browser User-Agents to reduce bot detection.
+ */
+function pm_random_ua(): string {
+    $agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    ];
+    return $agents[array_rand($agents)];
+}
+
+/**
+ * Single-shot HTTP GET — no sleeps, safe for web request job creation phase.
+ */
 function pm_http_get(string $url, int $timeout = 20): ?string {
     pm_validate_public_url($url);
+
+    $referer = (parse_url($url, PHP_URL_SCHEME) ?: 'https') . '://' . (parse_url($url, PHP_URL_HOST) ?: '') . '/';
+    $headers = [
+        'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'Accept-Language: en-US,en;q=0.9',
+        'Accept-Encoding: gzip, deflate',
+        'Cache-Control: no-cache',
+        'Pragma: no-cache',
+        'Upgrade-Insecure-Requests: 1',
+        'Referer: ' . $referer,
+    ];
 
     if (function_exists('curl_init')) {
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_MAXREDIRS => 4,
-            CURLOPT_TIMEOUT => $timeout,
+            CURLOPT_MAXREDIRS      => 5,
+            CURLOPT_TIMEOUT        => $timeout,
             CURLOPT_CONNECTTIMEOUT => 8,
-            CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_USERAGENT      => pm_random_ua(),
+            CURLOPT_HTTPHEADER     => $headers,
+            CURLOPT_ENCODING       => 'gzip, deflate',
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => 0,
         ]);
         $body = curl_exec($ch);
         $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $type = (string)curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
         pm_curl_close($ch);
-        if ($body !== false && $code >= 200 && $code < 400 && (str_contains($type, 'text/') || str_contains($type, 'json') || str_contains($type, 'xml') || $type === '')) {
+
+        if ($body !== false && $code >= 200 && $code < 400
+            && (str_contains($type, 'text/') || str_contains($type, 'json')
+                || str_contains($type, 'xml') || $type === '')) {
             return (string)$body;
         }
         return null;
     }
 
-    $ctx = stream_context_create(['http' => ['timeout' => $timeout, 'user_agent' => 'Mozilla/5.0']]);
+    $ctx = stream_context_create(['http' => [
+        'timeout'       => $timeout,
+        'user_agent'    => pm_random_ua(),
+        'ignore_errors' => true,
+        'header'        => implode("\r\n", $headers),
+    ]]);
     $body = @file_get_contents($url, false, $ctx);
     return $body === false ? null : $body;
 }
+
+/**
+ * HTTP GET with retry + delays. ONLY for import processing chunks, NOT during job creation.
+ */
+function pm_http_get_with_retry(string $url, int $timeout = 25): ?string {
+    foreach ([0, 3, 6] as $delay) {
+        if ($delay > 0) sleep($delay);
+        $body = pm_http_get($url, $timeout);
+        if ($body !== null) return $body;
+    }
+    return null;
+}
+
 
 function pm_curl_close($ch): void {
     if (PHP_VERSION_ID < 80500) {
@@ -186,11 +237,16 @@ function pm_discover_product_urls(string $startUrl, string $type = 'entire', ?st
 function pm_discover_product_urls_from_sitemaps(string $startUrl, int $limit = 500): array {
     $base = parse_url($startUrl);
     $origin = ($base['scheme'] ?? 'https') . '://' . ($base['host'] ?? '');
+
+    // Prioritize: sitemap index first (it links to product-specific child sitemaps),
+    // then try common direct product sitemap URLs as fallbacks.
     $candidates = [
-        $origin . '/sitemap.xml',
-        $origin . '/product-sitemap.xml',
-        $origin . '/sitemap_products_1.xml',
-        $origin . '/wp-sitemap-posts-product-1.xml',
+        $origin . '/sitemap.xml',                      // Shopify / most platforms
+        $origin . '/sitemap_index.xml',                // WooCommerce
+        $origin . '/product-sitemap.xml',              // WooCommerce SEO plugins
+        $origin . '/sitemap_products_1.xml',           // Shopify direct (no params version)
+        $origin . '/wp-sitemap-posts-product-1.xml',   // WordPress native sitemap
+        $origin . '/page-sitemap.xml',
     ];
     $seenMaps = [];
     $urls = [];
@@ -202,17 +258,28 @@ function pm_discover_product_urls_from_sitemaps(string $startUrl, int $limit = 5
 }
 
 function pm_read_sitemap_urls(string $mapUrl, array &$urls, array &$seenMaps, int $limit, int $depth = 0): void {
-    if ($depth > 2 || isset($seenMaps[$mapUrl]) || count($urls) >= $limit) return;
+    if ($depth > 3 || isset($seenMaps[$mapUrl]) || count($urls) >= $limit) return;
     $seenMaps[$mapUrl] = true;
-    $xml = pm_http_get($mapUrl, 15);
+    $xml = pm_http_get($mapUrl, 20);
     if (!$xml) return;
     if (!preg_match_all('#<loc>\s*([^<]+)\s*</loc>#i', $xml, $m)) return;
+    // A sitemap explicitly named "product" (Shopify, WooCommerce, ePages,
+    // Shopware …) contains ONLY product URLs — trust it wholesale instead of
+    // second-guessing each URL's shape. URL-shape matching stays as the
+    // fallback for mixed sitemaps only.
+    $mapIsProducts = str_contains(strtolower(parse_url($mapUrl, PHP_URL_PATH) ?? ''), 'product');
     foreach ($m[1] as $loc) {
         $loc = html_entity_decode(trim($loc), ENT_QUOTES);
         if ($loc === '') continue;
-        if (str_ends_with(strtolower(parse_url($loc, PHP_URL_PATH) ?? ''), '.xml')) {
-            pm_read_sitemap_urls($loc, $urls, $seenMaps, $limit, $depth + 1);
-        } elseif (pm_url_looks_like_product($loc)) {
+        // A sitemap child link: path ends in .xml (but may have query params like ?from=...&to=...)
+        $locPath = strtolower(parse_url($loc, PHP_URL_PATH) ?? '');
+        if (str_ends_with($locPath, '.xml')) {
+            // Only follow child sitemaps that look like product sitemaps, or any if at root depth
+            $isProductSitemap = str_contains($locPath, 'product') || str_contains($locPath, 'sitemap') || $depth === 0;
+            if ($isProductSitemap) {
+                pm_read_sitemap_urls($loc, $urls, $seenMaps, $limit, $depth + 1);
+            }
+        } elseif ($mapIsProducts || pm_url_looks_like_product($loc)) {
             $urls[] = $loc;
             if (count($urls) >= $limit) return;
         }
@@ -222,17 +289,98 @@ function pm_read_sitemap_urls(string $mapUrl, array &$urls, array &$seenMaps, in
 function pm_url_looks_like_product(string $url): bool {
     $path = strtolower((string)(parse_url($url, PHP_URL_PATH) ?? ''));
     $query = strtolower((string)(parse_url($url, PHP_URL_QUERY) ?? ''));
-    if (preg_match('#\.(jpg|jpeg|png|gif|webp|pdf|zip|xml)$#', $path)) return false;
-    foreach (['/product/', '/products/', '/shop/', '/item/', '/tuote/', '/produkt/'] as $hint) {
+    if (preg_match('#\.(jpg|jpeg|png|gif|webp|pdf|zip|xml|css|js)$#', $path)) return false;
+    // Common product path hints across platforms
+    $hints = ['/product/', '/products/', '/shop/', '/item/', '/tuote/', '/produkt/', '/artikel/', '/catalogue/', '/catalog/', '/detail/'];
+    foreach ($hints as $hint) {
         if (str_contains($path, $hint)) return true;
     }
+    // Short-segment product paths: ePages "/p/slug", Amazon-style "/dp/id"
+    if (preg_match('#(^|/)(p|dp)/[^/]+/?$#', $path)) return true;
+    // Shopify-style: /en/products/, /de/products/ etc.
+    if (preg_match('#^/[a-z]{2}(-[a-z]{2})?/products/#', $path)) return true;
     return str_contains($query, 'product') || str_contains($query, 'p=');
 }
 
+/**
+ * Try to fetch product data from Shopify's JSON API.
+ * Works for any Shopify store — returns normalized product array or null.
+ *
+ * Shopify endpoint: GET /products/{handle}.json
+ * This bypasses JS lazy-loading and returns full image URLs instantly.
+ */
+function pm_try_shopify_json(string $productUrl): ?array {
+    // Only try for /products/{handle} style URLs (Shopify pattern)
+    $path = parse_url($productUrl, PHP_URL_PATH) ?? '';
+    if (!preg_match('~/products/([^/?#]+)~', $path, $m)) return null;
+    $handle = $m[1];
+
+    $base   = parse_url($productUrl, PHP_URL_SCHEME) . '://' . parse_url($productUrl, PHP_URL_HOST);
+    $apiUrl = $base . '/products/' . $handle . '.json';
+
+    $json = pm_http_get($apiUrl, 15);
+    if (!$json) return null;
+
+    $data    = json_decode($json, true);
+    $product = $data['product'] ?? null;
+    if (!$product || empty($product['title'])) return null;
+
+    // Extract images — Shopify gives full CDN URLs
+    $images = [];
+    foreach (($product['images'] ?? []) as $img) {
+        $src = $img['src'] ?? '';
+        // Strip query params like ?v=123456 for cleaner URLs
+        $src = preg_replace('/\?.*$/', '', $src);
+        if ($src) $images[] = $src;
+    }
+
+    // Price from variants
+    $price = '';
+    $salePrice = null;
+    foreach (($product['variants'] ?? []) as $v) {
+        $cp = (float)($v['compare_at_price'] ?? 0);
+        $p  = (float)($v['price'] ?? 0);
+        if ($p > 0 && $price === '') $price = $v['price'];
+        if ($cp > $p && $p > 0) $salePrice = $v['price'];
+    }
+
+    // Categories from product_type and tags
+    $categories = array_filter([
+        $product['product_type'] ?? '',
+    ]);
+    foreach (($product['tags'] ?? []) as $tag) {
+        // Shopify tags: "category:Spices" style or plain tags
+        if (preg_match('/^(?:category|cat|type):\s*(.+)$/i', $tag, $tm)) {
+            $categories[] = trim($tm[1]);
+        }
+    }
+
+    return [
+        'source_url'        => $productUrl,
+        'name'              => trim($product['title'] ?? ''),
+        'short_description' => pm_clean_html($product['body_html'] ?? ''),
+        'description'       => pm_clean_html($product['body_html'] ?? ''),
+        'price'             => $price,
+        'sale_price'        => $salePrice,
+        'sku'               => (string)($product['variants'][0]['sku'] ?? ''),
+        'brand'             => (string)($product['vendor'] ?? ''),
+        'stock'             => (int)($product['variants'][0]['inventory_quantity'] ?? 1),
+        'images'            => $images,
+        'categories'        => array_values(array_unique(array_filter($categories))),
+    ];
+}
+
 function pm_extract_product_from_html(string $url, string $html): array {
+    // ── Shopify JSON API bypass (most reliable for Shopify stores) ──────────
+    // Shopify lazy-loads images via JS — the HTML parser can't see real images.
+    // But /products/{handle}.json returns full data without JS execution.
+    $shopifyData = pm_try_shopify_json($url);
+    if (!empty($shopifyData)) return $shopifyData;
+
     $dom = pm_dom($html);
     if (!$dom) return ['source_url' => $url, 'name' => ''];
     $xp = new DOMXPath($dom);
+
 
     $jsonProduct = [];
     foreach ($xp->query('//script[@type="application/ld+json"]') as $script) {
@@ -250,17 +398,25 @@ function pm_extract_product_from_html(string $url, string $html): array {
     }
 
     $name = (string)($jsonProduct['name'] ?? '');
+    // Microdata product name (ePages, older WooCommerce themes) — cleaner than
+    // og:title, which usually carries an " - Shop Name" suffix.
+    if ($name === '') $name = pm_xpath_text($xp, '//h1[@itemprop="name"]');
+    if ($name === '') $name = pm_xpath_text($xp, '//*[@itemprop="name" and (self::h1 or self::h2 or self::span)]');
     if ($name === '') $name = pm_xpath_attr($xp, '//meta[@property="og:title"]', 'content');
     if ($name === '') $name = pm_xpath_text($xp, '//h1');
 
     $desc = (string)($jsonProduct['description'] ?? '');
     if ($desc === '') $desc = pm_xpath_attr($xp, '//meta[@name="description"]', 'content');
+    if ($desc === '') $desc = pm_xpath_attr($xp, '//meta[@property="og:description"]', 'content');
     if ($desc === '') $desc = pm_xpath_text($xp, '//*[contains(@class,"description") or contains(@id,"description")]');
 
     $offers = $jsonProduct['offers'] ?? [];
     if (isset($offers[0])) $offers = $offers[0];
     $price = (string)($offers['price'] ?? '');
     if ($price === '') $price = pm_xpath_attr($xp, '//meta[@property="product:price:amount"]', 'content');
+    if ($price === '') $price = pm_xpath_attr($xp, '//meta[@property="og:price:amount"]', 'content');
+    if ($price === '') $price = pm_xpath_attr($xp, '//meta[@itemprop="price"]', 'content');
+    if ($price === '') $price = pm_xpath_attr($xp, '//*[@itemprop="price"]', 'content');
     if ($price === '') {
         $body = pm_xpath_text($xp, '//body');
         if (preg_match('/(?:[$€£]\s?|USD\s?|EUR\s?|GBP\s?)(\d+(?:[,.]\d{1,2})?)/i', $body, $m)) {
@@ -339,20 +495,117 @@ function pm_extract_product_from_html(string $url, string $html): array {
     $sku = (string)($jsonProduct['sku'] ?? '');
     $availability = strtolower((string)($offers['availability'] ?? ''));
 
+    // ── Category extraction ──────────────────────────────────────────────────
+    $categories = [];
+
+    // 1. JSON-LD BreadcrumbList (most reliable)
+    foreach ($xp->query('//script[@type="application/ld+json"]') as $script) {
+        $decoded = json_decode(trim($script->textContent), true);
+        $items = is_array($decoded) && isset($decoded['@graph']) ? $decoded['@graph'] : [$decoded];
+        foreach ($items as $item) {
+            if (!is_array($item)) continue;
+            $type = $item['@type'] ?? '';
+            $types = is_array($type) ? $type : [$type];
+            if (in_array('BreadcrumbList', $types, true)) {
+                $crumbs = [];
+                foreach ($item['itemListElement'] ?? [] as $el) {
+                    $n = trim((string)($el['name'] ?? $el['item']['name'] ?? ''));
+                    if ($n !== '' && !in_array(strtolower($n), ['home','homepage','start','ana sayfa'], true)) {
+                        $crumbs[] = $n;
+                    }
+                }
+                // Last crumb is the product name; we want the second-to-last as category
+                if (count($crumbs) >= 2) {
+                    array_pop($crumbs); // remove product name itself
+                    $categories[] = implode(' > ', $crumbs);
+                } elseif (count($crumbs) === 1) {
+                    $categories[] = $crumbs[0];
+                }
+                break 2;
+            }
+        }
+    }
+
+    // 2. JSON-LD Product.category field
+    if (empty($categories) && !empty($jsonProduct['category'])) {
+        $cat = $jsonProduct['category'];
+        $catList = is_array($cat) ? $cat : [$cat];
+        foreach ($catList as $c) {
+            if (is_string($c) && $c !== '') $categories[] = trim($c);
+            elseif (is_array($c) && !empty($c['name'])) $categories[] = trim($c['name']);
+        }
+    }
+
+    // 3. WooCommerce: .posted_in a  or  .product_meta .posted_in a
+    if (empty($categories)) {
+        $wcQueries = [
+            '//*[contains(@class,"posted_in")]//a',
+            '//*[contains(@class,"product_meta")]//*[contains(@class,"cat")]//a',
+            '//*[contains(@class,"product-cats")]//a',
+            '//*[contains(@class,"product__cats")]//a',
+            '//*[contains(@class,"wc-product-category")]//a',
+        ];
+        foreach ($wcQueries as $q) {
+            foreach ($xp->query($q) as $a) {
+                $t = trim($a->textContent);
+                if ($t !== '') { $categories[] = $t; break 2; }
+            }
+        }
+    }
+
+    // 4. HTML breadcrumb nav
+    if (empty($categories)) {
+        $breadcrumbQueries = [
+            '//nav[contains(@class,"breadcrumb")]//a',
+            '//ol[contains(@class,"breadcrumb")]//a',
+            '//ul[contains(@class,"breadcrumb")]//a',
+            '//*[contains(@class,"breadcrumbs")]//a',
+            '//*[contains(@id,"breadcrumb")]//a',
+            '//*[@aria-label="breadcrumb"]//a',
+        ];
+        $crumbNodes = [];
+        foreach ($breadcrumbQueries as $bq) {
+            $nodes = $xp->query($bq);
+            if ($nodes && $nodes->length > 0) {
+                foreach ($nodes as $node) $crumbNodes[] = trim($node->textContent);
+                break;
+            }
+        }
+        // Strip 'Home' and the last item (which is the product itself)
+        $crumbNodes = array_filter($crumbNodes, fn($t) => $t !== '' && !in_array(strtolower($t), ['home','homepage','start','ana sayfa'], true));
+        $crumbNodes = array_values($crumbNodes);
+        if (count($crumbNodes) >= 2) {
+            array_pop($crumbNodes); // remove product name
+            $categories[] = implode(' > ', $crumbNodes);
+        } elseif (count($crumbNodes) === 1) {
+            $categories[] = $crumbNodes[0];
+        }
+    }
+
+    // 5. Open Graph product:category meta
+    if (empty($categories)) {
+        $ogCat = pm_xpath_attr($xp, '//meta[@property="product:category"]', 'content');
+        if ($ogCat !== '') $categories[] = $ogCat;
+    }
+
+    // Deduplicate and clean
+    $categories = array_values(array_unique(array_filter(array_map('trim', $categories))));
+    // ────────────────────────────────────────────────────────────────────────
+
     return [
-        'source_url' => $url,
-        'name' => trim($name),
-        'description' => pm_clean_html($desc),
-        'short_description' => pm_short_text(trim(strip_tags($desc)), 500),
-        'images' => array_values(array_unique(array_filter($images))),
-        'categories' => [],
-        'price' => $price,
-        'sale_price' => '',
-        'sku' => $sku,
-        'brand' => is_array($brand) ? '' : (string)$brand,
-        'stock' => str_contains($availability, 'outofstock') ? 0 : 1,
-        'weight' => '',
-        'meta_title' => pm_xpath_text($xp, '//title') ?: $name,
+        'source_url'       => $url,
+        'name'             => trim($name),
+        'description'      => pm_clean_html($desc),
+        'short_description'=> pm_short_text(trim(strip_tags($desc)), 500),
+        'images'           => array_values(array_unique(array_filter($images))),
+        'categories'       => $categories,
+        'price'            => $price,
+        'sale_price'       => '',
+        'sku'              => $sku,
+        'brand'            => is_array($brand) ? '' : (string)$brand,
+        'stock'            => str_contains($availability, 'outofstock') ? 0 : 1,
+        'weight'           => '',
+        'meta_title'       => pm_xpath_text($xp, '//title') ?: $name,
         'meta_description' => pm_xpath_attr($xp, '//meta[@name="description"]', 'content'),
     ];
 }

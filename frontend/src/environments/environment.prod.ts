@@ -2,5 +2,5 @@ export const environment = {
   production: true,
   apiUrl: '/api',
   mediaUrl: '',
-  appName: 'Kale Gida'
+  appName: 'LAAVI STORE'
 };

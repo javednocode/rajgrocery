@@ -43,12 +43,23 @@ function productMigrationHandle(PDO $db, string $method, string $uri): void {
         productMigrationReport($db, (int)$m[1]);
         return;
     }
+    if ($method === 'POST' && preg_match('#^/api/product-migration/repair-images/?$#', $uri)) {
+        successResponse(pm_repair_missing_images($db), 'Image repair completed');
+        return;
+    }
     if ($method === 'GET' && preg_match('#^/api/product-migration/mappings/?$#', $uri)) {
         productMigrationMappings($db);
         return;
     }
     if ($method === 'POST' && preg_match('#^/api/product-migration/mappings/?$#', $uri)) {
         productMigrationSaveMapping($db);
+        return;
+    }
+
+    if ($method === 'POST' && preg_match('#^/api/product-migration/repair-categories/?$#', $uri)) {
+        $body  = productMigrationInput();
+        $limit = (int)($body['limit'] ?? 500);
+        successResponse(pm_repair_categories($db, $limit), 'Category repair completed');
         return;
     }
 
@@ -68,18 +79,6 @@ function productMigrationCreateJob(PDO $db): void {
     if (!in_array($duplicate, ['skip','update','copy'], true)) $duplicate = 'skip';
     if (!in_array($method, ['scraper','woocommerce','shopify','csv','xml'], true)) {
         errorResponse('Unsupported import method', 400);
-    }
-
-    // Require and validate country_id
-    $countryId = (int)($data['country_id'] ?? $_POST['country_id'] ?? 0);
-    if (!$countryId) {
-        errorResponse('Import To Country is required. Please select a target country.', 400);
-    }
-    $countryCheck = $db->prepare("SELECT id, name FROM countries WHERE id = :id AND is_active = 1");
-    $countryCheck->execute([':id' => $countryId]);
-    $country = $countryCheck->fetch(PDO::FETCH_ASSOC);
-    if (!$country) {
-        errorResponse('Selected country not found or is inactive.', 400);
     }
 
     $max = max(1, min(10000, (int)($data['limit'] ?? 500)));
@@ -107,7 +106,7 @@ function productMigrationCreateJob(PDO $db): void {
         productMigrationStoreMapping($db, (string)$data['mapping_name'], $method, $mappingToSave);
     }
 
-    $job = pm_create_job($db, $method, $sourceUrl ?: null, $importType, $duplicate, $products, $options, $countryId);
+    $job = pm_create_job($db, $method, $sourceUrl ?: null, $importType, $duplicate, $products, $options);
     successResponse($job, 'Migration job created', 201);
 }
 
@@ -461,7 +460,8 @@ function productMigrationFromShopify(array $p, string $store): array {
         'sale_price' => ($variant['compare_at_price'] ?? '') !== '' ? ($variant['price'] ?? '') : '',
         'sku' => $variant['sku'] ?? '',
         'brand' => $p['vendor'] ?? '',
-        'stock' => (int)($variant['inventory_quantity'] ?? 0),
+        // public /products.json uses 'available' (bool); admin API uses 'inventory_quantity'
+        'stock' => !empty($variant['available']) ? 1 : ((int)($variant['inventory_quantity'] ?? 0)),
         'weight' => $variant['grams'] ?? '',
         'meta_title' => $p['title'] ?? '',
         'meta_description' => pm_short_text(strip_tags((string)($p['body_html'] ?? '')), 160),
@@ -514,6 +514,206 @@ function productMigrationTextHasKeyword(string $text, string $keyword): bool {
     $keyword = strtolower(trim($keyword));
     if ($keyword === '') return false;
     return (bool)preg_match('/(?<![a-z0-9])' . preg_quote($keyword, '/') . '(?![a-z0-9])/i', $text);
+}
+
+/**
+ * Repair products that have no category assigned.
+ * Infers a category from the product name using keyword matching,
+ * creates the category if it doesn't exist, and links it.
+ *
+ * @param PDO $db
+ * @param int $limit Max products to process in one call
+ */
+function pm_repair_categories(PDO $db, int $limit = 1000): array {
+    require_once __DIR__ . '/../helpers/import_queue.php';
+
+    // Find products with no category assignment
+    $sql = "SELECT p.id, p.name
+            FROM products p
+            LEFT JOIN product_categories pcat ON pcat.product_id = p.id
+            WHERE pcat.product_id IS NULL
+            LIMIT :lim";
+    $stmt = $db->prepare($sql);
+    $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // ── Keyword rules ──────────────────────────────────────────────────────────
+    // Uses simple stripos (case-insensitive substring match) — no regex.
+    // Order matters: more specific rules first. Each product gets ALL matching categories.
+    $rules = [
+        'Rice' => [
+            'rice','basmati','sona masoori','ponni','idli rice','biryani rice','long grain',
+            'short grain','glutinous','jasmine rice','samba','matta','brown rice',
+            'puffed rice','mamra','murmura','reis','pilav',
+        ],
+        'Atta & Flour' => [
+            'atta','flour','maida','besan','sooji','semolina','rava','idli rava','dosa flour',
+            'bajra','jowar','ragi','millet flour','corn flour','chickpea flour','gram flour',
+            'mehl','weizenmehl','vollkornmehl','buğday unu','un ',
+        ],
+        'Spices' => [
+            'masala','spice','chilli','chili','turmeric','haldi','jeera','cumin','coriander',
+            'dhaniya','cardamom','elaichi','clove','pepper','garam','ginger','methi',
+            'mustard seed','ajwain','hing','asafoetida','fenugreek','bay leaf','star anise',
+            'cinnamon','dalchini','saffron','kesar','black pepper','white pepper','red chilli',
+            'kashmiri','paprika','pul biber','sumac','baharat','kümmel','gewürz','biber',
+            'kimyon','tarçın','karanfil','zencefil','safran','za\'atar','allspice','anise',
+            'caraway','nigella','black seed','kalonji','thyme','oregano','curry',
+        ],
+        'Lentils & Beans' => [
+            'dal','dhal','daal','lentil','beans','chana','rajma','moong','toor','urad',
+            'masoor','peas','chick','horse gram','black eyed','kidney bean','soya bean',
+            'black gram','green gram','yellow split','moth','matki','valval','linsen',
+            'bohnen','fasulye','mercimek','nohut','barbunya','börülce','kuru fasulye',
+        ],
+        'Oil & Ghee' => [
+            'oil','ghee','butter','coconut oil','sesame oil','sunflower oil','mustard oil',
+            'groundnut oil','palm oil','olive oil','vegetable oil','cooking oil','vanaspati',
+            'dalda','öl','zeytinyağ','ayçiçek','tereyağ','sade yağ','mısır yağ',
+        ],
+        'Dairy & Eggs' => [
+            'milk','cheese','paneer','yogurt','curd','cream','butter milk','condensed milk',
+            'evaporated milk','lassi','dahi','raita','milch','käse','süt','peynir','yoğurt',
+            'kaymak','beyaz peynir','kaşar','lor','süzme','ayran','egg','eggs','ei',
+        ],
+        'Olives & Pickles' => [
+            'olive','zeytin','pickle','turşu','gherkin','achar','achaar','tur\u015fu','kapari',
+        ],
+        'Bread & Bakery' => [
+            'bread','roti','naan','paratha','chapati','pita','lavash','flatbread','puri','bhatura',
+            'kulcha','tortilla','wrap','bun','roll','brot','ekmek','pide','simit','yufka',
+            'lavaş','biscuit','cookie','cake','rusk','toast','keks','gebäck','börek',
+            'pogaca','açma','sırt','kahvaltılık',
+        ],
+        'Pasta & Noodles' => [
+            'pasta','noodle','noodles','maggi','vermicelli','spaghetti','penne','fusilli',
+            'macaroni','makarna','erişte','şehriye','sevai','rice noodle','glass noodle',
+            'instant noodle','ramen','udon','cellophane',
+        ],
+        'Snacks' => [
+            'snack','namkeen','sev','bhujia','chips','mixture','murukku','papad','popcorn',
+            'cracker','chakli','mathri','thattai','khakhra','fryum','puffed','peanut','roasted',
+            'cips','nachos','pretzel','corn puff','bombay mix',
+        ],
+        'Sweets & Halva' => [
+            'sweet','mithai','laddu','ladoo','halwa','halva','halvah','barfi','gulab jamun',
+            'rasgulla','soan','jalebi','kheer','khoya','mawa','basundi','rabdi','peda',
+            'mysore pak','balushahi','baklava','lokum','kadayıf','künefe','helva','tahin',
+            'şeker','candy','toffee','chocolate','çikolata','bonbon',
+        ],
+        'Drinks & Beverages' => [
+            'drink','juice','soda','syrup','lassi','sherbet','squash','cordial','cold drink',
+            'lemon drink','rose water','sharbat','nimbu','nimbu pani','getränk','limonade',
+            'ayran','şerbet','meyve suyu','limon soğuk','aloe vera',
+        ],
+        'Tea & Coffee' => [
+            'tea','chai','coffee','masala chai','green tea','black tea','herbal tea',
+            'tulsi','ashwagandha','nescafe','horlicks','bournvita','complan','milo',
+            'tee','kaffee','kahve','çay','bitki çayı','ihlamur','ada çayı',
+        ],
+        'Sauces & Condiments' => [
+            'sauce','ketchup','mayonnaise','vinegar','soy sauce','hot sauce','chilli sauce',
+            'tamarind','imli','amchur','chaat masala','soße','sos','acı sos','domates sos',
+            'salça','domates salçası','biber salçası',
+        ],
+        'Jam & Spreads' => [
+            'jam','jelly','marmalade','spread','honey','tahini','peanut butter','nutella',
+            'reçel','marmelat','konfitüre','bal','pekmez','helva spread',
+        ],
+        'Frozen Foods' => [
+            'frozen','tiefkühl','samosa','spring roll','kebab','momo','dumplings','paratha frozen',
+            'naan frozen','roti frozen','börek frozen','gözleme','croquette','fish finger',
+        ],
+        'Nuts & Dried Fruit' => [
+            'nut','almond','cashew','pistachio','walnut','hazelnut','raisin','dried fruit',
+            'apricot','fig','date','prune','sultana','cranberry','pecan','macadamia',
+            'fındık','fıstık','ceviz','badem','kaju','kuru üzüm','kayısı','incir','hurma',
+            'kuru meyve','antep fıstığı','çam fıstığı','kestane','mixed nuts',
+        ],
+        'Lemon & Citrus' => [
+            'lemon','lime','orange','citrus','zitrone','limon',
+        ],
+        'Fresh Vegetables' => [
+            'vegetable','sabzi','veggies','spinach','palak','fenugreek leaves','methi leaves',
+            'coriander bunch','parsley','tomato','onion','potato','garlic','ginger root',
+            'green chilli','capsicum','carrot','brinjal','eggplant','cauliflower','broccoli',
+            'zucchini','pumpkin','gemüse','domates','soğan','patates','sarımsak',
+        ],
+        'Cleaning & Hygiene' => [
+            'soap','detergent','washing','dishwash','bleach','floor cleaner','toilet cleaner',
+            'sabun','temizlik','seife','reiniger','waschmittel','spülmittel',
+        ],
+        'Health & Beauty' => [
+            'shampoo','hair','cream','toothpaste','lotion','moisturiser','face wash',
+            'ayurvedic','herbal','neem','amla','patanjali','dabur','himalaya',
+        ],
+        'Grains & Seeds' => [
+            'grain','seed','quinoa','oats','barley','wheat','corn','millet','sorghum',
+            'amaranth','flaxseed','chia','sesame','poppy seed','sunflower seed','pumpkin seed',
+            'bajra','jowar','ragi','kodo','little millet','foxtail','barnyard millet',
+            'tapioca','sabudana','sago','arrowroot','starch','getreide','samen',
+        ],
+        'Canned & Preserved' => [
+            'canned','tinned','jar','preserved','conserve','in brine','in oil',
+            'konserve','teneke','kavanos','dose','eingemacht',
+        ],
+        'Clearance Sale' => [
+            'clearance','sale %','offer','discount','bundle','combo','deal',
+        ],
+    ];
+    // ──────────────────────────────────────────────────────────────────────────
+
+    $fixed = 0; $skipped = 0;
+    $catStmt = $db->prepare("INSERT IGNORE INTO product_categories (product_id, category_id) VALUES (:p, :c)");
+
+    foreach ($products as $prod) {
+        $text = strtolower(trim((string)($prod['name'] ?? '')));
+        if ($text === '') { $skipped++; continue; }
+
+        $inferred = [];
+        foreach ($rules as $catName => $keywords) {
+            foreach ($keywords as $keyword) {
+                // Simple case-insensitive substring match — no regex, no word-boundary issues
+                if (stripos($text, $keyword) !== false) {
+                    $inferred[] = $catName;
+                    break;
+                }
+            }
+        }
+
+        // Fallback: assign "Grocery" so every product gets at least one category
+        if (empty($inferred)) {
+            $inferred = ['Grocery'];
+        }
+
+        // Resolve (create if needed) and link categories
+        try {
+            $catIds = pm_resolve_categories($db, $inferred);
+            foreach ($catIds as $cid) {
+                $catStmt->execute([':p' => (int)$prod['id'], ':c' => (int)$cid]);
+            }
+            if ($catIds) $fixed++; else $skipped++;
+        } catch (Throwable $e) {
+            $skipped++;
+        }
+    }
+
+    // Clear product/category caches
+    if (function_exists('cacheClearPattern')) {
+        cacheClearPattern('products_');
+        cacheClearPattern('cat_products_');
+    }
+    if (function_exists('cacheFlush')) {
+        cacheFlush('countries_public');
+    }
+
+    return [
+        'total_uncategorized' => count($products),
+        'fixed'   => $fixed,
+        'skipped' => $skipped,
+        'message' => "Fixed {$fixed} products. {$skipped} products could not be processed.",
+    ];
 }
 
 function productMigrationHttpJson(string $url, array $headers = []): array {
@@ -705,7 +905,10 @@ function productMigrationRollback(PDO $db, int $jobId): array {
         while ($img = $imgs->fetch(PDO::FETCH_ASSOC)) {
             if (function_exists('deleteImage')) deleteImage($img['image_path']);
         }
-        $db->prepare("DELETE FROM products WHERE id=:id")->execute([':id' => $pid]);
+        // Clean up all related pivot/child rows BEFORE deleting the product
+        $db->prepare("DELETE FROM product_categories WHERE product_id=:id")->execute([':id' => $pid]);
+        $db->prepare("DELETE FROM product_images     WHERE product_id=:id")->execute([':id' => $pid]);
+        $db->prepare("DELETE FROM products           WHERE id=:id")->execute([':id' => $pid]);
     }
     $db->prepare("UPDATE import_jobs SET status='rolled_back', finished_at=NOW() WHERE id=:id")->execute([':id' => $jobId]);
     pm_log($db, $jobId, $job['batch_id'], 'warning', 'Rollback completed. Products removed: ' . count($ids));
@@ -714,21 +917,17 @@ function productMigrationRollback(PDO $db, int $jobId): array {
 
 function productMigrationReport(PDO $db, int $jobId): void {
     $job = pm_get_job($db, $jobId);
-    $countryLabel = !empty($job['country_name'])
-        ? trim(($job['country_flag'] ?? '') . ' ' . $job['country_name'])
-        : 'N/A';
     $stmt = $db->prepare("SELECT source_name, source_sku, source_url, product_id, action, status, error, created_at FROM import_job_items WHERE job_id=:j ORDER BY id ASC");
     $stmt->execute([':j' => $jobId]);
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="product_migration_' . $job['batch_id'] . '.csv"');
     $out = fopen('php://output', 'w');
-    fputcsv($out, ['Product', 'SKU', 'Source URL', 'Product ID', 'Action', 'Status', 'Error', 'Target Country', 'Created At']);
+    fputcsv($out, ['Product', 'SKU', 'Source URL', 'Product ID', 'Action', 'Status', 'Error', 'Created At']);
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $row['target_country'] = $countryLabel;
         fputcsv($out, [
             $row['source_name'], $row['source_sku'], $row['source_url'],
             $row['product_id'], $row['action'], $row['status'], $row['error'],
-            $row['target_country'], $row['created_at']
+            $row['created_at']
         ]);
     }
     fclose($out);

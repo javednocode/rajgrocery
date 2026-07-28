@@ -1,16 +1,6 @@
 <?php $pageTitle = 'Products'; include 'includes/header.php'; ?>
 
 <style>
-/* ── Country Banner ── */
-.country-banner {
-    display:flex; align-items:center; gap:10px;
-    padding:10px 16px; border-radius:10px; margin-bottom:14px;
-    background:linear-gradient(135deg,rgba(37,99,235,.08),rgba(99,102,241,.06));
-    border:1.5px solid rgba(37,99,235,.15); font-size:13px;
-}
-.country-banner .cb-label { font-weight:700; color:var(--admin-text-muted); margin-right:4px; }
-.country-banner .cb-val   { font-weight:800; color:var(--admin-primary); font-size:14px; }
-
 /* ── Toolbar ── */
 .ptb { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
 .ptb-left { display:flex; align-items:center; gap:8px; flex:1; flex-wrap:wrap; min-width:0; }
@@ -23,7 +13,6 @@
 
 .filter-select { padding:8px 10px; border:1.5px solid var(--admin-border); border-radius:8px; font-size:13px; background:var(--admin-card); color:var(--admin-text); outline:none; cursor:pointer; }
 .filter-select:focus { border-color:var(--admin-primary); }
-.country-select { border-color:var(--admin-primary)!important; font-weight:700; }
 
 /* ── Bulk Bar ── */
 .bulk-bar { display:none; align-items:center; gap:10px; flex-wrap:wrap; background:linear-gradient(135deg,#EDE9FF,#E0F2EE); border:1.5px solid #C4B5FD; border-radius:10px; padding:10px 16px; margin-bottom:12px; }
@@ -56,7 +45,6 @@ input[type=checkbox] { width:15px; height:15px; accent-color:#2563EB; cursor:poi
 .prod-name { font-weight:600; color:var(--admin-text); line-height:1.3; }
 .prod-sku { font-size:11px; color:var(--admin-text-muted); margin-top:2px; }
 .cat-badge { display:inline-block; padding:2px 8px; background:#EDE9FF; color:#2563EB; border-radius:999px; font-size:11px; font-weight:600; margin:1px; }
-.country-flags { font-size:16px; letter-spacing:2px; }
 .sort-arrow { font-size:10px; margin-left:3px; opacity:.5; }
 .sort-arrow.asc::after  { content:'▲'; }
 .sort-arrow.desc::after { content:'▼'; }
@@ -82,14 +70,6 @@ input[type=checkbox] { width:15px; height:15px; accent-color:#2563EB; cursor:poi
 .btn-modal-danger:hover { background:#B91C1C; }
 </style>
 
-<!-- ── Active Country Banner ── -->
-<div id="countryBanner" class="country-banner" style="display:none;">
-    <span class="cb-label">Viewing:</span>
-    <span class="cb-val" id="countryBannerText"></span>
-    <span style="flex:1"></span>
-    <a href="javascript:void(0)" onclick="setAdminCountry(null)" style="font-size:12px;color:var(--admin-text-muted);text-decoration:none;">× Show All Countries</a>
-</div>
-
 <!-- ── Toolbar ── -->
 <div class="ptb">
     <div class="ptb-left">
@@ -97,9 +77,6 @@ input[type=checkbox] { width:15px; height:15px; accent-color:#2563EB; cursor:poi
             <span class="si">🔍</span>
             <input type="text" id="searchInput" placeholder="Search products..." oninput="debounceSearch()">
         </div>
-        <select id="countryFilter" class="filter-select country-select" onchange="onCountryFilterChange()">
-            <option value="">🌍 All Countries</option>
-        </select>
         <select id="catFilter" class="filter-select" onchange="loadProducts(1)">
             <option value="">All Categories</option>
         </select>
@@ -168,7 +145,6 @@ input[type=checkbox] { width:15px; height:15px; accent-color:#2563EB; cursor:poi
                         <th class="sortable" onclick="setSort('price')">Price <span class="sort-arrow" id="sort-price"></span></th>
                         <th class="sortable" onclick="setSort('stock')">Stock <span class="sort-arrow" id="sort-stock"></span></th>
                         <th>Category</th>
-                        <th>Countries</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -200,60 +176,11 @@ let allCategories = [];
 let selectedIds = new Set();
 let pendingAction = '';
 let searchTimer;
-let allCountriesList = [];
 
-// ── Init Country ──
-function initCountryFilter() {
-    const c = getAdminCountry();
-    // Show banner
-    const banner = document.getElementById('countryBanner');
-    if (c) {
-        document.getElementById('countryBannerText').textContent = (c.flag || '') + ' ' + c.name;
-        banner.style.display = 'flex';
-    } else {
-        banner.style.display = 'none';
-    }
-    // Set Add Product link to include country
-    const addBtn = document.getElementById('addProductBtn');
-    if (c) addBtn.href = 'product-edit.php?country_id=' + c.id;
-    else addBtn.href = 'product-edit.php';
-}
-
-// ── Load countries ──
-async function loadCountriesFilter() {
-    try {
-        const res = await api('/countries?all=1');
-        allCountriesList = (res.data || []).filter(c => c.is_active);
-        const sel = document.getElementById('countryFilter');
-        allCountriesList.forEach(c => {
-            const opt = document.createElement('option');
-            opt.value = c.id;
-            opt.textContent = (c.flag || '') + ' ' + c.name;
-            sel.appendChild(opt);
-        });
-        // Set to current global country
-        const active = getAdminCountry();
-        if (active) sel.value = String(active.id);
-    } catch(e) {}
-}
-
-function onCountryFilterChange() {
-    const sel = document.getElementById('countryFilter');
-    const id = sel.value;
-    if (!id) {
-        setAdminCountry(null); // reloads page
-        return;
-    }
-    const match = allCountriesList.find(c => String(c.id) === String(id));
-    if (match) setAdminCountry({ id: match.id, code: match.code, name: match.name, flag: match.flag || '' });
-}
-
-// ── Load categories scoped to selected country ──
+// ── Load categories ──
 async function loadCategories() {
-    const c = getAdminCountry();
-    const url = c ? '/categories?country_id=' + c.id : '/categories';
     try {
-        const res = await api(url);
+        const res = await api('/categories');
         function flat(cats, prefix='') {
             let out = [];
             (cats||[]).forEach(c => {
@@ -290,17 +217,15 @@ function setSort(col) {
     loadProducts(currentPage);
 }
 
-// ── Load Products — always country-scoped ──
+// ── Load Products ──
 async function loadProducts(page = 1) {
     currentPage = page;
     const q      = document.getElementById('searchInput').value;
     const cat    = document.getElementById('catFilter').value;
     const status = document.getElementById('statusFilter').value;
     const stock  = document.getElementById('stockFilter').value;
-    const c      = getAdminCountry();
 
     let url = `/products?page=${page}&per_page=20&q=${encodeURIComponent(q)}&sort=${sortBy}&dir=${sortDir}`;
-    if (c)      url += `&country_id=${c.id}`;
     if (cat)    url += `&category_id=${cat}`;
     if (status !== '') url += `&is_active=${status}`;
     if (stock)  url += `&stock_filter=${stock}`;
@@ -318,13 +243,11 @@ async function loadProducts(page = 1) {
                 const isChecked = selectedIds.has(p.id);
                 const cats = (p.category_names||'').split(',').filter(Boolean).map(n =>
                     `<span class="cat-badge">${n.trim()}</span>`).join('') || '<span style="color:var(--admin-text-muted)">—</span>';
-                // Render country flags
-                const flags = (p.countries || []).map(ct => `<span title="${ct.name}">${ct.flag || ct.code}</span>`).join(' ') || '<span style="color:var(--admin-text-muted)">—</span>';
                 return `<tr id="row-${p.id}" class="${isChecked?'selected':''}">
                     <td class="check-col"><input type="checkbox" class="row-check" value="${p.id}" onchange="toggleRow(${p.id},this)" ${isChecked?'checked':''}></td>
                     <td>
                         <div class="prod-cell">
-                            <img class="prod-thumb" src="${imgUrl(p.primary_image||p.images?.[0]?.image_path)}" alt="${p.name}" loading="lazy">
+                            <img class="prod-thumb" src="${imgUrl(p.primary_image||p.images?.[0]?.image_path)}" alt="${p.name}" loading="lazy" onerror="this.src='/admin/assets/placeholder-product.svg'">
                             <div>
                                 <div class="prod-name">${p.name}</div>
                                 <div class="prod-sku">SKU: ${p.sku||'—'} ${p.is_featured==1?'<span style="color:#F59E0B;font-size:11px;">⭐ Featured</span>':''}</div>
@@ -340,7 +263,6 @@ async function loadProducts(page = 1) {
                             ? `<span class="badge badge-warning">${p.stock}</span>`
                             : `<span class="badge badge-success">${p.stock}</span>`}</td>
                     <td>${cats}</td>
-                    <td><div class="country-flags">${flags}</div></td>
                     <td>${p.is_active==1
                         ? '<span class="badge badge-success">Active</span>'
                         : '<span class="badge badge-danger">Inactive</span>'}</td>
@@ -350,7 +272,7 @@ async function loadProducts(page = 1) {
                     </td>
                 </tr>`;
             }).join('')
-            : '<tr><td colspan="8" style="text-align:center;padding:48px;color:var(--admin-text-muted)">No products found</td></tr>';
+            : '<tr><td colspan="7" style="text-align:center;padding:48px;color:var(--admin-text-muted)">No products found</td></tr>';
 
         renderPager(pag, page);
 
@@ -450,9 +372,7 @@ function closeBulkModal() {
 }
 
 async function executeBulkAction() {
-    const c = getAdminCountry();
     const body = { action: pendingAction, ids: [...selectedIds] };
-    if (c) body.country_id = c.id; // Scope bulk action to selected country
     if (catActions.includes(pendingAction)) {
         body.category_id = parseInt(document.getElementById('modalCatSel').value);
         if (!body.category_id) { alert('Please select a category'); return; }
@@ -490,8 +410,6 @@ document.getElementById('bulkModal').addEventListener('click', function(e) {
         setTimeout(() => { if (!localStorage.getItem('admin_token')) window.location.href = '/admin/index.php'; }, 500);
         return;
     }
-    initCountryFilter();
-    loadCountriesFilter();
     loadCategories();
     loadProducts();
 })();

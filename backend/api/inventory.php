@@ -10,8 +10,32 @@
  */
 
 /**
+ * Ensure the inventory_history table exists (safe to call multiple times).
+ */
+function ensureInventorySchema(PDO $db): void {
+    static $done = false;
+    if ($done) return;
+    $done = true;
+    $db->exec("CREATE TABLE IF NOT EXISTS inventory_history (
+        id          INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        site_id     INT NOT NULL DEFAULT 1,
+        product_id  INT NOT NULL,
+        variant_id  INT DEFAULT NULL,
+        type        ENUM('adjustment','import','damage','expiry','return','sale','restock') DEFAULT 'adjustment',
+        qty_before  INT NOT NULL DEFAULT 0,
+        qty_change  INT NOT NULL DEFAULT 0,
+        qty_after   INT NOT NULL DEFAULT 0,
+        reference   VARCHAR(200) DEFAULT NULL,
+        note        TEXT DEFAULT NULL,
+        admin_id    INT DEFAULT NULL,
+        created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_site_product (site_id, product_id),
+        KEY idx_created_at (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
+/**
  * Core function to record a stock movement and update stock level.
- * Used internally and by orders, imports, etc.
  */
 function adjustStock(
     PDO    $db,
@@ -49,7 +73,8 @@ function adjustStock(
            ->execute([':s' => $after, ':pid' => $productId, ':sid' => $siteId]);
     }
 
-    // Write audit trail
+    // Write audit trail — create table if it doesn't exist yet
+    ensureInventorySchema($db);
     $db->prepare("INSERT INTO inventory_history
         (site_id, product_id, variant_id, type, qty_before, qty_change, qty_after, reference, note, admin_id)
         VALUES (:s, :pid, :vid, :type, :before, :change, :after, :ref, :note, :aid)")
@@ -81,6 +106,7 @@ function adjustStock(
 }
 
 function getInventory(PDO $db): void {
+    ensureInventorySchema($db);
     $siteId = defined('ECOMMERCE_SITE_ID') ? ECOMMERCE_SITE_ID : 1;
     [$page, $perPage, $offset] = getPaginationParams();
 
@@ -99,8 +125,11 @@ function getInventory(PDO $db): void {
     $count->execute($params);
     $total  = (int)$count->fetchColumn();
 
+    // Use subquery for primary image — products table has no image_path column
     $stmt = $db->prepare("SELECT p.id, p.name, p.sku, p.stock, p.low_stock_threshold,
-        p.is_active, p.price, p.image_path,
+        p.is_active, p.price,
+        (SELECT pi.image_path FROM product_images pi
+         WHERE pi.product_id = p.id AND pi.is_primary = 1 LIMIT 1) AS image_path,
         (SELECT COUNT(*) FROM product_variants WHERE product_id = p.id AND is_active = 1) AS variant_count
         FROM products p $clause
         ORDER BY p.stock ASC, p.name ASC
@@ -145,6 +174,7 @@ function getInventoryAlerts(PDO $db): void {
 }
 
 function getInventoryHistory(PDO $db): void {
+    ensureInventorySchema($db);
     $siteId = defined('ECOMMERCE_SITE_ID') ? ECOMMERCE_SITE_ID : 1;
     [$page, $perPage, $offset] = getPaginationParams();
 
@@ -179,6 +209,7 @@ function getInventoryHistory(PDO $db): void {
 }
 
 function getProductInventory(PDO $db, int $productId): void {
+    ensureInventorySchema($db);
     $siteId = defined('ECOMMERCE_SITE_ID') ? ECOMMERCE_SITE_ID : 1;
 
     $prodStmt = $db->prepare("SELECT id, name, sku, stock, low_stock_threshold FROM products WHERE id = :pid AND site_id = :s");

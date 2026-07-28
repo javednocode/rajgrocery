@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { timeout, retry, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -27,38 +29,36 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/products`, { params: httpParams });
   }
 
-  getFeaturedProducts(limit = 8, country = ''): Observable<any> {
-    return this.http.get(`${this.baseUrl}/products/featured?limit=${limit}${country ? '&country=' + encodeURIComponent(country) : ''}`);
+  getFeaturedProducts(limit = 8): Observable<any> {
+    return this.http.get(`${this.baseUrl}/products/featured?limit=${limit}`)
+      .pipe(timeout(10000), retry(1), catchError(() => of({ success: true, data: [] })));
   }
 
   getHeroProducts(): Observable<any> {
     return this.http.get(`${this.baseUrl}/hero-products`);
   }
 
-  getTrendingProducts(limit = 8, country = ''): Observable<any> {
-    return this.http.get(`${this.baseUrl}/products/trending?limit=${limit}${country ? '&country=' + encodeURIComponent(country) : ''}`);
+  getTrendingProducts(limit = 8): Observable<any> {
+    return this.http.get(`${this.baseUrl}/products/trending?limit=${limit}`)
+      .pipe(timeout(10000), retry(1), catchError(() => of({ success: true, data: [] })));
   }
 
   getProductBySlug(slug: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/products/slug/${slug}`);
   }
 
-  searchProducts(query: string, country = ''): Observable<any> {
-    return this.http.get(`${this.baseUrl}/products/search?q=${encodeURIComponent(query)}${country ? '&country=' + encodeURIComponent(country) : ''}`);
-  }
-
-  // ── Countries (admin-managed marketplaces) ──
-  getCountries(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/countries`);
+  searchProducts(query: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/products/search?q=${encodeURIComponent(query)}`);
   }
 
   // ── Categories ──
-  getCategories(country = ''): Observable<any> {
-    return this.http.get(`${this.baseUrl}/categories${country ? '?country=' + encodeURIComponent(country) : ''}`);
+  getCategories(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/categories`);
   }
 
-  getFeaturedCategories(country = ''): Observable<any> {
-    return this.http.get(`${this.baseUrl}/categories/featured${country ? '?country=' + encodeURIComponent(country) : ''}`);
+  getFeaturedCategories(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/categories/featured`)
+      .pipe(timeout(10000), retry(1), catchError(() => of({ success: true, data: [] })));
   }
 
   getCategoryBySlug(slug: string): Observable<any> {
@@ -66,8 +66,8 @@ export class ApiService {
   }
 
   // ── Banners ──
-  getBanners(country = ''): Observable<any> {
-    return this.http.get(`${this.baseUrl}/banners${country ? '?country=' + encodeURIComponent(country) : ''}`);
+  getBanners(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/banners`);
   }
 
   // ── Settings ──

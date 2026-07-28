@@ -38,7 +38,6 @@ require_once __DIR__ . '/helpers/upload.php';
 require_once __DIR__ . '/helpers/slug.php';
 require_once __DIR__ . '/helpers/cache.php';
 require_once __DIR__ . '/helpers/security.php';
-require_once __DIR__ . '/helpers/country.php';
 
 // Inject security headers on every request
 sendSecurityHeaders();
@@ -74,6 +73,9 @@ header("Content-Type: application/json; charset=utf-8");
 
 // Get request info
 $method = $_SERVER['REQUEST_METHOD'];
+if ($method === 'POST' && isset($_POST['_method'])) {
+    $method = strtoupper($_POST['_method']);
+}
 $uri = $_SERVER['REQUEST_URI'];
 
 // Remove query string
@@ -112,30 +114,16 @@ if (preg_match('#^/api/auth/login$#', $uri)) {
     exit;
 }
 
-
-
-// Countries — the admin-managed marketplace worlds
-if (preg_match('#^/api/countries/(\d+)/default/?$#', $uri, $m)) {
-    require_once __DIR__ . '/api/countries.php';
-    if ($method === 'POST') { requireAuth(); setDefaultCountry(getDB(), $m[1]); }
-    exit;
-}
-if (preg_match('#^/api/countries/(\d+)$#', $uri, $m)) {
-    require_once __DIR__ . '/api/countries.php';
-    if ($method === 'PUT')    { requireAuth(); updateCountry(getDB(), $m[1]); }
-    if ($method === 'POST')   { requireAuth(); updateCountry(getDB(), $m[1]); }
-    if ($method === 'DELETE') { requireAuth(); deleteCountry(getDB(), $m[1]); }
-    exit;
-}
-if (preg_match('#^/api/countries/?$#', $uri)) {
-    require_once __DIR__ . '/api/countries.php';
-    if ($method === 'GET') {
-        if (isset($_GET['all']) && $_GET['all'] == '1') requireAuth();
-        getCountries(getDB());
+if (preg_match('#^/api/auth/profile$#', $uri)) {
+    require_once __DIR__ . '/api/auth.php';
+    if ($method === 'PUT') {
+        requireAuth();
+        updateAdminProfile(getDB());
     }
-    if ($method === 'POST') { requireAuth(); createCountry(getDB()); }
     exit;
 }
+
+
 
 // Products — order matters: specific routes before parameterized ones
 if (preg_match('#^/api/products/featured/?$#', $uri)) {
@@ -241,6 +229,28 @@ if (preg_match('#^/api/categories/?$#', $uri)) {
     require_once __DIR__ . '/api/categories.php';
     if ($method === 'GET') getCategories(getDB());
     if ($method === 'POST') { requireAuth(); createCategory(getDB()); }
+    exit;
+}
+
+// AI category images (admin only)
+if (preg_match('#^/api/ai-images/gemini/models/?$#', $uri)) {
+    require_once __DIR__ . '/api/ai_images.php';
+    if ($method === 'GET') { requireAuth(); aiListGeminiModels(getDB()); }
+    exit;
+}
+if (preg_match('#^/api/ai-images/categories/missing/?$#', $uri)) {
+    require_once __DIR__ . '/api/ai_images.php';
+    if ($method === 'GET') { requireAuth(); aiListMissingCategoryImages(getDB()); }
+    exit;
+}
+if (preg_match('#^/api/ai-images/categories/(\d+)/generate/?$#', $uri, $m)) {
+    require_once __DIR__ . '/api/ai_images.php';
+    if ($method === 'POST') { requireAuth(); aiGenerateCategoryImage(getDB(), (int)$m[1]); }
+    exit;
+}
+if (preg_match('#^/api/ai-images/categories/(\d+)/image/?$#', $uri, $m)) {
+    require_once __DIR__ . '/api/ai_images.php';
+    if ($method === 'DELETE') { requireAuth(); aiRemoveCategoryImage(getDB(), (int)$m[1]); }
     exit;
 }
 

@@ -1,8 +1,0 @@
--- White-label ecommerce import entry point.
---
--- This reusable starter should not ship with production dump data from any
--- previous storefront. For a new deployment:
--- 1. Import schema.sql.
--- 2. Optionally import seed.sql for demo catalog data.
--- 3. Configure branding, contact, delivery, email, SEO, and social settings
---    from the admin panel or site_settings rows.

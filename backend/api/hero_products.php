@@ -22,43 +22,31 @@ function initHeroProductsTable($db) {
         is_active TINYINT DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )");
-    // Ensure product_id column exists on older tables
-    try {
-        $db->exec("ALTER TABLE hero_products ADD COLUMN product_id INT NULL AFTER id");
-    } catch (\Throwable $e) {}
+    // Ensure columns exist on older tables
+    try { $db->exec("ALTER TABLE hero_products ADD COLUMN product_id INT NULL AFTER id"); } catch (\Throwable $e) {}
 }
 
 function getHeroProducts($db) {
+    initHeroProductsTable($db);
     try {
         $all = $_GET['all'] ?? false;
-        $sql = "SELECT hp.*, p.slug as product_slug
-                FROM hero_products hp
-                LEFT JOIN products p ON hp.product_id = p.id";
-        if (!$all) $sql .= " WHERE hp.is_active = 1";
+
+        $where = [];
+        $params = [];
+        if (!$all) $where[] = "hp.is_active = 1";
+
+        $sql = "SELECT hp.*, p.slug as product_slug FROM hero_products hp LEFT JOIN products p ON hp.product_id = p.id";
+        if ($where) $sql .= ' WHERE ' . implode(' AND ', $where);
         $sql .= " ORDER BY hp.sort_order ASC, hp.id DESC";
-        $stmt = $db->query($sql);
+
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
         successResponse($stmt->fetchAll());
     } catch (\PDOException $e) {
-        $msg  = $e->getMessage();
-        $code = $e->getCode(); // e.g. '42S22' = unknown column, '42S02' = table not found
-
-        // Table doesn't exist OR column missing → migrate & retry
-        if (strpos($msg, "42S02") !== false  // Base table not found
-         || strpos($msg, "42S22") !== false  // Unknown column
-         || strpos($msg, "Table '") !== false) {
+        $msg = $e->getMessage();
+        if (strpos($msg, '42S02') !== false || strpos($msg, '42S22') !== false || strpos($msg, "Table '") !== false) {
             initHeroProductsTable($db);
-            try {
-                $all = $_GET['all'] ?? false;
-                $sql = "SELECT hp.*, p.slug as product_slug
-                        FROM hero_products hp
-                        LEFT JOIN products p ON hp.product_id = p.id";
-                if (!$all) $sql .= " WHERE hp.is_active = 1";
-                $sql .= " ORDER BY hp.sort_order ASC, hp.id DESC";
-                $stmt = $db->query($sql);
-                successResponse($stmt->fetchAll());
-            } catch (\PDOException $e2) {
-                errorResponse('Database error: ' . $e2->getMessage(), 500);
-            }
+            successResponse([]);
             return;
         }
         errorResponse('Database error: ' . $msg, 500);

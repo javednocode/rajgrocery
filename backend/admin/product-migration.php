@@ -40,7 +40,11 @@
     <h3 style="font-size:16px;margin:0;">Product Migration</h3>
     <p style="font-size:12px;color:var(--admin-text-muted);margin:4px 0 0;">Import products from websites, WooCommerce, Shopify, CSV, or XML feeds.</p>
   </div>
-  <button class="btn btn-outline btn-sm" onclick="loadHistory()">Refresh History</button>
+  <div style="display:flex;gap:8px;">
+    <button id="pmRepairBtn" class="btn btn-outline btn-sm" onclick="repairImages()" title="Re-links product photos whose file went missing to a saved copy on disk. Safe to run any time.">🔧 Repair Images</button>
+    <button id="pmRepairCatBtn" class="btn btn-outline btn-sm" onclick="repairCategories()" title="Auto-assigns categories to products that currently have none, using keyword matching on the product name.">🏷️ Repair Categories</button>
+    <button class="btn btn-outline btn-sm" onclick="loadHistory()">Refresh History</button>
+  </div>
 </div>
 
 <div class="pm-grid">
@@ -53,14 +57,6 @@
           <button class="pm-tab" data-method="shopify" onclick="selectMethod('shopify')">Shopify</button>
           <button class="pm-tab" data-method="csv" onclick="selectMethod('csv')">CSV</button>
           <button class="pm-tab" data-method="xml" onclick="selectMethod('xml')">XML Feed</button>
-        </div>
-
-        <div class="form-group" style="margin-bottom:16px;">
-          <label style="font-weight:700;">Import To Country <span style="color:#dc2626;">*</span></label>
-          <select id="pmCountry" class="form-control" onchange="onCountryChange()" style="border:2px solid var(--admin-primary);font-weight:600;">
-            <option value="">— Select Target Country —</option>
-          </select>
-          <div class="pm-help">All imported data will be linked exclusively to the selected country.</div>
         </div>
 
         <input type="hidden" id="pmMethod" value="scraper">
@@ -165,8 +161,7 @@
           </div>
         </div>
 
-        <button class="btn btn-primary" id="pmStartBtn" onclick="startMigration()" disabled>Start Import</button>
-        <div class="pm-help" id="pmCountryHint" style="margin-top:6px;color:#dc2626;font-weight:600;">⚠ Please select a target country above before importing.</div>
+        <button class="btn btn-primary" id="pmStartBtn" onclick="startMigration()">Start Import</button>
       </div>
     </div>
 
@@ -174,8 +169,8 @@
       <div class="card-header"><h3>Import History</h3></div>
       <div class="card-body" style="overflow-x:auto;">
         <table class="pm-history">
-          <thead><tr><th>Date</th><th>Source</th><th>Country</th><th>Status</th><th>Progress</th><th>Results</th><th>Actions</th></tr></thead>
-          <tbody id="pmHistory"><tr><td colspan="7">Loading...</td></tr></tbody>
+          <thead><tr><th>Date</th><th>Source</th><th>Status</th><th>Progress</th><th>Results</th><th>Actions</th></tr></thead>
+          <tbody id="pmHistory"><tr><td colspan="6">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -190,7 +185,6 @@
           <div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:10px;">
             <div>
               <strong id="pmJobTitle">Job</strong>
-              <span id="pmJobCountry" style="margin-left:8px;font-size:12px;"></span>
             </div>
             <span class="pm-pill" id="pmJobStatus">pending</span>
           </div>
@@ -226,6 +220,10 @@
       </div>
     </div>
   </div>
+  
+  <div style="text-align: center; padding: 15px; color: #64748b; font-size: 13px; margin-top: 10px;">
+      Powered by <a href="https://webcraftstech.in" target="_blank" style="color: var(--admin-primary); text-decoration: none;">webcraftstech.in</a>
+  </div>
 </div>
 
 <script>
@@ -238,12 +236,6 @@ function selectMethod(method) {
   document.querySelectorAll('.pm-tab').forEach(b => b.classList.toggle('active', b.dataset.method === method));
   document.querySelectorAll('.pm-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel_' + method).classList.add('active');
-}
-
-function onCountryChange() {
-  const val = document.getElementById('pmCountry').value;
-  document.getElementById('pmStartBtn').disabled = !val;
-  document.getElementById('pmCountryHint').style.display = val ? 'none' : '';
 }
 
 function toggleScraperFields() {
@@ -260,11 +252,9 @@ function getJsonMapping(id) {
 
 function buildPayload() {
   const method = document.getElementById('pmMethod').value;
-  const countryId = document.getElementById('pmCountry').value;
   const base = {
     method,
-    duplicate_strategy: document.getElementById('pmDuplicate').value,
-    country_id: countryId
+    duplicate_strategy: document.getElementById('pmDuplicate').value
   };
   if (method === 'scraper') {
     return {
@@ -320,7 +310,6 @@ async function startMigration() {
       const fd = new FormData();
       fd.set('method', 'csv');
       fd.set('duplicate_strategy', document.getElementById('pmDuplicate').value);
-      fd.set('country_id', document.getElementById('pmCountry').value);
       fd.set('file', file);
       const mapping = getJsonMapping('csv_mapping');
       if (mapping) fd.set('mapping', JSON.stringify(mapping));
@@ -409,14 +398,6 @@ function renderJob(job) {
   document.getElementById('pmJobEmpty').style.display = 'none';
   document.getElementById('pmJob').style.display = '';
   document.getElementById('pmJobTitle').textContent = '#' + job.id + ' ' + job.method + ' - ' + (job.batch_id || '');
-  const countryEl = document.getElementById('pmJobCountry');
-  if (job.country_name) {
-    countryEl.textContent = (job.country_flag || '') + ' ' + job.country_name;
-    countryEl.style.display = '';
-  } else {
-    countryEl.textContent = '';
-    countryEl.style.display = 'none';
-  }
   const status = document.getElementById('pmJobStatus');
   status.textContent = job.status;
   status.className = 'pm-pill ' + job.status;
@@ -442,6 +423,51 @@ async function loadLogs(id) {
   const log = document.getElementById('pmLog');
   log.innerHTML = (res.data || []).map(l => `<div class="${l.level}">[${l.created_at}] ${escapeHtml(l.message)}</div>`).join('');
   log.scrollTop = log.scrollHeight;
+}
+
+async function repairImages() {
+  const btn = document.getElementById('pmRepairBtn');
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = 'Repairing…';
+  try {
+    const res = await api('/product-migration/repair-images', 'POST', {});
+    const d = res.data || {};
+    alert('Image repair finished.\n\nChecked: ' + (d.checked ?? 0)
+      + '\nAlready fine: ' + (d.healthy ?? 0)
+      + '\nRepaired: ' + (d.repaired ?? 0)
+      + '\nStill missing: ' + (d.missing ?? 0)
+      + (d.missing ? '\n\nRun the import again with "Update Existing" to re-download the missing ones.' : ''));
+  } catch (e) {
+    alert('Repair failed: ' + (e && e.message ? e.message : e));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+}
+
+async function repairCategories() {
+  const btn = document.getElementById('pmRepairCatBtn');
+  btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = 'Repairing…';
+
+  try {
+    const res = await api('/product-migration/repair-categories', 'POST', { limit: 1000 });
+    const d = res.data || {};
+    alert('Category repair finished!\n\n'
+      + 'Uncategorized found: ' + (d.total_uncategorized ?? 0) + '\n'
+      + 'Fixed: ' + (d.fixed ?? 0) + '\n'
+      + 'No keyword match (manual): ' + (d.skipped ?? 0) + '\n\n'
+      + (d.message || ''));
+    // Refresh page so product list shows new categories
+    if ((d.fixed ?? 0) > 0) setTimeout(() => location.reload(), 800);
+  } catch (e) {
+    alert('Category repair failed: ' + (e && e.message ? e.message : e));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
 }
 
 async function rollbackCurrentJob() {
@@ -474,11 +500,9 @@ async function loadHistory() {
     document.getElementById('pmHistory').innerHTML = rows.length ? rows.map(job => {
       const pct = job.total > 0 ? Math.round((job.processed / job.total) * 100) : 0;
       const source = escapeHtml(job.source_url || job.method);
-      const countryLabel = job.country_name ? (job.country_flag || '') + ' ' + escapeHtml(job.country_name) : '<span style="color:var(--admin-text-muted)">—</span>';
       return `<tr>
         <td>${job.created_at || ''}<br><small>${escapeHtml(job.batch_id || '')}</small></td>
         <td><strong>${escapeHtml(job.method)}</strong><br><small>${source}</small></td>
-        <td>${countryLabel}</td>
         <td><span class="pm-pill ${job.status}">${job.status}</span></td>
         <td>${job.processed}/${job.total}<br><small>${pct}%</small></td>
         <td>I:${job.imported} U:${job.updated} S:${job.skipped} E:${job.failed}</td>
@@ -488,7 +512,7 @@ async function loadHistory() {
           ${job.status !== 'rolled_back' ? `<button class="btn btn-danger btn-sm" onclick="rollbackJob(${job.id})">Rollback</button>` : ''}
         </div></td>
       </tr>`;
-    }).join('') : '<tr><td colspan="7">No import jobs yet.</td></tr>';
+    }).join('') : '<tr><td colspan="6">No import jobs yet.</td></tr>';
   } catch(e) {}
 }
 
@@ -539,23 +563,6 @@ function escapeHtml(s) {
 toggleScraperFields();
 loadMappings();
 loadHistory();
-
-// Load countries for the Import To Country dropdown
-(async function loadCountries() {
-  try {
-    const res = await api('/countries?all=1');
-    const countries = (res.data || []).filter(c => c.is_active);
-    const sel = document.getElementById('pmCountry');
-    countries.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c.id;
-      opt.textContent = (c.flag || '') + ' ' + c.name;
-      sel.appendChild(opt);
-    });
-  } catch(e) {
-    console.error('Failed to load countries:', e);
-  }
-})();
 </script>
 
 <?php include 'includes/footer.php'; ?>

@@ -5,8 +5,7 @@
 
 function getCategories($db) {
     $isAdmin = isset($_GET['admin']) && $_GET['admin'] == '1';
-    $countryParam = strtolower(preg_replace('/[^a-z0-9]/', '', $_GET['country'] ?? ''));
-    $cacheKey = $isAdmin ? 'categories_all_admin' : "categories_all_public_c{$countryParam}";
+    $cacheKey = $isAdmin ? 'categories_all_admin' : 'categories_all_public';
 
     // Cache public categories for 10 minutes (categories rarely change)
     if (!$isAdmin) {
@@ -17,17 +16,11 @@ function getCategories($db) {
         }
     }
 
-    $join = '';
     $where = $isAdmin ? '' : 'WHERE c.is_active = 1';
-    if (!$isAdmin && $countryParam !== '') {
-        $countryId = resolveCountryId($db, $countryParam);
-        if (!$countryId) { successResponse([]); return; }
-        $join = "INNER JOIN category_countries ccty ON ccty.category_id = c.id AND ccty.country_id = " . (int)$countryId;
-    }
 
     $sql = "SELECT c.id, c.name, c.slug, c.description, c.image, c.icon, c.parent_id,
                 c.sort_order, c.is_active, c.is_featured, c.meta_title, c.meta_description
-            FROM categories c $join $where
+            FROM categories c $where
             ORDER BY c.sort_order ASC, c.name ASC";
     $stmt = $db->prepare($sql);
     $stmt->execute();
@@ -37,65 +30,38 @@ function getCategories($db) {
     if (!empty($categories)) {
         $catIds = array_column($categories, 'id');
         $placeholders = implode(',', array_fill(0, count($catIds), '?'));
-        $countStmt = $db->prepare("SELECT category_id, COUNT(*) as cnt FROM product_categories WHERE category_id IN ($placeholders) GROUP BY category_id");
+
+        $countSql = "SELECT category_id, COUNT(*) as cnt FROM product_categories WHERE category_id IN ($placeholders) GROUP BY category_id";
+        $countStmt = $db->prepare($countSql);
         $countStmt->execute($catIds);
         $counts = $countStmt->fetchAll(PDO::FETCH_KEY_PAIR);
         foreach ($categories as &$c) {
             $c['product_count'] = (int)($counts[$c['id']] ?? 0);
         }
         unset($c);
-
-        // Admin needs current country assignments for the edit form
-        if ($isAdmin) {
-            $countryIdMap = batchLoadCategoryCountryIds($db, $catIds);
-            foreach ($categories as &$c) {
-                $c['country_ids'] = $countryIdMap[$c['id']] ?? [];
-            }
-            unset($c);
-        }
     }
 
-    // When filtering by country, orphaned children (parent not assigned)
-    // still belong in the list — flatten them to the root of the tree.
+    // Build the category tree from filtered categories
     $tree = buildCategoryTree($categories);
-    if (!$isAdmin && $countryParam !== '') {
-        $inTree = [];
-        $collect = function ($nodes) use (&$collect, &$inTree) {
-            foreach ($nodes as $n) { $inTree[] = $n['id']; $collect($n['children'] ?? []); }
-        };
-        $collect($tree);
-        foreach ($categories as $c) {
-            if (!in_array($c['id'], $inTree)) { $c['children'] = []; $tree[] = $c; }
-        }
-    }
 
     if (!$isAdmin) {
-        cacheSet($cacheKey, $tree, 600); // 10 minutes
+        cacheSet($cacheKey, $tree, 60); // 1 minute
     }
 
     successResponse($tree);
 }
 
 function getFeaturedCategories($db) {
-    $countryParam = strtolower(preg_replace('/[^a-z0-9]/', '', $_GET['country'] ?? ''));
-    $cacheKey = "categories_featured_c{$countryParam}";
+    $cacheKey = 'categories_featured';
     $cached = cacheGet($cacheKey);
     if ($cached !== null) {
         successResponse($cached);
         return;
     }
 
-    $join = '';
-    if ($countryParam !== '') {
-        $countryId = resolveCountryId($db, $countryParam);
-        if (!$countryId) { successResponse([]); return; }
-        $join = "INNER JOIN category_countries ccty ON ccty.category_id = c.id AND ccty.country_id = " . (int)$countryId;
-    }
-
     $stmt = $db->prepare("
         SELECT c.id, c.name, c.slug, c.image, c.icon, c.sort_order, c.is_featured
         FROM categories c
-        $join
         WHERE c.is_active = 1 AND c.is_featured = 1
         ORDER BY c.sort_order ASC
         LIMIT 12
@@ -107,7 +73,9 @@ function getFeaturedCategories($db) {
     if (!empty($result)) {
         $catIds = array_column($result, 'id');
         $placeholders = implode(',', array_fill(0, count($catIds), '?'));
-        $countStmt = $db->prepare("SELECT category_id, COUNT(*) as cnt FROM product_categories WHERE category_id IN ($placeholders) GROUP BY category_id");
+
+        $countSql = "SELECT category_id, COUNT(*) as cnt FROM product_categories WHERE category_id IN ($placeholders) GROUP BY category_id";
+        $countStmt = $db->prepare($countSql);
         $countStmt->execute($catIds);
         $counts = $countStmt->fetchAll(PDO::FETCH_KEY_PAIR);
         foreach ($result as &$c) {
@@ -116,7 +84,7 @@ function getFeaturedCategories($db) {
         unset($c);
     }
 
-    cacheSet($cacheKey, $result, 600); // 10 minutes
+    cacheSet($cacheKey, $result, 60); // 1 minute
     successResponse($result);
 }
 
@@ -139,8 +107,6 @@ function getCategoryById($db, $id) {
     $sub = $db->prepare("SELECT id, name, slug, image, sort_order FROM categories WHERE parent_id = :id AND is_active = 1 ORDER BY sort_order ASC");
     $sub->execute([':id' => $id]);
     $cat['subcategories'] = $sub->fetchAll();
-    $ctyMap = batchLoadCategoryCountryIds($db, [(int)$id]);
-    $cat['country_ids'] = $ctyMap[(int)$id] ?? [];
     successResponse($cat);
 }
 
@@ -188,9 +154,6 @@ function createCategory($db) {
     $stmt->execute([':name'=>$name,':slug'=>$slug,':desc'=>$data['description']??null,':img'=>$image??($data['image']??null),':icon'=>$data['icon']??null,':pid'=>!empty($data['parent_id'])?(int)$data['parent_id']:null,':sort'=>(int)($data['sort_order']??0),':active'=>(int)($data['is_active']??1),':feat'=>(int)($data['is_featured']??0),':mt'=>$data['meta_title']??null,':md'=>$data['meta_description']??null,':fk'=>$data['focus_keyword']??null]);
 
     $newId = (int)$db->lastInsertId();
-    if (isset($data['countries'])) {
-        syncCategoryCountries($db, $newId, $data['countries']);
-    }
 
     // Clear category caches
     cacheClearPattern('categories_');
@@ -206,7 +169,10 @@ function updateCategory($db, $id) {
 
     if (!empty($_POST)) {
         $data = $_POST;
-        $uploadedFile = !empty($_FILES['image']) ? $_FILES['image'] : null;
+        // Also capture the file upload from $_FILES if present
+        $uploadedFile = (!empty($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK)
+            ? $_FILES['image']
+            : null;
     } elseif (strpos($contentType, 'multipart/form-data') !== false) {
         preg_match('/boundary=([^;]+)/', $contentType, $bm);
         if (!empty($bm[1])) {
@@ -264,10 +230,6 @@ function updateCategory($db, $id) {
     $stmt = $db->prepare('UPDATE categories SET name=:name,slug=:slug,description=:desc,image=:img,icon=:icon,parent_id=:pid,sort_order=:sort,is_active=:active,is_featured=:feat,meta_title=:mt,meta_description=:md,focus_keyword=:fk WHERE id=:id');
     $stmt->execute([':id'=>$id,':name'=>$name,':slug'=>$slug,':desc'=>$data['description']??null,':img'=>$image,':icon'=>$data['icon']??null,':pid'=>!empty($data['parent_id'])?(int)$data['parent_id']:null,':sort'=>(int)($data['sort_order']??0),':active'=>(int)($data['is_active']??1),':feat'=>(int)($data['is_featured']??0),':mt'=>$data['meta_title']??null,':md'=>$data['meta_description']??null,':fk'=>$data['focus_keyword']??null]);
 
-    if (isset($data['countries'])) {
-        syncCategoryCountries($db, (int)$id, $data['countries']);
-    }
-
     // Clear all category caches including slug cache
     cacheClearPattern('categories_');
     cacheClearPattern('category_slug_');
@@ -283,7 +245,6 @@ function deleteCategory($db, $id) {
     try {
         $db->beginTransaction();
         $db->prepare("DELETE FROM product_categories WHERE category_id = :id")->execute([':id' => $id]);
-        try { $db->prepare("DELETE FROM category_countries WHERE category_id = :id")->execute([':id' => $id]); } catch (Exception $e) {}
         $db->prepare("UPDATE categories SET parent_id = NULL WHERE parent_id = :id")->execute([':id' => $id]);
         $db->prepare("DELETE FROM categories WHERE id = :id")->execute([':id' => $id]);
         $db->commit();

@@ -13,9 +13,9 @@ define('JWT_EXPIRY', 86400 * 7); // 7 days
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('UPLOAD_URL', '/uploads/');
 define('MAX_FILE_SIZE', 5 * 1024 * 1024); // 5MB images
-define('MAX_VIDEO_SIZE', 50 * 1024 * 1024); // 50MB videos
+define('MAX_VIDEO_SIZE', 100 * 1024 * 1024); // 100MB videos
 define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']);
-define('ALLOWED_VIDEO_EXTENSIONS', ['mp4', 'webm', 'mov']);
+define('ALLOWED_VIDEO_EXTENSIONS', ['mp4', 'webm', 'mov', 'm4v', 'avi', 'mkv', 'ogg']);
 
 // Pagination
 define('DEFAULT_PAGE_SIZE', 12);

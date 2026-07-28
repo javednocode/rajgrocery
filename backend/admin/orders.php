@@ -1,13 +1,5 @@
 <?php $pageTitle = 'Orders'; include 'includes/header.php'; ?>
 
-<!-- Country context banner -->
-<div id="orderCountryBanner" style="display:none;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;margin-bottom:14px;background:linear-gradient(135deg,rgba(37,99,235,.08),rgba(99,102,241,.06));border:1.5px solid rgba(37,99,235,.15);font-size:13px;">
-    <span style="font-weight:700;color:var(--admin-text-muted);">Country:</span>
-    <span id="orderCountryName" style="font-weight:800;color:var(--admin-primary);font-size:14px;"></span>
-    <span style="font-size:12px;color:var(--admin-text-muted);">(orders are not country-scoped yet — showing all)</span>
-    <span style="flex:1"></span>
-    <a href="javascript:void(0)" onclick="setAdminCountry(null)" style="font-size:12px;color:var(--admin-text-muted);text-decoration:none;">× Show All Countries</a>
-</div>
 <div class="toolbar">
     <div class="search-box"><span class="search-icon"></span><input type="text" id="searchInput" placeholder="Search orders..." oninput="loadOrders()"></div>
     <select id="statusFilter" class="form-control" style="width:180px;" onchange="loadOrders()">
@@ -48,14 +40,6 @@
 <script>
 let currentOrderId = null;
 async function loadOrders(page = 1) {
-    const c = getAdminCountry();
-    const banner = document.getElementById('orderCountryBanner');
-    if (c) {
-        document.getElementById('orderCountryName').textContent = (c.flag||'') + ' ' + c.name;
-        banner.style.display = 'flex';
-    } else {
-        banner.style.display = 'none';
-    }
     const q = document.getElementById('searchInput').value;
     const status = document.getElementById('statusFilter').value;
     try {

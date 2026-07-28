@@ -51,15 +51,15 @@ function uploadVideo($file, $folder = 'banners/videos') {
         return ['success' => false, 'message' => 'No video uploaded'];
     }
 
-    $maxSize = defined('MAX_VIDEO_SIZE') ? MAX_VIDEO_SIZE : (50 * 1024 * 1024);
+    $maxSize = defined('MAX_VIDEO_SIZE') ? MAX_VIDEO_SIZE : (100 * 1024 * 1024);
     if ($file['size'] > $maxSize) {
-        return ['success' => false, 'message' => 'Video too large. Max 50MB allowed'];
+        return ['success' => false, 'message' => 'Video too large. Max 100MB allowed'];
     }
 
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    $allowed = defined('ALLOWED_VIDEO_EXTENSIONS') ? ALLOWED_VIDEO_EXTENSIONS : ['mp4', 'webm', 'mov'];
+    $allowed = defined('ALLOWED_VIDEO_EXTENSIONS') ? ALLOWED_VIDEO_EXTENSIONS : ['mp4', 'webm', 'mov', 'm4v', 'avi', 'mkv', 'ogg'];
     if (!in_array($ext, $allowed)) {
-        return ['success' => false, 'message' => 'Invalid video type. Allowed: mp4, webm, mov'];
+        return ['success' => false, 'message' => 'Invalid video type. Allowed: mp4, webm, mov, m4v, avi, mkv, ogg'];
     }
 
     $uploadPath = UPLOAD_DIR . $folder . '/';

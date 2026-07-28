@@ -55,7 +55,6 @@
 <div class="toolbar">
     <div>
         <h3 style="font-size:16px;margin:0;">⭐ Featured Products</h3>
-        <p style="font-size:12px;color:var(--admin-text-muted);margin:4px 0 0;">Add or remove products from the "Featured" section on the homepage</p>
     </div>
     <button class="btn btn-outline" onclick="clearAllFeatured()" style="color:#ef4444;border-color:rgba(239,68,68,0.4);">Clear All Featured</button>
 </div>
@@ -95,7 +94,7 @@ let nonFeaturedProducts = [];
 async function loadAll() {
     try {
         const [featRes, allRes] = await Promise.all([
-            api('/products/featured?limit=100'),
+            api('/products/featured?limit=200'),
             api('/products?per_page=2000&admin=1')
         ]);
         featuredProducts    = featRes.data || [];
@@ -156,7 +155,8 @@ async function toggleFeatured(productId, makeF) {
     const btn = document.querySelector(`#row_${productId} button`);
     if (btn) { btn.disabled = true; btn.textContent = '...'; }
     try {
-        await apiPost(`/products/${productId}/featured`, { is_featured: makeF ? 1 : 0 });
+        const body = { is_featured: makeF ? 1 : 0 };
+        await apiPost(`/products/${productId}/featured`, body);
         if (makeF) {
             const idx = nonFeaturedProducts.findIndex(p => p.id === productId);
             if (idx >= 0) { const [m] = nonFeaturedProducts.splice(idx, 1); featuredProducts.push(m); }

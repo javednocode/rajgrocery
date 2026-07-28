@@ -6,6 +6,22 @@
 
 require_once __DIR__ . '/../helpers/branding.php';
 
+/**
+ * Secrets that must NEVER be returned to any client. They are stored in
+ * site_settings so the admin can set them, but every read redacts them to
+ * an empty value plus a `<key>_set` boolean so the UI can show configured
+ * status without ever shipping the secret to the browser.
+ */
+const SENSITIVE_SETTING_KEYS = ['ai_image_api_key'];
+
+function redactSensitiveSettings(array $settings): array {
+    foreach (SENSITIVE_SETTING_KEYS as $k) {
+        $settings[$k . '_set'] = (isset($settings[$k]) && trim((string)$settings[$k]) !== '') ? 1 : 0;
+        if (array_key_exists($k, $settings)) $settings[$k] = '';
+    }
+    return $settings;
+}
+
 function getSettings($db) {
     $group = $_GET['group'] ?? null;
     $cacheKey = 'settings_' . ($group ?: 'all');
@@ -29,6 +45,7 @@ function getSettings($db) {
         errorResponse('Settings unavailable', 500);
     }
 
+    $settings = redactSensitiveSettings($settings);
     $settings['_ts'] = time();
 
     if (function_exists('cacheSet')) {
@@ -67,6 +84,9 @@ function updateSettings($db) {
     $defaults = brandingDefaults();
     foreach ($data as $key => $value) {
         if (!is_string($key) || $key === '') continue;
+        // Never let a blank submission wipe a stored secret — the admin UI
+        // sends secret fields only when the user actually types a new value.
+        if (in_array($key, SENSITIVE_SETTING_KEYS, true) && trim((string)$value) === '') continue;
         $type = $defaults[$key][1] ?? 'text';
         $group = brandingSettingGroup($key);
         try {
@@ -87,6 +107,15 @@ function updateSettings($db) {
         'promo_1_image' => 'promos',
         'promo_2_image' => 'promos',
         'promo_3_image' => 'promos',
+        'promo_1_image_mobile' => 'promos',
+        'promo_2_image_mobile' => 'promos',
+        'promo_3_image_mobile' => 'promos',
+        'review_1_photo' => 'homepage',
+        'review_2_photo' => 'homepage',
+        'review_3_photo' => 'homepage',
+        'review_4_photo' => 'homepage',
+        'review_5_photo' => 'homepage',
+        'review_6_photo' => 'homepage',
     ];
     foreach ($fileKeys as $fileKey => $uploadFolder) {
         if (empty($_FILES[$fileKey]) || $_FILES[$fileKey]['error'] !== UPLOAD_ERR_OK) continue;
@@ -128,6 +157,9 @@ function getPublicSettings(PDO $db): void {
             $data[$row['setting_key']] = $row['setting_value'];
         }
 
+        // Strip secrets before this ever reaches the public/frontend.
+        $data = redactSensitiveSettings($data);
+
         // Resolve site_logo URL — prepend base URL if it's a relative path
         if (!empty($data['site_logo']) && !str_starts_with($data['site_logo'], 'http')) {
             $data['logo_url'] = $data['site_logo']; // alias for frontend compatibility
@@ -143,15 +175,17 @@ function getPublicSettings(PDO $db): void {
 
         // Fallback defaults for keys the frontend expects
         $defaults = [
-            'site_name'          => 'Indian Market Grocery Store',
-            'site_tagline'       => 'Premium South Asian groceries delivered.',
+            'site_name'          => 'LAAVI STORE',
+            'site_tagline'       => 'Indian Grocery Store in Hong Kong',
             'site_logo'          => '/logo.png',
             'logo_url'           => '/logo.png',
-            'currency_symbol'    => '€',
+            'currency_symbol'    => 'HK$',
+            'currency_code'      => 'HKD',
+            'store_country'      => 'Hong Kong',
             'shipping_free_above'=> '50',
-            'hero_eyebrow'       => 'Premium Indian Grocery',
-            'hero_title'         => 'Authentic Indian groceries, delivered fresh.',
-            'hero_subtitle'      => 'Shop trusted brands, fresh staples, spices, rice, atta, lentils, snacks and more.',
+            'hero_eyebrow'       => 'Indian Grocery in Hong Kong',
+            'hero_title'         => 'Your Favourite Indian Groceries, All in One Place.',
+            'hero_subtitle'      => 'Shop everyday Indian groceries, pantry essentials, snacks, beverages and household favourites from LAAVI STORE.',
         ];
         foreach ($defaults as $k => $v) {
             if (!isset($data[$k]) || $data[$k] === '') {
@@ -165,10 +199,11 @@ function getPublicSettings(PDO $db): void {
         error_log('getPublicSettings error: ' . $e->getMessage());
         // Return minimal defaults so the frontend still renders
         successResponse([
-            'site_name'       => 'Indian Market Grocery Store',
+            'site_name'       => 'LAAVI STORE',
             'site_logo'       => '/logo.png',
             'logo_url'        => '/logo.png',
-            'currency_symbol' => '€',
+            'currency_symbol' => 'HK$',
+            'currency_code'   => 'HKD',
         ]);
     }
 }

@@ -32,18 +32,6 @@ function isActivePage(string ...$pages): string {
     </div>
 
     <nav class="sidebar-nav">
-        <!-- ─── COUNTRY CONTEXT ─── -->
-        <div class="nav-section">Store Context</div>
-        <div style="padding:0 4px 12px;">
-            <div id="countrySwitcherWrap">
-                <select id="countrySwitcher"
-                    onchange="handleCountrySwitch(this)"
-                    style="width:100%;padding:9px 10px;border:2px solid var(--admin-primary);border-radius:9px;font-size:13px;font-weight:700;background:var(--admin-surface);color:var(--admin-text);outline:none;cursor:pointer;">
-                    <option value="">🌍 All Countries</option>
-                </select>
-                <div id="countryIndicator" style="margin-top:6px;height:3px;border-radius:2px;background:var(--admin-border);transition:background .3s;"></div>
-            </div>
-        </div>
         <!-- ─── MAIN ─── -->
         <div class="nav-section">Main</div>
         <a href="dashboard.php" class="<?= isActivePage('dashboard.php') ?>">
@@ -60,10 +48,6 @@ function isActivePage(string ...$pages): string {
         <a href="categories.php" class="<?= isActivePage('categories.php') ?>">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
             Categories
-        </a>
-        <a href="countries.php" class="<?= isActivePage('countries.php') ?>">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 4 5.7 4 9s-1.5 6.4-4 9c-2.5-2.6-4-5.7-4-9s1.5-6.4 4-9z"/></svg>
-            Countries
         </a>
         <a href="inventory.php" class="<?= isActivePage('inventory.php') ?>">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3h18v4H3z"/><path d="M3 11h18v4H3z"/><path d="M3 19h18v2H3z"/></svg>
@@ -94,6 +78,10 @@ function isActivePage(string ...$pages): string {
         <a href="banners.php" class="<?= isActivePage('banners.php') ?>">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg>
             Banner Slider
+        </a>
+        <a href="promo-banners.php" class="<?= isActivePage('promo-banners.php') ?>">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h10M7 12h6"/></svg>
+            Promo Banners
         </a>
         <a href="hero-products.php" class="<?= isActivePage('hero-products.php') ?>">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 3.9 2.4-7.4L2 9.4h7.6z"/></svg>
@@ -188,65 +176,4 @@ function isActivePage(string ...$pages): string {
             Logout
         </a>
     </nav>
-
-<script>
-(function initCountrySwitcher() {
-    var colorMap = { '1':'#FF9933', '2':'#E30A17', '3':'#003580' }; // India=saffron, Turkey=red, Finland=blue
-    var c = null;
-    try { c = JSON.parse(localStorage.getItem('admin_country') || 'null'); } catch(e){}
-
-    // Set active selection
-    var sel = document.getElementById('countrySwitcher');
-    if (c && sel) sel.value = String(c.id);
-
-    // Load countries from API
-    var token = localStorage.getItem('admin_token') || '';
-    fetch('/api/countries?all=1', { headers: { 'Authorization': 'Bearer ' + token } })
-        .then(function(r){ return r.json(); })
-        .then(function(res){
-            var countries = (res.data || []).filter(function(ct){ return ct.is_active; });
-            var sel = document.getElementById('countrySwitcher');
-            if (!sel) return;
-            countries.forEach(function(ct) {
-                var opt = document.createElement('option');
-                opt.value = ct.id;
-                opt.textContent = (ct.flag || '') + ' ' + ct.name;
-                if (c && ct.id == c.id) opt.selected = true;
-                sel.appendChild(opt);
-            });
-            updateIndicator(c, countries, colorMap);
-        }).catch(function(){});
-})();
-
-function updateIndicator(c, countries, colorMap) {
-    var ind = document.getElementById('countryIndicator');
-    if (!ind) return;
-    if (!c) { ind.style.background = 'var(--admin-border)'; ind.title = 'All Countries'; return; }
-    ind.style.background = colorMap[String(c.id)] || 'var(--admin-primary)';
-    ind.title = 'Active: ' + c.name;
-}
-
-function handleCountrySwitch(sel) {
-    var id = sel.value;
-    if (!id) {
-        if (typeof setAdminCountry === 'function') setAdminCountry(null);
-        else { localStorage.removeItem('admin_country'); window.location.reload(); }
-        return;
-    }
-    // Read data from selected option
-    var opt = sel.options[sel.selectedIndex];
-    var label = opt.textContent.trim();
-    // Fetch country details
-    var token = localStorage.getItem('admin_token') || '';
-    fetch('/api/countries?all=1', { headers: { 'Authorization': 'Bearer ' + token } })
-        .then(function(r){ return r.json(); })
-        .then(function(res){
-            var match = (res.data||[]).find(function(c){ return String(c.id) === String(id); });
-            if (match) {
-                if (typeof setAdminCountry === 'function') setAdminCountry({ id: match.id, code: match.code, name: match.name, flag: match.flag || '' });
-                else { localStorage.setItem('admin_country', JSON.stringify({ id: match.id, code: match.code, name: match.name, flag: match.flag || '' })); window.location.reload(); }
-            }
-        });
-}
-</script>
 </aside>

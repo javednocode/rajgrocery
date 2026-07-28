@@ -1,15 +1,24 @@
 <?php $pageTitle = 'Categories'; include 'includes/header.php'; ?>
 
-<!-- Country context banner -->
-<div id="catCountryBanner" style="display:none;align-items:center;gap:10px;padding:10px 16px;border-radius:10px;margin-bottom:14px;background:linear-gradient(135deg,rgba(37,99,235,.08),rgba(99,102,241,.06));border:1.5px solid rgba(37,99,235,.15);font-size:13px;">
-    <span style="font-weight:700;color:var(--admin-text-muted);">Viewing:</span>
-    <span id="catCountryName" style="font-weight:800;color:var(--admin-primary);font-size:14px;"></span>
-    <span style="flex:1"></span>
-    <a href="javascript:void(0)" onclick="setAdminCountry(null)" style="font-size:12px;color:var(--admin-text-muted);text-decoration:none;">× Show All Countries</a>
-</div>
 <div class="toolbar">
     <h3 style="font-size:16px;">Manage Categories</h3>
-    <button class="btn btn-primary" onclick="showCategoryModal()">+ Add Category</button>
+    <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline" id="bulkAiBtn" onclick="generateMissingCategoryImages()"> Generate Missing Images</button>
+        <button class="btn btn-primary" onclick="showCategoryModal()">+ Add Category</button>
+    </div>
+</div>
+
+<!-- Bulk AI progress -->
+<div id="bulkAiPanel" style="display:none;margin-bottom:14px;padding:14px 16px;border-radius:10px;background:var(--admin-surface-2,rgba(37,99,235,.06));border:1.5px solid rgba(37,99,235,.15);">
+    <div style="display:flex;align-items:center;gap:12px;">
+        <strong id="bulkAiStatus" style="font-size:13px;color:var(--admin-text);">Preparing…</strong>
+        <span style="flex:1"></span>
+        <button class="btn btn-sm btn-danger" id="bulkAiStop" onclick="bulkAiCancel=true" style="display:none;">Stop</button>
+    </div>
+    <div style="height:8px;border-radius:6px;background:rgba(0,0,0,.08);overflow:hidden;margin-top:10px;">
+        <div id="bulkAiBar" style="height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#10b981);transition:width .3s;"></div>
+    </div>
+    <div id="bulkAiLog" style="margin-top:8px;font-size:12px;color:var(--admin-text-muted);max-height:120px;overflow-y:auto;"></div>
 </div>
 
 <div class="card">
@@ -32,16 +41,30 @@
                 <div class="form-group"><label>Slug</label><input type="text" id="catSlug" class="form-control"></div>
                 <div class="form-group"><label>Parent Category</label><select id="catParent" class="form-control"><option value="">— None (Top Level) —</option></select></div>
                 <div class="form-group"><label>Description</label><textarea id="catDesc" class="form-control" rows="3"></textarea></div>
-                <div class="form-group"><label>Image</label><input type="file" id="catImage" class="form-control" accept="image/*"></div>
+                <div class="form-group">
+                    <label>Category Image</label>
+                    <div style="display:flex;gap:14px;align-items:flex-start;">
+                        <div style="flex-shrink:0;">
+                            <img id="catImagePreview" src="/admin/assets/placeholder-product.svg"
+                                 style="width:96px;height:96px;border-radius:12px;object-fit:cover;background:var(--admin-surface-2);border:1px solid var(--admin-border);">
+                        </div>
+                        <div style="flex:1;min-width:0;">
+                            <input type="file" id="catImage" class="form-control" accept="image/*" style="margin-bottom:8px;">
+                            <div id="catAiRow" style="display:flex;flex-wrap:wrap;gap:6px;">
+                                <button type="button" class="btn btn-sm btn-primary" id="catAiGenBtn" onclick="generateCatImageAi()"> Generate with AI</button>
+                                <button type="button" class="btn btn-sm btn-outline" id="catAiRegenBtn" onclick="generateCatImageAi()" style="display:none;"> Regenerate</button>
+                                <button type="button" class="btn btn-sm btn-danger" id="catAiRemoveBtn" onclick="removeCatImage()" style="display:none;">Remove Image</button>
+                            </div>
+                            <div id="catAiHint" style="font-size:11.5px;color:var(--admin-text-muted);margin-top:6px;">
+                                Save the category first, then generate an AI image from its name.
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="form-group"><label>Icon (emoji)</label><input type="text" id="catIcon" class="form-control" placeholder=""></div>
                 <div class="form-row">
                     <div class="form-group"><label class="form-check"><input type="checkbox" id="catActive" checked> Active</label></div>
                     <div class="form-group"><label class="form-check"><input type="checkbox" id="catFeatured"> Featured</label></div>
-                </div>
-                <div class="form-group">
-                    <label>Countries</label>
-                    <p style="font-size:12px;color:var(--admin-text-muted);margin:0 0 8px;">Which marketplaces show this category.</p>
-                    <div id="catCountries"></div>
                 </div>
                 <div class="seo-section">
                     <h4> SEO</h4>
@@ -61,17 +84,7 @@
 <script>
 async function loadCategories() {
     try {
-        const c = getAdminCountry();
-        // Update banner
-        const banner = document.getElementById('catCountryBanner');
-        if (c) {
-            document.getElementById('catCountryName').textContent = (c.flag||'') + ' ' + c.name;
-            banner.style.display = 'flex';
-        } else {
-            banner.style.display = 'none';
-        }
-        const url = c ? '/categories?admin=1&country_id=' + c.id : '/categories?admin=1';
-        const res = await api(url);
+        const res = await api('/categories?admin=1');
         const flat = flattenCats(res.data);
         document.getElementById('categoriesList').innerHTML = flat.map(c => `
             <tr style="opacity:${c.is_active==1?'1':'0.55'}">
@@ -94,24 +107,69 @@ async function loadCategories() {
     } catch(e) { console.error('loadCategories error', e); }
 }
 
-async function loadCatCountryOptions() {
-    try {
-        const res = await api('/countries?all=1');
-        document.getElementById('catCountries').innerHTML = (res.data || []).map(c =>
-            `<label class="form-check" style="margin-bottom:6px;"><input type="checkbox" value="${c.id}" class="cat-cty-check"> ${c.flag || ''} ${c.name}</label>`
-        ).join('') || '<span style="font-size:12px;color:var(--admin-text-muted)">No countries yet.</span>';
-    } catch(e) {}
-}
-
 function flattenCats(cats, prefix='') {
     let r=[]; cats.forEach(c => { r.push({...c,prefix}); if(c.children?.length) r.push(...flattenCats(c.children, prefix+'— ')); }); return r;
 }
 
 function showCategoryModal(id) {
     document.getElementById('categoryModal').classList.add('show');
-    if (!id) { document.getElementById('categoryForm').reset(); document.getElementById('catId').value=''; document.getElementById('modalTitle').textContent='Add Category'; }
+    if (!id) {
+        document.getElementById('categoryForm').reset();
+        document.getElementById('catId').value='';
+        document.getElementById('modalTitle').textContent='Add Category';
+        updateCatImageUi(null);
+    }
 }
 function closeCategoryModal() { document.getElementById('categoryModal').classList.remove('show'); }
+
+// ── AI category image controls ──
+// Reflect current image + whether the category is saved (needs an id to generate).
+function updateCatImageUi(image) {
+    const id = document.getElementById('catId').value;
+    const hasId = !!id;
+    const hasImg = !!image;
+    document.getElementById('catImagePreview').src = image ? imgUrl(image) : '/admin/assets/placeholder-product.svg';
+    document.getElementById('catAiGenBtn').style.display   = (hasId && !hasImg) ? '' : 'none';
+    document.getElementById('catAiRegenBtn').style.display = (hasId && hasImg) ? '' : 'none';
+    document.getElementById('catAiRemoveBtn').style.display= (hasId && hasImg) ? '' : 'none';
+    document.getElementById('catAiHint').style.display = hasId ? 'none' : '';
+}
+
+async function generateCatImageAi() {
+    const id = document.getElementById('catId').value;
+    if (!id) { showAlert('Save the category first, then generate.', 'danger'); return; }
+    const btns = ['catAiGenBtn','catAiRegenBtn','catAiRemoveBtn'].map(i=>document.getElementById(i));
+    const gen = document.getElementById('catAiGenBtn'), regen = document.getElementById('catAiRegenBtn');
+    const active = gen.style.display !== 'none' ? gen : regen;
+    const label = active.textContent;
+    btns.forEach(b=>b.disabled=true);
+    active.textContent = ' Generating…';
+    try {
+        const res = await api(`/ai-images/categories/${id}/generate`, 'POST', {});
+        updateCatImageUi(res.data.image);
+        // bust the <img> cache so a regenerated image (may reuse a path) refreshes
+        document.getElementById('catImagePreview').src = imgUrl(res.data.image) + '?t=' + Date.now();
+        showAlert('AI image generated & saved to this category.');
+        loadCategories();
+    } catch(e) {
+        // endpoint leaves the existing image untouched on failure; button stays as retry
+    } finally {
+        btns.forEach(b=>b.disabled=false);
+        active.textContent = label;
+    }
+}
+
+async function removeCatImage() {
+    const id = document.getElementById('catId').value;
+    if (!id) return;
+    if (!confirm('Remove the image from this category?')) return;
+    try {
+        await api(`/ai-images/categories/${id}/image`, 'DELETE');
+        updateCatImageUi(null);
+        showAlert('Image removed.');
+        loadCategories();
+    } catch(e) {}
+}
 
 async function editCategory(id) {
     try {
@@ -128,13 +186,9 @@ async function editCategory(id) {
         document.getElementById('catMetaTitle').value = c.meta_title || '';
         document.getElementById('catMetaDesc').value = c.meta_description || '';
         document.getElementById('catFocusKw').value = c.focus_keyword || '';
-        document.querySelectorAll('.cat-cty-check').forEach(cb => cb.checked = false);
-        (c.country_ids || []).forEach(cid => {
-            const cb = document.querySelector(`input[value="${cid}"].cat-cty-check`);
-            if (cb) cb.checked = true;
-        });
         document.getElementById('modalTitle').textContent = 'Edit Category';
-        showCategoryModal(id);
+        document.getElementById('categoryModal').classList.add('show');
+        updateCatImageUi(c.image || null);
     } catch(e) {}
 }
 
@@ -152,8 +206,6 @@ async function saveCategory() {
     formData.set('meta_description', document.getElementById('catMetaDesc').value);
     formData.set('focus_keyword', document.getElementById('catFocusKw').value);
     if (document.getElementById('catImage').files[0]) formData.set('image', document.getElementById('catImage').files[0]);
-    const ctys = [...document.querySelectorAll('.cat-cty-check:checked')].map(c => c.value);
-    formData.set('countries', JSON.stringify(ctys));
 
     try {
         // Always POST — PHP cannot read $_POST/$_FILES for PUT+multipart
@@ -162,7 +214,6 @@ async function saveCategory() {
         showAlert(id ? 'Category updated!' : 'Category created!');
         closeCategoryModal();
         loadCategories();
-loadCatCountryOptions();
     } catch(e) { showAlert('Error: ' + e.message, 'danger'); }
 }
 
@@ -184,6 +235,65 @@ async function confirmDeleteCat(btn) {
     }
 }
 
+
+// ── Bulk: generate images only for categories that have none ──
+let bulkAiCancel = false;
+async function generateMissingCategoryImages() {
+    let missing;
+    try {
+        const res = await api('/ai-images/categories/missing');
+        missing = res.data.categories || [];
+    } catch(e) { return; }
+
+    if (!missing.length) { showAlert('All categories already have an image. Nothing to generate.'); return; }
+    if (!confirm(`Generate AI images for ${missing.length} categories without one?\n\nThis calls the configured AI provider once per category and may take a while. Existing images are never overwritten.`)) return;
+
+    bulkAiCancel = false;
+    const panel = document.getElementById('bulkAiPanel');
+    const bar = document.getElementById('bulkAiBar');
+    const status = document.getElementById('bulkAiStatus');
+    const log = document.getElementById('bulkAiLog');
+    const stop = document.getElementById('bulkAiStop');
+    const btn = document.getElementById('bulkAiBtn');
+    panel.style.display = 'block'; stop.style.display = ''; log.innerHTML = ''; bar.style.width = '0%';
+    btn.disabled = true;
+
+    let done = 0, ok = 0, failed = 0;
+    for (let i = 0; i < missing.length; i++) {
+        if (bulkAiCancel) { logLine(log, '⏹ Stopped by user.', '#b45309'); break; }
+        const cat = missing[i];
+        status.textContent = `Generating ${i+1} of ${missing.length}: ${cat.name}`;
+        let success = false, lastErr = '';
+        for (let attempt = 1; attempt <= 2 && !success; attempt++) {
+            try {
+                const r = await fetch(`${API_BASE}/ai-images/categories/${cat.id}/generate`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + getStoredToken(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ only_if_missing: true })
+                });
+                const j = await r.json();
+                if (r.ok && j.success) { success = true; }
+                else { lastErr = j.message || ('HTTP ' + r.status); }
+            } catch(e) { lastErr = e.message; }
+            if (!success && attempt < 2) await new Promise(res => setTimeout(res, 1500));
+        }
+        done++;
+        if (success) { ok++; logLine(log, `✓ ${cat.name}`, '#047857'); }
+        else { failed++; logLine(log, `✗ ${cat.name} — ${lastErr}`, '#b91c1c'); }
+        bar.style.width = Math.round((done / missing.length) * 100) + '%';
+    }
+
+    stop.style.display = 'none';
+    btn.disabled = false;
+    status.textContent = `Done — ${ok} generated, ${failed} failed of ${missing.length}.`;
+    if (failed) logLine(log, `Retry later for the ${failed} that failed (existing images were left unchanged).`, '#6b7280');
+    loadCategories();
+}
+function logLine(box, text, color) {
+    const d = document.createElement('div');
+    d.textContent = text; if (color) d.style.color = color;
+    box.appendChild(d); box.scrollTop = box.scrollHeight;
+}
 
 document.getElementById('catName').addEventListener('input', function() {
     document.getElementById('catSlug').value = generateSlug(this.value);

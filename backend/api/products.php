@@ -149,21 +149,6 @@ function getProducts($db) {
         $params[':cat_id'] = (int)$_GET['category_id'];
     }
 
-    // Filter: country marketplace — accepts ?country=code OR ?country_id=N (admin usage)
-    $countryParam = $_GET['country'] ?? '';
-    $countryIdDirect = (int)($_GET['country_id'] ?? 0);
-    if ($countryIdDirect > 0) {
-        // Direct ID — used by admin panel (no code lookup needed)
-        $joins[] = "INNER JOIN product_countries pcty ON pcty.product_id = p.id AND pcty.country_id = " . $countryIdDirect;
-    } elseif ($countryParam !== '') {
-        $countryId = resolveCountryId($db, $countryParam);
-        if ($countryId) {
-            $joins[] = "INNER JOIN product_countries pcty ON pcty.product_id = p.id AND pcty.country_id = " . (int)$countryId;
-        } else {
-            $where[] = "1 = 0";
-        }
-    }
-
     // Filter: stock
     if (!empty($_GET['stock_filter'])) {
         switch ($_GET['stock_filter']) {
@@ -214,7 +199,7 @@ function getProducts($db) {
     // Try cache for public category pages (the most common case)
     $cacheKey = null;
     if ($isPublic && $hasCategoryFilter) {
-        $cacheKey = "cat_products_{$_GET['category']}_{$sortCol}_{$page}_{$perPage}_c" . preg_replace('/[^a-z0-9]/', '', strtolower($countryParam));
+        $cacheKey = "cat_products_{$_GET['category']}_{$sortCol}_{$page}_{$perPage}";
         $cached = cacheGet($cacheKey);
         if ($cached !== null) {
             // Return cached response directly
@@ -254,10 +239,8 @@ function getProducts($db) {
     if ($isPublic && !empty($products)) {
         $productIds = array_column($products, 'id');
         $primaryMap = batchLoadPrimaryImages($db, $productIds);
-        $countryMap = batchLoadProductCountries($db, $productIds);
         foreach ($products as &$p) {
             $p['primary_image'] = $primaryMap[$p['id']] ?? null;
-            $p['countries'] = $countryMap[$p['id']] ?? [];
         }
         unset($p);
     }
@@ -266,11 +249,9 @@ function getProducts($db) {
         $productIds = array_column($products, 'id');
         $primaryMap = batchLoadPrimaryImages($db, $productIds);
         $categoryMap = batchLoadCategoryNames($db, $productIds);
-        $countryMap = batchLoadProductCountries($db, $productIds);
         foreach ($products as &$p) {
             $p['primary_image'] = $primaryMap[$p['id']] ?? null;
             $p['category_names'] = $categoryMap[$p['id']] ?? '';
-            $p['countries'] = $countryMap[$p['id']] ?? [];
         }
         unset($p);
     }
@@ -296,28 +277,15 @@ function getProducts($db) {
 
 function getFeaturedProducts($db) {
     $limit = min(20, (int)($_GET['limit'] ?? 8));
-    $countryParam = strtolower(preg_replace('/[^a-z0-9]/', '', $_GET['country'] ?? ''));
-    $cacheKey = "products_featured_{$limit}_c{$countryParam}";
+    $cacheKey = "products_featured_{$limit}";
 
     $cached = cacheGet($cacheKey);
-    if ($cached !== null) {
-        successResponse($cached);
-        return;
-    }
+    if ($cached !== null) { successResponse($cached); return; }
 
-    $join = '';
-    if ($countryParam !== '') {
-        $countryId = resolveCountryId($db, $countryParam);
-        if (!$countryId) { successResponse([]); return; }
-        $join = "INNER JOIN product_countries pcty ON pcty.product_id = p.id AND pcty.country_id = " . (int)$countryId;
-    }
-
-    // Clean query — no correlated subqueries
     $stmt = $db->prepare("
         SELECT p.id, p.name, p.slug, p.price, p.sale_price, p.stock,
             p.brand, p.is_featured, p.sales_count, p.unit
         FROM products p
-        $join
         WHERE p.is_active = 1 AND p.is_featured = 1
         ORDER BY p.created_at DESC
         LIMIT :lim
@@ -326,13 +294,10 @@ function getFeaturedProducts($db) {
     $stmt->execute();
     $products = $stmt->fetchAll();
 
-    // Batch primary images + countries (1 query each for all products)
     if (!empty($products)) {
         $primaryMap = batchLoadPrimaryImages($db, array_column($products, 'id'));
-        $countryMap = batchLoadProductCountries($db, array_column($products, 'id'));
         foreach ($products as &$p) {
             $p['primary_image'] = $primaryMap[$p['id']] ?? null;
-            $p['countries'] = $countryMap[$p['id']] ?? [];
         }
         unset($p);
     }
@@ -345,12 +310,12 @@ function toggleProductFeatured($db, $id) {
     $data = getJsonInput();
     $val  = isset($data['is_featured']) ? (int)$data['is_featured'] : null;
     if ($val === null) errorResponse('is_featured value required (0 or 1)', 400);
+
     $stmt = $db->prepare("UPDATE products SET is_featured = :f WHERE id = :id");
     $stmt->execute([':f' => $val, ':id' => (int)$id]);
     if ($stmt->rowCount() === 0) errorResponse('Product not found', 404);
-    // Clear featured cache
+
     cacheClearPattern('products_featured_');
-    cacheClearPattern('cat_products_');
     successResponse(['id' => (int)$id, 'is_featured' => $val],
         $val ? 'Product added to featured' : 'Product removed from featured');
 }
@@ -359,34 +324,20 @@ function clearAllFeatured($db) {
     $stmt = $db->prepare("UPDATE products SET is_featured = 0 WHERE is_featured = 1");
     $stmt->execute();
     cacheClearPattern('products_featured_');
-    cacheClearPattern('cat_products_');
     successResponse(['cleared' => $stmt->rowCount()], 'All featured products cleared');
 }
 
 function getTrendingProducts($db) {
     $limit = min(50, (int)($_GET['limit'] ?? 12));
-    $countryParam = strtolower(preg_replace('/[^a-z0-9]/', '', $_GET['country'] ?? ''));
-    $cacheKey = "products_trending_{$limit}_c{$countryParam}";
+    $cacheKey = "products_trending_{$limit}";
 
     $cached = cacheGet($cacheKey);
-    if ($cached !== null) {
-        successResponse($cached);
-        return;
-    }
+    if ($cached !== null) { successResponse($cached); return; }
 
-    $join = '';
-    if ($countryParam !== '') {
-        $countryId = resolveCountryId($db, $countryParam);
-        if (!$countryId) { successResponse([]); return; }
-        $join = "INNER JOIN product_countries pcty ON pcty.product_id = p.id AND pcty.country_id = " . (int)$countryId;
-    }
-
-    // Clean query — no correlated subqueries
     $stmt = $db->prepare("
         SELECT p.id, p.name, p.slug, p.price, p.sale_price, p.stock,
             p.brand, p.is_trending, p.sales_count, p.unit
         FROM products p
-        $join
         WHERE p.is_active = 1 AND p.is_trending = 1
         ORDER BY p.sales_count DESC, p.id ASC
         LIMIT :lim
@@ -395,13 +346,10 @@ function getTrendingProducts($db) {
     $stmt->execute();
     $products = $stmt->fetchAll();
 
-    // Batch primary images + countries (1 query each for all products)
     if (!empty($products)) {
         $primaryMap = batchLoadPrimaryImages($db, array_column($products, 'id'));
-        $countryMap = batchLoadProductCountries($db, array_column($products, 'id'));
         foreach ($products as &$p) {
             $p['primary_image'] = $primaryMap[$p['id']] ?? null;
-            $p['countries'] = $countryMap[$p['id']] ?? [];
         }
         unset($p);
     }
@@ -410,18 +358,16 @@ function getTrendingProducts($db) {
     successResponse($products);
 }
 
-/**
- * Toggle a single product's is_trending flag
- */
 function toggleProductTrending($db, $id) {
     $data = getJsonInput();
     $val  = isset($data['is_trending']) ? (int)$data['is_trending'] : null;
     if ($val === null) errorResponse('is_trending value required (0 or 1)', 400);
+
     $stmt = $db->prepare("UPDATE products SET is_trending = :t WHERE id = :id");
     $stmt->execute([':t' => $val, ':id' => (int)$id]);
     if ($stmt->rowCount() === 0) errorResponse('Product not found', 404);
+
     cacheClearPattern('products_trending_');
-    cacheClearPattern('cat_products_');
     successResponse(['id' => (int)$id, 'is_trending' => $val],
         $val ? 'Product added to trending' : 'Product removed from trending');
 }
@@ -430,7 +376,6 @@ function clearAllTrending($db) {
     $stmt = $db->prepare("UPDATE products SET is_trending = 0 WHERE is_trending = 1");
     $stmt->execute();
     cacheClearPattern('products_trending_');
-    cacheClearPattern('cat_products_');
     successResponse(['cleared' => $stmt->rowCount()], 'All trending products cleared');
 }
 
@@ -438,26 +383,17 @@ function searchProducts($db) {
     $q = trim($_GET['q'] ?? '');
     if (strlen($q) < 2) errorResponse('Search query too short', 400);
 
-    $countryParam = strtolower(preg_replace('/[^a-z0-9]/', '', $_GET['country'] ?? ''));
-    $cacheKey = 'search_' . md5($q . '|' . $countryParam);
+    $cacheKey = 'search_' . md5($q);
     $cached = cacheGet($cacheKey);
     if ($cached !== null) {
         successResponse($cached);
         return;
     }
 
-    $join = '';
-    if ($countryParam !== '') {
-        $countryId = resolveCountryId($db, $countryParam);
-        if (!$countryId) { successResponse([]); return; }
-        $join = "INNER JOIN product_countries pcty ON pcty.product_id = p.id AND pcty.country_id = " . (int)$countryId;
-    }
-
     // Clean query — no correlated subqueries
     $stmt = $db->prepare("
         SELECT p.id, p.name, p.slug, p.price, p.sale_price, p.stock, p.brand, p.unit
         FROM products p
-        $join
         WHERE p.is_active = 1
           AND (p.name LIKE :q1 OR p.brand LIKE :q2 OR p.short_description LIKE :q3)
         ORDER BY
@@ -470,13 +406,11 @@ function searchProducts($db) {
     $stmt->execute([':q1' => $s, ':q2' => $s, ':q3' => $s, ':q4' => $sStart]);
     $results = $stmt->fetchAll();
 
-    // Batch primary images + countries
+    // Batch primary images
     if (!empty($results)) {
         $primaryMap = batchLoadPrimaryImages($db, array_column($results, 'id'));
-        $countryMap = batchLoadProductCountries($db, array_column($results, 'id'));
         foreach ($results as &$r) {
             $r['primary_image'] = $primaryMap[$r['id']] ?? null;
-            $r['countries'] = $countryMap[$r['id']] ?? [];
         }
         unset($r);
     }
@@ -496,8 +430,6 @@ function getProductById($db, $id) {
     $cs = $db->prepare("SELECT c.id, c.name, c.slug FROM product_categories pc JOIN categories c ON pc.category_id = c.id WHERE pc.product_id = :pid");
     $cs->execute([':pid' => $id]);
     $p['categories'] = $cs->fetchAll();
-    $ctyMap = batchLoadProductCountries($db, [(int)$id]);
-    $p['countries'] = $ctyMap[(int)$id] ?? [];
     try {
         $vs = $db->prepare("SELECT * FROM product_variations WHERE product_id = :pid ORDER BY sort_order ASC, id ASC");
         $vs->execute([':pid' => $id]);
@@ -534,10 +466,6 @@ function getProductBySlug($db, $slug) {
     $cs = $db->prepare("SELECT c.id, c.name, c.slug FROM product_categories pc JOIN categories c ON pc.category_id = c.id WHERE pc.product_id = :pid");
     $cs->execute([':pid' => $pid]);
     $p['categories'] = $cs->fetchAll();
-
-    // Countries (origin worlds)
-    $ctyMap = batchLoadProductCountries($db, [(int)$pid]);
-    $p['countries'] = $ctyMap[(int)$pid] ?? [];
 
     // Variations
     try {
@@ -598,9 +526,6 @@ function createProduct($db) {
         $catIds = is_array($data['categories']) ? $data['categories'] : json_decode($data['categories'], true);
         if ($catIds) { $cs = $db->prepare("INSERT INTO product_categories (product_id,category_id) VALUES (:p,:c)"); foreach ($catIds as $c) $cs->execute([':p'=>$pid,':c'=>$c]); }
     }
-    if (isset($data['countries'])) {
-        syncProductCountries($db, (int)$pid, $data['countries']);
-    }
     if (!empty($_FILES['images'])) {
         $files = $_FILES['images'];
         $count = is_array($files['name']) ? count($files['name']) : 1;
@@ -638,9 +563,6 @@ function updateProduct($db, $id) {
         $catIds = is_array($data['categories'])?$data['categories']:json_decode($data['categories'],true);
         if ($catIds) { $cs=$db->prepare("INSERT INTO product_categories (product_id,category_id) VALUES (:p,:c)"); foreach ($catIds as $c) $cs->execute([':p'=>$id,':c'=>$c]); }
     }
-    if (isset($data['countries'])) {
-        syncProductCountries($db, (int)$id, $data['countries']);
-    }
     if (!empty($_FILES['images']['name'][0]) || !empty($_FILES['images']['name'])) {
         $files = $_FILES['images'];
         $count = is_array($files['name']) ? count($files['name']) : 1;
@@ -676,7 +598,6 @@ function deleteProduct($db, $id) {
     while ($img = $is->fetch()) deleteImage($img['image_path']);
     $vs = $db->prepare("SELECT image_path FROM product_variations WHERE product_id = :pid AND image_path IS NOT NULL"); $vs->execute([':pid'=>$id]);
     while ($v = $vs->fetch()) deleteImage($v['image_path']);
-    try { $db->prepare("DELETE FROM product_countries WHERE product_id = :pid")->execute([':pid'=>$id]); } catch (Exception $e) {}
     $stmt = $db->prepare("DELETE FROM products WHERE id = :id"); $stmt->execute([':id'=>$id]);
     if ($stmt->rowCount()===0) errorResponse('Product not found', 404);
     cacheClearPattern('products_');
