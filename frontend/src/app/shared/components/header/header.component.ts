@@ -270,11 +270,13 @@ import { environment } from '../../../../environments/environment';
     box-shadow: 0 0 0 3px rgba(228,163,59,.22);
   }
   .kgh-announce-links { display: flex; align-items: center; gap: 22px; }
+  /* The announcement bar is a light tint, so these need dark ink —
+     they were left white when the bar went from dark to light. */
   .kgh-announce-links a {
-    font-size: 11.5px; font-weight: 700; color: rgba(255,255,255,.7);
+    font-size: 11.5px; font-weight: 700; color: var(--raj-ink-2);
     transition: color .2s; letter-spacing: .03em;
   }
-  .kgh-announce-links a:hover { color: var(--raj-turmeric-lt); }
+  .kgh-announce-links a:hover { color: var(--raj-leaf); }
 
   /* ── Main shop bar ── */
   .kgh-main {
@@ -283,7 +285,7 @@ import { environment } from '../../../../environments/environment';
     border-bottom: 1px solid var(--raj-line-lt);
     transition: box-shadow .3s ease;
   }
-  .kgh.scrolled .kgh-main { box-shadow: 0 6px 24px rgba(52,38,24,.09); }
+  .kgh.scrolled .kgh-main { box-shadow: 0 6px 24px rgba(18,42,64,.09); }
   .kgh-main-in { display: flex; align-items: center; gap: 22px; padding: 15px 0; flex-wrap: wrap; }
 
   /* Burger (mobile only) */
@@ -351,7 +353,7 @@ import { environment } from '../../../../environments/environment';
     position: absolute; top: calc(100% + 10px); left: 0; right: 0;
     background: var(--raj-paper); border: 1px solid var(--raj-line);
     border-radius: var(--r-xl);
-    box-shadow: 0 20px 52px rgba(52,38,24,.17);
+    box-shadow: 0 20px 52px rgba(18,42,64,.17);
     padding: 16px; z-index: 60;
     max-height: min(480px, 70vh); overflow-y: auto;
     animation: kghDrop .22s var(--ease) both;
@@ -472,7 +474,7 @@ import { environment } from '../../../../environments/environment';
     background: var(--raj-paper);
     border: 1px solid var(--raj-line);
     border-radius: var(--r-xl); overflow: hidden;
-    box-shadow: 0 26px 64px rgba(52,38,24,.19);
+    box-shadow: 0 26px 64px rgba(18,42,64,.19);
   }
   .kgh-mega-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 16px; }
   .kgh-mega-item {
@@ -499,7 +501,7 @@ import { environment } from '../../../../environments/environment';
     background: radial-gradient(ellipse 80% 60% at 80% 0%, rgba(228,163,59,.18), transparent 70%);
     pointer-events: none;
   }
-  .kgh-mega-eyebrow { font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: rgba(255,255,255,.6); position: relative; }
+  .kgh-mega-eyebrow { font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: var(--raj-muted); position: relative; }
   .kgh-mega-head { font-family: var(--font-display); font-size: 20px; font-weight: 600; line-height: 1.22; color: #fff; margin: 0; position: relative; }
   .kgh-mega-cta {
     display: inline-flex; align-items: center; gap: 7px;
@@ -511,7 +513,7 @@ import { environment } from '../../../../environments/environment';
 
   .kgh-scrim {
     position: fixed; inset: 0; z-index: 999;
-    background: rgba(33,26,20,.38);
+    background: rgba(16,35,54,.38);
     animation: fadeIn .2s ease both;
   }
 
@@ -523,7 +525,7 @@ import { environment } from '../../../../environments/environment';
     transform: translateX(-100%);
     transition: transform .32s var(--ease);
     display: flex; flex-direction: column;
-    box-shadow: 20px 0 54px rgba(33,26,20,.2);
+    box-shadow: 20px 0 54px rgba(16,35,54,.2);
   }
   .kgh-mmenu.open { transform: none; }
   .kgh-mmenu-head {
@@ -564,14 +566,29 @@ import { environment } from '../../../../environments/environment';
     .kgh.scrolled .kgh-announce { margin-top: -30px; }
     .kgh-announce-links { display: none; }
     .kgh-announce-in { justify-content: center; }
-    .kgh-main-in { padding: 11px 0 10px; gap: 10px; }
+    /* Mobile top bar: burger | centred logo | balancing spacer.
+       The cart lives in the bottom nav on mobile, so the top cart pill
+       is dropped rather than duplicated — the spacer keeps the logo
+       optically centred now that the right side is empty. */
+    .kgh-main-in {
+      display: grid;
+      grid-template-columns: 42px 1fr 42px;
+      grid-template-areas: 'burger logo spacer' 'search search search';
+      align-items: center;
+      padding: 11px 0 10px; gap: 10px 6px;
+    }
+    .kgh-burger { grid-area: burger; }
+    .kgh-logo { grid-area: logo; justify-self: center; }
     .kgh-logo-img { height: 42px; }
+    .kgh-word { align-items: center; text-align: center; }
     .kgh-word-main { font-size: 21px; }
     .kgh-word-sub { display: none; }
     body { padding-bottom: 76px; }
 
-    .kgh-search-wrap { order: 10; flex-basis: 100%; margin-top: 2px; }
-    .kgh-icon { display: none; }
+    .kgh-search-wrap { grid-area: search; margin-top: 2px; }
+    /* Account, wishlist and cart are all reachable from the bottom nav */
+    .kgh-icon, .kgh-cart { display: none; }
+    .kgh-actions { display: none; }
 
     .kgh-bnav {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 1002;
@@ -579,7 +596,7 @@ import { environment } from '../../../../environments/environment';
       background: var(--raj-paper);
       border-top: 1px solid var(--raj-line);
       padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
-      box-shadow: 0 -8px 26px rgba(52,38,24,.09);
+      box-shadow: 0 -8px 26px rgba(18,42,64,.09);
     }
     .kgh-bnav a, .kgh-bnav button {
       position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px;

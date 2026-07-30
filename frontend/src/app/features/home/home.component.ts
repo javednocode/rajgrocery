@@ -848,16 +848,17 @@ import { environment } from '../../../environments/environment';
   }
   .hm-cat:hover .hm-cat-mono { color: var(--raj-leaf-lt); }
   .hm-cat-info {
-    padding: 13px 14px 15px; display: flex; flex-direction: column; gap: 3px;
+    padding: 15px 16px 17px; display: flex; flex-direction: column; gap: 4px;
     border-top: 1px solid var(--raj-line-lt);
   }
   .hm-cat-name {
-    font-size: 13.5px; font-weight: 700; color: var(--raj-ink); line-height: 1.3;
+    font-size: 17px; font-weight: 700; color: var(--raj-ink); line-height: 1.28;
+    letter-spacing: -0.012em;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     transition: color .2s;
   }
   .hm-cat:hover .hm-cat-name { color: var(--raj-leaf); }
-  .hm-cat-count { font-style: normal; font-size: 11px; font-weight: 600; color: var(--raj-faint); }
+  .hm-cat-count { font-style: normal; font-size: 13px; font-weight: 600; color: var(--raj-muted); }
   .hm-cat-skel { aspect-ratio: 1 / 1.34; border-radius: var(--r-lg); }
 
   /* ═══════════════════════════════════════════════════════════
@@ -1250,8 +1251,8 @@ import { environment } from '../../../environments/environment';
     .hm-sec-head { margin-bottom: 22px; gap: 12px; }
     .hm-sec-head-center { margin-bottom: 30px; }
     .hm-cats-grid { grid-template-columns: repeat(2, 1fr); }
-    .hm-cat-info { padding: 10px 11px 12px; }
-    .hm-cat-name { font-size: 12.5px; }
+    .hm-cat-info { padding: 12px 13px 14px; }
+    .hm-cat-name { font-size: 15.5px; }
 
     .hm-promo-col { grid-template-columns: 1fr; }
     .hm-pr-hero { min-height: 260px; }

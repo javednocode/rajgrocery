@@ -320,7 +320,7 @@ import { environment } from '../../../environments/environment';
   .cd-header-bg {
     position: absolute; inset: 0; pointer-events: none;
     background:
-      radial-gradient(ellipse 65% 130% at 6% 62%, rgba(109,49,95,.06) 0%, transparent 68%),
+      radial-gradient(ellipse 65% 130% at 6% 62%, rgba(29,111,163,.06) 0%, transparent 68%),
       radial-gradient(ellipse 45% 90% at 95% 10%, rgba(242,169,59,.06) 0%, transparent 70%);
   }
   .cd-header .container { position: relative; z-index: 1; }
@@ -379,8 +379,8 @@ import { environment } from '../../../environments/environment';
   .cd-subcats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; position: relative; z-index: 1; }
   .cd-subcat {
     font-size: 12.5px; font-weight: 700; padding: 7px 15px; border-radius: var(--r-full);
-    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16);
-    color: rgba(255,255,255,.78); transition: all .22s; text-decoration: none;
+    background: var(--raj-paper); border: 1px solid var(--raj-line);
+    color: var(--raj-ink-2); transition: all .22s; text-decoration: none;
     font-family: var(--font-sans);
   }
   .cd-subcat:hover { background: var(--raj-leaf); border-color: var(--raj-leaf); color: #FFFFFF; }

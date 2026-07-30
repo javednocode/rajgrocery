@@ -224,13 +224,13 @@ import { ApiService } from '../../../core/services/api.service';
   }
   /* Layer 1 — slowest, most prominent */
   .ft-wave-1 {
-    color: rgba(109,49,95,.18);
+    color: rgba(29,111,163,.18);
     animation: waveShift1 8s ease-in-out infinite;
     z-index: 1;
   }
   /* Layer 2 — medium */
   .ft-wave-2 {
-    color: rgba(109,49,95,.12);
+    color: rgba(29,111,163,.12);
     animation: waveShift2 6s ease-in-out infinite;
     z-index: 2;
   }
@@ -267,7 +267,7 @@ import { ApiService } from '../../../core/services/api.service';
   .ft::before {
     content: ''; position: absolute; inset: 0; z-index: -1;
     background:
-      radial-gradient(ellipse 70% 90% at 12% 0%, rgba(109,49,95,.06), transparent 62%),
+      radial-gradient(ellipse 70% 90% at 12% 0%, rgba(29,111,163,.06), transparent 62%),
       radial-gradient(ellipse 55% 80% at 92% 8%, rgba(242,169,59,.08), transparent 66%);
     pointer-events: none;
   }
@@ -318,8 +318,8 @@ import { ApiService } from '../../../core/services/api.service';
     border-radius: 50%;
     animation: coinSpin 6s ease-in-out infinite;
     box-shadow:
-      0 4px 16px rgba(109,49,95,.18),
-      0 0 0 3px rgba(109,49,95,.10),
+      0 4px 16px rgba(29,111,163,.18),
+      0 0 0 3px rgba(29,111,163,.10),
       inset 0 1px 0 rgba(255,255,255,.6);
   }
   @keyframes coinSpin {
@@ -363,7 +363,7 @@ import { ApiService } from '../../../core/services/api.service';
     position: absolute;
     inset: -6px;
     border-radius: 50%;
-    border: 2px solid rgba(109,49,95,.2);
+    border: 2px solid rgba(29,111,163,.2);
     animation: coinRing 6s ease-in-out infinite;
     pointer-events: none;
   }

@@ -132,7 +132,7 @@ import { environment } from '../../../environments/environment';
   .cl-hero-noise {
     position: absolute; inset: 0; pointer-events: none; z-index: 0;
     background:
-      radial-gradient(ellipse 72% 110% at 5% 55%, rgba(109,49,95,.06) 0%, transparent 68%),
+      radial-gradient(ellipse 72% 110% at 5% 55%, rgba(29,111,163,.06) 0%, transparent 68%),
       radial-gradient(ellipse 50% 80% at 92% 15%, rgba(242,169,59,.06) 0%, transparent 65%);
   }
   .cl-hero-inner { position: relative; z-index: 1; }
@@ -259,8 +259,8 @@ import { environment } from '../../../environments/environment';
     flex: 1;
   }
   .cl-name {
-    font-family: var(--font-sans); font-size: 14.5px; font-weight: 800;
-    color: var(--raj-ink); line-height: 1.3; letter-spacing: -0.01em;
+    font-family: var(--font-sans); font-size: 17px; font-weight: 800;
+    color: var(--raj-ink); line-height: 1.28; letter-spacing: -0.012em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .cl-meta-row { display: flex; align-items: center; gap: 6px; }
@@ -325,7 +325,7 @@ import { environment } from '../../../environments/environment';
   @media (max-width: 480px) {
     .cl-grid { gap: 10px; }
     .cl-card { border-radius: var(--r); }
-    .cl-name { font-size: 13px; }
+    .cl-name { font-size: 15.5px; }
     .cl-count-badge { font-size: 10.5px; }
     .cl-emoji { font-size: 32px; }
     .cl-arrow { display: none; }

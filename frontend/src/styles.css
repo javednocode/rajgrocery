@@ -19,27 +19,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..900&family=Manrope:wght@400..800&display=swap');
 
 :root {
-  /* ── Ink ── */
-  --raj-ink:        #241D23;
-  --raj-ink-2:      #4A3F48;
-  --raj-muted:      #746B72;
-  --raj-faint:      #A99FA7;
+  /* ── Ink — cool charcoal-navy ── */
+  --raj-ink:        #16232E;
+  --raj-ink-2:      #35485A;
+  --raj-muted:      #5D7285;
+  --raj-faint:      #93A6B5;
 
-  /* ── Surfaces ── */
+  /* ── Surfaces — light blue ground ── */
   --raj-paper:      #FFFFFF;
-  --raj-canvas:     #FFFCF8;
-  --raj-warm:       #F8F2F6;
-  --raj-sand:       #F8F2F6;
-  --raj-sand-2:     #F2E9EF;
-  --raj-dark:       #F8F2F6;   /* Repointed to light plum tint per requirements */
-  --raj-dark-2:     #F2E9EF;
+  --raj-canvas:     #F7FBFE;
+  --raj-warm:       #EFF6FC;
+  --raj-sand:       #EFF6FC;
+  --raj-sand-2:     #DFEBF5;
+  --raj-dark:       #EFF6FC;   /* Light blue tint — kept light, see note below */
+  --raj-dark-2:     #DFEBF5;
 
-  /* ── Plum — primary brand ── */
-  --raj-leaf:       #6D315F;
-  --raj-leaf-dk:    #4D2142;
-  --raj-leaf-lt:    #91507F;
-  --raj-leaf-bg:    #F8F2F6;
-  --raj-leaf-bg2:   #EAE2E7;
+  /* ── Blue — primary brand ──
+     The mid tone carries buttons and nav so white text stays AA
+     (5.4:1); the light blues live in -lt / -bg for surfaces. */
+  --raj-leaf:       #1D6FA3;
+  --raj-leaf-dk:    #14547D;
+  --raj-leaf-lt:    #4A9BD1;
+  --raj-leaf-bg:    #EAF4FB;
+  --raj-leaf-bg2:   #D3E8F7;
 
   /* ── Saffron — offers, badges, promo CTAs ── */
   --raj-turmeric:     #F2A93B;
@@ -58,18 +60,17 @@
   --raj-brass-bg:   #FFE3A8;
 
   /* ── Lines ── */
-  --raj-line:       #EAE2E7;
-  --raj-line-lt:    #F4EFF2;
-  --raj-line-warm:  #DFD4DC;
+  --raj-line:       #DCE8F1;
+  --raj-line-lt:    #EDF4FA;
+  --raj-line-warm:  #C6D8E6;
 
-  /* ── Shadows — warm-tinted. Cold blue-grey shadows on a warm
-         canvas is the tell of a template. ── */
-  --shadow-xs:  0 1px 2px  rgba(52,38,24,0.05);
-  --shadow-sm:  0 2px 10px rgba(52,38,24,0.06);
-  --shadow:     0 8px 24px rgba(52,38,24,0.09);
-  --shadow-lg:  0 18px 46px rgba(52,38,24,0.13);
-  --shadow-leaf:     0 8px 22px rgba(192,133,82,0.30);
-  --shadow-turmeric: 0 8px 22px rgba(228,163,59,0.30);
+  /* ── Shadows — tinted to the blue ground, not neutral grey ── */
+  --shadow-xs:  0 1px 2px  rgba(18,42,64,0.05);
+  --shadow-sm:  0 2px 10px rgba(18,42,64,0.07);
+  --shadow:     0 8px 24px rgba(18,42,64,0.10);
+  --shadow-lg:  0 18px 46px rgba(18,42,64,0.14);
+  --shadow-leaf:     0 8px 22px rgba(29,111,163,0.28);
+  --shadow-turmeric: 0 8px 22px rgba(242,169,59,0.30);
 
   /* ── Radius ── */
   --r-xs:   4px;
