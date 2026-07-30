@@ -579,9 +579,9 @@ import { environment } from '../../../../environments/environment';
     }
     .kgh-burger { grid-area: burger; }
     .kgh-logo { grid-area: logo; justify-self: center; }
-    .kgh-logo-img { height: 60px; }
+    .kgh-logo-img { height: 84px; }
     .kgh-word { align-items: center; text-align: center; }
-    .kgh-word-main { font-size: 26px; }
+    .kgh-word-main { font-size: 30px; }
     .kgh-word-sub { display: none; }
     body { padding-bottom: 76px; }
 

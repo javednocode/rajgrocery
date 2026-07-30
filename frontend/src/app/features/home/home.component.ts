@@ -1263,8 +1263,12 @@ import { environment } from '../../../environments/environment';
     .hm-caro-pad { flex: 0 0 16px; }
     .hm-caro-wrap::before, .hm-caro-wrap::after { width: 22px; }
 
-    .hm-why-grid { grid-template-columns: 1fr; gap: 12px; }
-    .hm-why-item { padding: 22px 20px; }
+    .hm-why-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .hm-why-item { padding: 16px 14px; }
+    .hm-why-icon { width: 38px; height: 38px; margin-bottom: 12px; border-radius: var(--r-sm); }
+    .hm-why-icon svg { width: 17px; height: 17px; }
+    .hm-why-item h4 { font-size: 13px; margin-bottom: 5px; }
+    .hm-why-item p { font-size: 11.5px; line-height: 1.5; }
     .hm-svc-grid { grid-template-columns: 1fr; }
     .hm-rev-card { padding: 24px 22px; }
     .hm-rev-text { font-size: 16px; }
