@@ -29,6 +29,10 @@ router.php.bak
 *.tar.gz
 *.tar.bz2
 
+# Hostinger deploy dump — built Angular output plus copied uploads (~220MB).
+# Regenerate with build_hostinger.sh; never commit build artefacts.
+hostinger_public_html/
+
 # Uploaded media files — use remote storage or local volume
 backend/uploads/banners/*
 backend/uploads/blogs/*

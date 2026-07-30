@@ -252,7 +252,7 @@ import { environment } from '../../../../environments/environment';
 
   /* ── Announcement ── */
   .kgh-announce {
-    background: var(--raj-dark); color: rgba(255,255,255,.86);
+    background: var(--raj-dark); color: var(--raj-ink);
     height: 36px; font-size: 12px; display: flex; align-items: center;
     transition: margin-top .4s var(--ease);
     position: relative; z-index: 2;
@@ -490,7 +490,7 @@ import { environment } from '../../../../environments/environment';
   .kgh-mega-txt strong { font-size: 13px; font-weight: 700; color: var(--raj-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .kgh-mega-txt em { font-style: normal; font-size: 11px; color: var(--raj-muted); }
   .kgh-mega-side {
-    background: var(--raj-dark); color: #fff;
+    background: var(--raj-dark); color: var(--raj-ink);
     padding: 26px; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
     position: relative; overflow: hidden;
   }

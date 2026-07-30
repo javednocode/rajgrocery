@@ -648,8 +648,8 @@ import { environment } from '../../../environments/environment';
 
   .hm-hero-inner {
     position: relative; z-index: 1;
-    display: grid; grid-template-columns: 1fr 1.02fr;
-    gap: 64px; align-items: center;
+    display: grid; grid-template-columns: 1fr 1.35fr;
+    gap: 48px; align-items: center;
     padding: 74px 24px 88px;
   }
 
@@ -747,7 +747,7 @@ import { environment } from '../../../environments/environment';
     position: relative; border-radius: var(--r-xl); overflow: hidden;
     background: var(--raj-warm);
   }
-  .hm-hero-frame-media { position: relative; aspect-ratio: 4 / 3.05; }
+  .hm-hero-frame-media { position: relative; aspect-ratio: 16 / 9; }
   .hm-hero-slide {
     position: absolute; inset: 0;
     opacity: 0; transition: opacity .8s var(--ease);
@@ -1013,24 +1013,24 @@ import { environment } from '../../../environments/environment';
   .hm-store-inner {
     display: flex; align-items: center; justify-content: space-between;
     gap: 32px; flex-wrap: wrap;
-    background: var(--raj-dark); color: #fff;
+    background: var(--raj-dark); color: var(--raj-ink);
     border-radius: var(--r-2xl); padding: 44px 48px;
     position: relative; overflow: hidden;
   }
   .hm-store-inner::before {
     content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(ellipse 60% 120% at 88% 10%, rgba(228,163,59,.17), transparent 66%);
+    background: radial-gradient(ellipse 60% 120% at 88% 10%, rgba(242,169,59,.06), transparent 66%);
   }
   .hm-store-text { position: relative; }
   .hm-store-text .sec-eyebrow { color: var(--raj-turmeric); margin-bottom: 10px; }
   .hm-store-text .sec-eyebrow::before { background: var(--raj-turmeric); }
   .hm-store-heading {
     font-family: var(--font-display); font-size: clamp(1.5rem, 2.6vw, 2rem);
-    font-weight: 600; color: #fff; margin: 0 0 10px; letter-spacing: -0.014em;
+    font-weight: 600; color: var(--raj-ink); margin: 0 0 10px; letter-spacing: -0.014em;
   }
   .hm-store-location {
     display: flex; align-items: center; gap: 9px;
-    font-size: 14.5px; color: rgba(255,255,255,.72); margin: 0;
+    font-size: 14.5px; color: var(--raj-muted); margin: 0;
   }
   .hm-store-location svg { color: var(--raj-turmeric); flex-shrink: 0; }
   .hm-store-actions { display: flex; gap: 12px; flex-wrap: wrap; position: relative; }
@@ -1039,10 +1039,10 @@ import { environment } from '../../../environments/environment';
   .btn-wa {
     display: inline-flex; align-items: center; justify-content: center; gap: 9px;
     min-height: var(--btn-h); padding: 14px 28px; border-radius: var(--r-full);
-    background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.22);
-    color: #fff; font-size: 14px; font-weight: 700; transition: var(--t);
+    background: var(--raj-paper); border: 1.5px solid var(--raj-line);
+    color: var(--raj-ink); font-size: 14px; font-weight: 700; transition: var(--t);
   }
-  .btn-wa:hover { background: rgba(255,255,255,.17); transform: translateY(-2px); }
+  .btn-wa:hover { background: var(--raj-warm); transform: translateY(-2px); border-color: var(--raj-line-warm); }
 
   /* ═══════════════════════════════════════════════════════════
      REVIEWS
@@ -1245,7 +1245,7 @@ import { environment } from '../../../environments/environment';
     .hm-hero-cta, .hm-hero-ghost { flex: 1; justify-content: center; }
     .hm-hero-trust { margin-top: 26px; padding-top: 20px; gap: 8px 16px; }
     .hm-hero-mat { padding: 9px; border-radius: var(--r-xl); }
-    .hm-hero-frame-media { aspect-ratio: 4 / 3.3; }
+    .hm-hero-frame-media { aspect-ratio: 16 / 9; }
 
     .hm-sec-head { margin-bottom: 22px; gap: 12px; }
     .hm-sec-head-center { margin-bottom: 30px; }

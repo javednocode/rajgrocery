@@ -210,8 +210,8 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
   .sr-header-bg {
     position: absolute; inset: 0; pointer-events: none;
     background:
-      radial-gradient(ellipse 65% 130% at 6% 62%, rgba(23,81,63,.34) 0%, transparent 68%),
-      radial-gradient(ellipse 50% 90% at 95% 8%, rgba(47,125,99,.12) 0%, transparent 70%);
+      radial-gradient(ellipse 65% 130% at 6% 62%, rgba(109,49,95,.06) 0%, transparent 68%),
+      radial-gradient(ellipse 50% 90% at 95% 8%, rgba(242,169,59,.06) 0%, transparent 70%);
   }
   .sr-header-inner { position: relative; z-index: 1; }
   .sr-header.sr-header-sale .sr-header-bg {
@@ -223,13 +223,13 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
   /* Breadcrumb */
   .sr-crumbs {
     display: flex; align-items: center; gap: 6px;
-    font-size: 11.5px; color: rgba(255,255,255,.38);
+    font-size: 11.5px; color: var(--raj-muted);
     margin-bottom: 24px;
     font-family: var(--font-sans); font-weight: 700;
     letter-spacing: .05em; text-transform: uppercase;
   }
-  .sr-crumbs a { color: rgba(255,255,255,.58); text-decoration: none; transition: color .2s; }
-  .sr-crumbs a:hover { color: var(--raj-turmeric-lt); }
+  .sr-crumbs a { color: var(--raj-ink); text-decoration: none; transition: color .2s; }
+  .sr-crumbs a:hover { color: var(--raj-leaf); }
   .sr-crumbs svg { opacity: .35; flex-shrink: 0; }
 
   /* Eyebrow */
@@ -248,7 +248,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
   .sr-title {
     font-family: var(--font-display);
     font-size: clamp(2rem, 4.5vw, 3.2rem);
-    font-weight: 600; color: #FFFFFF;
+    font-weight: 600; color: var(--raj-ink);
     margin-bottom: 32px; letter-spacing: -0.025em;
     line-height: 1.1;
     display: flex; align-items: center; gap: 14px;
@@ -264,35 +264,35 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
   .sr-form {
     display: flex; max-width: 700px; gap: 0;
     border-radius: var(--r-full); overflow: hidden;
-    background: rgba(255,255,255,.07);
-    border: 1.5px solid rgba(255,255,255,.16);
+    background: var(--raj-paper);
+    border: 1.5px solid var(--raj-line);
     backdrop-filter: blur(10px);
     transition: border-color .25s, box-shadow .25s;
     margin-bottom: 22px;
   }
   .sr-form:focus-within {
-    border-color: rgba(47,125,99,.7);
-    box-shadow: 0 0 0 4px rgba(23,81,63,.2);
+    border-color: var(--raj-leaf);
+    box-shadow: 0 0 0 4px rgba(109,49,95,.15);
   }
   .sr-input-wrap {
     flex: 1; display: flex; align-items: center; gap: 12px;
-    padding: 0 18px; color: rgba(255,255,255,.4); min-width: 0;
+    padding: 0 18px; color: var(--raj-muted); min-width: 0;
     cursor: text;
   }
   .sr-icon { flex-shrink: 0; }
   .sr-form input {
     flex: 1; border: none; outline: none;
     padding: 16px 0; font-size: 15px;
-    color: #FFFFFF; background: transparent;
+    color: var(--raj-ink); background: transparent;
     font-family: var(--font-sans); font-weight: 500; min-width: 0;
   }
-  .sr-form input::placeholder { color: rgba(255,255,255,.32); }
+  .sr-form input::placeholder { color: var(--raj-faint); }
   .sr-clear {
     display: grid; place-items: center; padding: 4px;
-    color: rgba(255,255,255,.4); cursor: pointer;
+    color: var(--raj-muted); cursor: pointer;
     transition: color .2s; flex-shrink: 0;
   }
-  .sr-clear:hover { color: rgba(255,255,255,.9); }
+  .sr-clear:hover { color: var(--raj-ink); }
   .sr-submit {
     background: var(--raj-leaf); color: #FFFFFF; border: none;
     padding: 0 28px; font-family: var(--font-sans);

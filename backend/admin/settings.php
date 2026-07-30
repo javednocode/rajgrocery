@@ -507,15 +507,19 @@ function brandRenderRows() {
         row.style.cssText = 'display:flex;align-items:center;gap:10px;background:var(--admin-surface,#f9fafb);border:1px solid var(--admin-line,#e5e7eb);border-radius:10px;padding:10px 14px;';
         row.innerHTML = `
             <!-- Logo preview / upload -->
-            <div style="position:relative;flex-shrink:0;">
+            <div style="position:relative;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:5px;">
                 <div id="brand-preview-${idx}" style="
-                    width:64px;height:44px;border-radius:8px;border:1.5px dashed #d1d5db;
+                    width:72px;height:48px;border-radius:8px;border:1.5px dashed #d1d5db;
                     display:flex;align-items:center;justify-content:center;
                     overflow:hidden;background:#f3f4f6;cursor:pointer;
                     font-size:20px;
                 " onclick="document.getElementById('brand-file-${idx}').click()" title="Click to upload logo">
-                    ${brand.image ? `<img src="${brand.image.startsWith('/uploads') ? '..' + brand.image : brand.image}" style="max-height:40px;max-width:60px;object-fit:contain;">` : '🖼️'}
+                    ${brand.image ? `<img src="${brand.image.startsWith('/uploads') ? '..' + brand.image : brand.image}" style="max-height:44px;max-width:68px;object-fit:contain;">` : '🖼️'}
                 </div>
+                <button type="button" onclick="document.getElementById('brand-file-${idx}').click()" style="
+                    font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:5px;cursor:pointer;
+                    background:var(--admin-accent,#1E88A8);color:#fff;border:none;white-space:nowrap;
+                ">Upload Logo</button>
                 <input type="file" id="brand-file-${idx}" accept="image/*" style="display:none"
                     onchange="brandUploadImage(${idx}, this)">
             </div>
@@ -583,19 +587,29 @@ async function brandUploadImage(idx, input) {
     formData.append('folder', 'brands');
 
     try {
-        const res = await fetch('../api/upload', {
+        // Resolve token same way admin.js does: localStorage first, cookie fallback
+        function _getBrandToken() {
+            var ls = localStorage.getItem('admin_token') || '';
+            if (ls) return ls;
+            var match = document.cookie.match(/(?:^|;\s*)admin_token=([^;]+)/);
+            return match ? decodeURIComponent(match[1]) : '';
+        }
+        const res = await fetch('/api/upload', {
             method: 'POST',
-            headers: { 'X-Admin-Token': window._adminToken || '' },
+            headers: { 'Authorization': 'Bearer ' + _getBrandToken() },
             body: formData
         });
         const data = await res.json();
-        if (data.success && (data.url || data.path)) {
-            _brandRows[idx].image = data.url || data.path;
+        // successResponse() wraps result as: { success, message, data: { path, filename } }
+        const payload = data.data || data;
+        const filePath = payload.url || payload.path;
+        if (data.success && filePath) {
+            _brandRows[idx].image = filePath;
             // Update the URL input in the row
             const urlInputs = document.querySelectorAll(`#brandRowsWrap input[type=text]`);
             // The URL input is the 2nd text input in each row (idx*2 + 1)
             const urlInput = urlInputs[idx * 2 + 1];
-            if (urlInput) urlInput.value = data.url || data.path;
+            if (urlInput) urlInput.value = filePath;
             brandRefreshPreview(idx);
             brandSyncJSON();
         } else {

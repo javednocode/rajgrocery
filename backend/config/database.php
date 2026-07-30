@@ -27,8 +27,8 @@ class Database {
         } else {
             // Production DB credentials (Hostinger)
             $this->host     = getenv('DB_HOST') ?: 'localhost';
-            $this->db_name  = getenv('DB_NAME') ?: 'u290166068_webcraftstech';
-            $this->username = getenv('DB_USER') ?: 'u290166068_webcraftstech';
+            $this->db_name  = getenv('DB_NAME') ?: 'u298651808_webcraftstechb';
+            $this->username = getenv('DB_USER') ?: 'u298651808_webcraftstechb';
             $this->password = getenv('DB_PASS') ?: 'Jj@9610022011..';
         }
     }

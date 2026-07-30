@@ -132,8 +132,8 @@ import { environment } from '../../../environments/environment';
   .cl-hero-noise {
     position: absolute; inset: 0; pointer-events: none; z-index: 0;
     background:
-      radial-gradient(ellipse 72% 110% at 5% 55%, rgba(23,81,63,.38) 0%, transparent 68%),
-      radial-gradient(ellipse 50% 80% at 92% 15%, rgba(228,163,59,.12) 0%, transparent 65%);
+      radial-gradient(ellipse 72% 110% at 5% 55%, rgba(109,49,95,.06) 0%, transparent 68%),
+      radial-gradient(ellipse 50% 80% at 92% 15%, rgba(242,169,59,.06) 0%, transparent 65%);
   }
   .cl-hero-inner { position: relative; z-index: 1; }
   .cl-hero-content { max-width: 640px; }
@@ -141,12 +141,12 @@ import { environment } from '../../../environments/environment';
   /* Breadcrumb */
   .cl-crumbs {
     display: flex; align-items: center; gap: 6px;
-    font-size: 12px; color: rgba(255,255,255,.4);
+    font-size: 12px; color: var(--raj-muted);
     margin-bottom: 28px; font-family: var(--font-sans);
     font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
   }
-  .cl-crumbs a { color: rgba(255,255,255,.6); text-decoration: none; transition: color .2s; }
-  .cl-crumbs a:hover { color: var(--raj-turmeric-lt); }
+  .cl-crumbs a { color: var(--raj-ink); text-decoration: none; transition: color .2s; }
+  .cl-crumbs a:hover { color: var(--raj-leaf); }
   .cl-sep { display: flex; align-items: center; opacity: .35; }
 
   /* Hero text */
@@ -163,12 +163,12 @@ import { environment } from '../../../environments/environment';
   .cl-heading {
     font-family: var(--font-display);
     font-size: clamp(2rem, 4.5vw, 3.2rem);
-    font-weight: 600; color: #FFFFFF;
+    font-weight: 600; color: var(--raj-ink);
     margin-bottom: 14px; letter-spacing: -0.025em;
     line-height: 1.1;
   }
   .cl-sub {
-    font-size: 15.5px; color: rgba(255,255,255,.58);
+    font-size: 15.5px; color: var(--raj-muted);
     margin: 0; line-height: 1.72; max-width: 520px;
   }
 
