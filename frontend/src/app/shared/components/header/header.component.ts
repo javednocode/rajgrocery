@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, ViewEncapsulation, effect, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, ViewEncapsulation, effect, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -17,7 +17,7 @@ import { environment } from '../../../../environments/environment';
   <div class="kgh" [class.scrolled]="scrolled()">
 
     <!-- ── Announcement ── -->
-    <div class="kgh-announce">
+    <div class="kgh-announce" #announceEl>
       <div class="kgh-wrap kgh-announce-in">
         <span class="kgh-offer">
           <i class="kgh-dot"></i>
@@ -32,7 +32,7 @@ import { environment } from '../../../../environments/environment';
     </div>
 
     <!-- ── Main bar ── -->
-    <header class="kgh-main">
+    <header class="kgh-main" #mainEl>
       <div class="kgh-wrap kgh-main-in">
 
         <button class="kgh-burger" (click)="mobileMenuOpen.set(true)" aria-label="Open menu">
@@ -579,9 +579,9 @@ import { environment } from '../../../../environments/environment';
     }
     .kgh-burger { grid-area: burger; }
     .kgh-logo { grid-area: logo; justify-self: center; }
-    .kgh-logo-img { height: 42px; }
+    .kgh-logo-img { height: 60px; }
     .kgh-word { align-items: center; text-align: center; }
-    .kgh-word-main { font-size: 21px; }
+    .kgh-word-main { font-size: 26px; }
     .kgh-word-sub { display: none; }
     body { padding-bottom: 76px; }
 
@@ -627,8 +627,10 @@ import { environment } from '../../../../environments/environment';
   }
   `]
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
+  @ViewChild('announceEl') announceEl?: ElementRef<HTMLDivElement>;
+  @ViewChild('mainEl') mainEl?: ElementRef<HTMLElement>;
 
   q = '';
   scrolled = signal(false);
@@ -647,6 +649,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private debounce: ReturnType<typeof setTimeout> | null = null;
   private routerSub?: Subscription;
   private lastCount = 0;
+  private headerRO?: ResizeObserver;
 
   constructor(
     public cart: CartService,
@@ -679,7 +682,45 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() { this.routerSub?.unsubscribe(); }
+  /**
+   * The rest of the page reserves space for the fixed header via the
+   * --header-height CSS var (used for main-content's padding-top and the
+   * scroll-padding-top). That used to be a hand-guessed pixel constant per
+   * breakpoint — it went stale (and content slid under the header) every
+   * time header content changed height, e.g. the search bar wrapping to a
+   * second row on mobile, or a logo size change like this one. Measuring
+   * the header's own two children and writing the sum to the CSS var means
+   * it can never drift out of sync again, regardless of logo size, font
+   * scaling, translation-driven wrapping, or future edits.
+   *
+   * Deliberately sums announceEl + mainEl's own offsetHeight rather than
+   * reading the outer .kgh wrapper: the scroll-shrink effect pulls the
+   * announcement bar up with a negative margin-top (so the fixed header
+   * visually shrinks as you scroll), but the space reserved in normal flow
+   * must stay at the resting (unscrolled) height or the page would jump.
+   * Each element's own offsetHeight is unaffected by that margin trick.
+   */
+  ngAfterViewInit() {
+    if (typeof ResizeObserver === 'undefined') return;
+    const measure = () => {
+      const a = this.announceEl?.nativeElement.offsetHeight || 0;
+      const m = this.mainEl?.nativeElement.offsetHeight || 0;
+      const h = a + m;
+      if (!h) return;
+      const root = document.documentElement.style;
+      root.setProperty('--header-height', h + 'px');
+      root.setProperty('--header-h', h + 'px');
+    };
+    this.headerRO = new ResizeObserver(measure);
+    if (this.announceEl) this.headerRO.observe(this.announceEl.nativeElement);
+    if (this.mainEl) this.headerRO.observe(this.mainEl.nativeElement);
+    measure();
+  }
+
+  ngOnDestroy() {
+    this.routerSub?.unsubscribe();
+    this.headerRO?.disconnect();
+  }
 
   @HostListener('window:scroll') onScroll() {
     this.scrolled.set(window.scrollY > 24);
