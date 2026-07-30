@@ -41,6 +41,7 @@ backend/uploads/categories/*
 backend/uploads/general/*
 backend/uploads/invoices/*
 backend/uploads/products/*
+backend/uploads/promos/*
 backend/uploads/variations/*
 !backend/uploads/**/.gitkeep
 
