@@ -9,14 +9,20 @@ include 'includes/header.php';
 
 <style>
 .report-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
-.kpi-card { background:var(--admin-surface); border:1px solid var(--admin-border); border-radius:12px; padding:20px; }
+.kpi-card {
+    background:var(--glass-bg); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur);
+    border:1px solid var(--glass-border); box-shadow:var(--glass-shadow);
+    border-radius:var(--admin-radius); padding:20px;
+    transition:transform .25s ease, box-shadow .25s ease;
+}
+.kpi-card:hover { transform:translateY(-2px); }
 .kpi-card .kpi-val { font-size:26px; font-weight:800; color:var(--admin-text); }
 .kpi-card .kpi-label { font-size:12px; color:var(--admin-muted); margin-top:2px; }
 .kpi-card .kpi-change { font-size:12px; font-weight:600; margin-top:6px; }
 .kpi-change.up { color:#10B981; }
 .kpi-change.down { color:#EF4444; }
 .chart-container { position:relative; width:100%; height:280px; }
-.period-btn { padding:6px 14px; border-radius:6px; border:1px solid var(--admin-border); background:transparent; font-size:12px; cursor:pointer; color:var(--admin-text); transition:all .15s; }
+.period-btn { padding:6px 14px; border-radius:8px; border:1px solid var(--admin-border); background:transparent; font-size:12px; cursor:pointer; color:var(--admin-text); transition:all .15s; }
 .period-btn.active { background:var(--admin-primary); color:#fff; border-color:var(--admin-primary); }
 </style>
 
@@ -155,8 +161,8 @@ async function loadRevenue(period, btn) {
       data: {
         labels,
         datasets: [
-          { label: 'Revenue', data: revenues, backgroundColor: 'rgba(99,102,241,.7)', borderRadius: 6, yAxisID: 'y' },
-          { label: 'Orders', data: orders, type: 'line', borderColor: '#10B981', backgroundColor: 'transparent', pointRadius: 4, tension: .3, yAxisID: 'y1' },
+          { label: 'Revenue', data: revenues, backgroundColor: 'rgba(29,111,163,.75)', borderRadius: 6, yAxisID: 'y' },
+          { label: 'Orders', data: orders, type: 'line', borderColor: '#C78122', backgroundColor: 'transparent', pointBackgroundColor: '#C78122', pointRadius: 4, tension: .3, yAxisID: 'y1' },
         ],
       },
       options: {
@@ -178,7 +184,7 @@ async function loadConversion() {
     const data = res.data?.by_status || [];
 
     if (conversionChart) conversionChart.destroy();
-    const colors = { pending:'#F59E0B', processing:'#3B82F6', completed:'#10B981', cancelled:'#EF4444', delivered:'#6366F1' };
+    const colors = { pending:'#F2A93B', processing:'#1D6FA3', completed:'#10B981', cancelled:'#C0392B', delivered:'#6366F1' };
     const ctx = document.getElementById('conversionChart').getContext('2d');
     conversionChart = new Chart(ctx, {
       type: 'doughnut',

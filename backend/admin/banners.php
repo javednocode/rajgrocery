@@ -200,7 +200,7 @@
         </div>
         <div class="form-group">
           <label>Subtitle</label>
-          <input type="text" id="bSubtitle" class="form-control" placeholder="e.g. Free delivery over €50">
+          <input type="text" id="bSubtitle" class="form-control" placeholder="e.g. Free delivery over HK$400">
         </div>
       </div>
 

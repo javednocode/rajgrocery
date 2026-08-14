@@ -70,6 +70,12 @@ function requireAuth(): array {
     if (!$payload) {
         errorResponse('Invalid or expired token', 401);
     }
+    // Customer tokens must never be accepted on admin routes. Old admin
+    // tokens (issued before the 'type' claim existed) have no 'type' key
+    // and are unaffected by this check.
+    if (($payload['type'] ?? null) === 'customer') {
+        errorResponse('Authentication required', 401);
+    }
 
     return $payload;
 }
@@ -146,6 +152,54 @@ function optionalAuth(): ?array {
     if (preg_match('/Bearer\s+(.+)/', $authHeader, $matches)) {
         $payload = verifyJWT($matches[1]);
         return $payload ?: null;
+    }
+    return null;
+}
+
+/**
+ * Require a valid customer JWT (storefront self-service auth — separate
+ * from the admin requireAuth() above). Returns the decoded payload.
+ * Uses its own rate-limit bucket ('customer_auth_verify') so a burst of
+ * storefront traffic can never exhaust the admin 'auth_verify' counter
+ * for the same IP.
+ */
+function requireCustomerAuth(): array {
+    $headers    = getallheaders();
+    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+
+    if (!preg_match('/Bearer\s+(.+)/', $authHeader, $matches)) {
+        errorResponse('Authentication required', 401);
+    }
+
+    $isLocalHost = in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1']);
+    if (!$isLocalHost && function_exists('checkRateLimit') && function_exists('getClientIp')) {
+        $ip = getClientIp();
+        if (!checkRateLimit($ip, 'customer_auth_verify', 120, 60)) {
+            errorResponse('Too many requests. Try again in a minute.', 429);
+        }
+    }
+
+    $payload = verifyJWT($matches[1]);
+    if (!$payload || ($payload['type'] ?? null) !== 'customer') {
+        errorResponse('Authentication required', 401);
+    }
+
+    return $payload;
+}
+
+/**
+ * Optional customer auth — returns the JWT payload or null. Used by
+ * routes (like guest checkout) that behave differently for logged-in
+ * customers vs guests without ever requiring a token.
+ */
+function optionalCustomerAuth(): ?array {
+    $headers    = getallheaders();
+    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    if (preg_match('/Bearer\s+(.+)/', $authHeader, $matches)) {
+        $payload = verifyJWT($matches[1]);
+        if ($payload && ($payload['type'] ?? null) === 'customer') {
+            return $payload;
+        }
     }
     return null;
 }

@@ -13,13 +13,15 @@ function sendWhatsAppNotification($cfg, $order) {
     $siteName = function_exists('settingOrDefault') ? settingOrDefault($cfg, 'site_name', 'Your Store') : ($cfg['site_name'] ?? 'Your Store');
     $adminUrl = function_exists('settingOrDefault') ? settingOrDefault($cfg, 'admin_url', '/admin/orders.php') : ($cfg['admin_url'] ?? '/admin/orders.php');
     $currency = function_exists('settingOrDefault') ? settingOrDefault($cfg, 'currency_symbol', '$') : ($cfg['currency_symbol'] ?? '$');
+    $payMethod = strtoupper(str_replace('_', ' ', $order['payment_method'] ?? 'COD'));
+    $payStatus = (strtolower((string)($order['payment_method'] ?? 'cod')) !== 'cod' || ($order['payment_status'] ?? '') === 'paid') ? ' - PAID ✅' : ' (COD)';
 
     $msg = "🛒 *New Order - {$siteName}*\n"
          . "Order: *{$order['order_number']}*\n"
          . "Customer: {$order['customer_name']}\n"
          . "Phone: {$order['customer_phone']}\n"
          . "Total: {$currency}" . number_format($order['total'] ?? 0, 2) . "\n"
-         . "Payment: " . strtoupper($order['payment_method'] ?? 'COD') . "\n"
+         . "Payment: {$payMethod}{$payStatus}\n"
          . "View: {$adminUrl}";
 
     $url = 'https://api.callmebot.com/whatsapp.php?'

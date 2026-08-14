@@ -94,7 +94,7 @@ function seedDefaultPages($db) {
         ['Privacy Policy',     'privacy-policy',    '<h2>Privacy Policy</h2><p>We value your privacy. This policy explains how we collect, use, and protect your personal data.</p><p>We do not sell or share your information with third parties without your consent.</p>'],
         ['Terms & Conditions', 'terms-conditions',  '<h2>Terms &amp; Conditions</h2><p>By using our website and services, you agree to these terms and conditions.</p><p>We reserve the right to update these terms at any time.</p>'],
         ['Returns Policy',     'returns-policy',    '<h2>Returns Policy</h2><p>We accept returns within 7 days of delivery for non-perishable items.</p><p>Fresh products cannot be returned. Please contact us if you have any issues.</p>'],
-        ['Delivery Info',      'delivery-info',     '<h2>Delivery Information</h2><p>We offer free delivery on orders over €50. Standard delivery is €5.</p><p>Same-day delivery is available for orders placed before 12 noon.</p>'],
+        ['Delivery Info',      'delivery-info',     '<h2>Delivery Information</h2><p>We offer free delivery on orders over HK$400. Standard delivery is HK$40.</p><p>Same-day delivery is available for orders placed before 12 noon.</p>'],
         ['FAQ',                'faq',               '<h2>Frequently Asked Questions</h2><h3>How do I track my order?</h3><p>You can track your order using the order number sent in your confirmation email.</p><h3>What payment methods do you accept?</h3><p>We accept all major credit/debit cards and PayPal.</p>'],
     ];
 

@@ -5,6 +5,7 @@ import { CartService } from '../../core/services/cart.service';
 import { ApiService } from '../../core/services/api.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { SeoService } from '../../core/services/seo.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-checkout',
@@ -116,6 +117,15 @@ import { SeoService } from '../../core/services/seo.service';
           </div>
         </div>
 
+        <!-- Guest banner — only when logged out; cart persists via localStorage so
+             navigating to /account and back is always safe -->
+        @if (step === 1 && !auth.isLoggedIn()) {
+          <div class="ck-guest-banner">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.7"/><path d="M4 20c1.2-3.6 4.2-5.5 8-5.5s6.8 1.9 8 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <span>Have an account? <a routerLink="/account">Log in</a> for faster checkout — or continue as a guest below.</span>
+          </div>
+        }
+
         <!-- Main two-column grid -->
         <div class="ck-grid">
 
@@ -137,6 +147,32 @@ import { SeoService } from '../../core/services/seo.service';
                 </div>
 
                 <div class="ck-fields">
+                  <!-- Saved address picker — logged-in customers with at least
+                       one saved address. Picking one prefills the fields below
+                       (still editable); they stay visible unchanged either way. -->
+                  @if (auth.isLoggedIn() && savedAddresses().length > 0) {
+                    <div class="ck-section">
+                      <h3 class="ck-section-label">Deliver To</h3>
+                      @for (a of savedAddresses(); track a.id) {
+                        <div class="ck-option" [class.ck-option-selected]="selectedAddressId() === a.id"
+                          (click)="selectAddress(a)" style="cursor:pointer;margin-bottom:10px;">
+                          <div class="ck-radio" [class.ck-radio-off]="selectedAddressId() !== a.id"></div>
+                          <div class="ck-option-content">
+                            <strong>{{ a.label }}{{ a.is_default ? ' (Default)' : '' }}</strong>
+                            <em>{{ a.address_line1 }}{{ a.address_line2 ? ', ' + a.address_line2 : '' }}, {{ a.city }}, {{ a.state }} {{ a.pincode }}</em>
+                          </div>
+                        </div>
+                      }
+                      <div class="ck-option" [class.ck-option-selected]="selectedAddressId() === 'new'"
+                        (click)="selectNewAddress()" style="cursor:pointer;">
+                        <div class="ck-radio" [class.ck-radio-off]="selectedAddressId() !== 'new'"></div>
+                        <div class="ck-option-content">
+                          <strong>Enter a new address</strong>
+                        </div>
+                      </div>
+                    </div>
+                  }
+
                   <!-- Name row -->
                   <div class="ck-row2">
                     <div class="ck-field">
@@ -168,8 +204,23 @@ import { SeoService } from '../../core/services/seo.service';
                   <div class="ck-row2">
                     <div class="ck-field">
                       <label for="ck-city">Town / City <span class="ck-req">*</span></label>
-                      <input id="ck-city" [(ngModel)]="form.city" name="city"
-                        placeholder="e.g. Hong Kong" autocomplete="address-level2" required />
+                      <select id="ck-city" [(ngModel)]="form.city" name="city" autocomplete="address-level2" required>
+                        <option value="" disabled>Select Hong Kong Region / City</option>
+                        @for (city of hkCities; track city.name) {
+                          <option [value]="city.name">{{ city.name }} ({{ isFreeDeliveryReached(city) ? 'FREE Delivery' : cur + city.fee }})</option>
+                        }
+                      </select>
+                      @if (selectedCity; as sc) {
+                        @if (selectedCityFreeThreshold(sc) > 0) {
+                          <div class="ck-min-badge" [class.ck-min-met]="isFreeDeliveryReached(sc)">
+                            @if (isFreeDeliveryReached(sc)) {
+                              ✅ <span>Free Delivery Applied!</span>
+                            } @else {
+                              🚚 <span>Add {{ cur }}{{ (selectedCityFreeThreshold(sc) - cart.subtotal()).toFixed(0) }} more for Free Delivery (above {{ cur }}{{ selectedCityFreeThreshold(sc) }})</span>
+                            }
+                          </div>
+                        }
+                      }
                     </div>
                     <div class="ck-field">
                       <!-- NOTE: backend field is 'county' — label updated to HK-friendly term.
@@ -189,18 +240,18 @@ import { SeoService } from '../../core/services/seo.service';
                         placeholder="e.g. HK or leave blank" autocomplete="postal-code" required />
                     </div>
                     <div class="ck-field">
-                      <!-- REPORT: country defaults to 'Finland' and only offers Finland/Other.
-                           Backend field preserved. Visible options updated to HK-relevant values.
-                           Do NOT change delivery zone / backend config in this phase. -->
                       <label for="ck-country">Country <span class="ck-req">*</span></label>
-                      <select id="ck-country" [(ngModel)]="form.country" name="country"
-                        autocomplete="country-name">
-                        <option value="Hong Kong">Hong Kong</option>
-                        <option value="Finland">Finland</option>
-                        <option value="Other">Other</option>
-                      </select>
+                      <input id="ck-country" [value]="form.country" name="country"
+                        type="text" readonly class="ck-input-fixed" autocomplete="country-name" />
                     </div>
                   </div>
+
+                  @if (auth.isLoggedIn() && selectedAddressId() === 'new') {
+                    <label class="ck-checkbox-row">
+                      <input type="checkbox" [(ngModel)]="saveNewAddress" name="saveAddr" />
+                      Save this address to my account for next time
+                    </label>
+                  }
 
                   <!-- Phone + Email -->
                   <div class="ck-row2">
@@ -306,16 +357,31 @@ import { SeoService } from '../../core/services/seo.service';
                   </div>
                 </div>
 
-                <!-- Payment method (COD — only confirmed active method) -->
-                <!-- NOTE: payment_method submitted as 'cod' (preserved exactly) -->
+                <!-- Payment method selector: COD + Bank Transfer -->
                 <div class="ck-section">
                   <h3 class="ck-section-label">Payment</h3>
-                  <div class="ck-option ck-option-selected">
-                    <div class="ck-radio"></div>
+                  <!-- Cash on Delivery -->
+                  <div class="ck-option" [class.ck-option-selected]="paymentMethod() === 'cod'"
+                    (click)="paymentMethod.set('cod')" style="margin-bottom:10px;cursor:pointer;">
+                    <div class="ck-radio" [class.ck-radio-off]="paymentMethod() !== 'cod'"></div>
                     <div class="ck-option-content">
                       <strong>Cash on Delivery</strong>
                       <em>Pay in cash when your order arrives</em>
                     </div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;color:var(--kg-forest-lt)">
+                      <rect x="2" y="6" width="20" height="12" rx="2" stroke="currentColor" stroke-width="1.7"/>
+                      <path d="M2 10h20" stroke="currentColor" stroke-width="1.7"/>
+                    </svg>
+                  </div>
+                  <!-- Bank Transfer -->
+                  <div class="ck-option" [class.ck-option-selected]="paymentMethod() === 'bank_transfer'"
+                    (click)="paymentMethod.set('bank_transfer')" style="cursor:pointer;">
+                    <div class="ck-radio" [class.ck-radio-off]="paymentMethod() !== 'bank_transfer'"></div>
+                    <div class="ck-option-content">
+                      <strong>Bank Transfer</strong>
+                      <em>HSBC — Account No: 521-088542-838 | FPS: 54264886</em>
+                    </div>
+                    <div class="ck-hsbc-dot">H</div>
                   </div>
                 </div>
 
@@ -427,6 +493,14 @@ import { SeoService } from '../../core/services/seo.service';
                 Easy online ordering
               </li>
             </ul>
+
+            <!-- WhatsApp Contact Button (checkout sidebar) -->
+            <a href="https://wa.me/85254264886" target="_blank" rel="noopener noreferrer" class="ck-wa-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+              </svg>
+              Contact on WhatsApp
+            </a>
           </aside>
         </div>
       }
@@ -524,6 +598,25 @@ import { SeoService } from '../../core/services/seo.service';
   }
   .ck-field input::placeholder, .ck-field textarea::placeholder { color: var(--kg-faint); }
   .ck-field textarea { resize: vertical; min-height: 80px; }
+  .ck-input-fixed {
+    background: rgba(15, 23, 42, 0.04) !important;
+    color: var(--kg-muted) !important;
+    cursor: not-allowed !important;
+    font-weight: 700 !important;
+    user-select: none;
+  }
+  .ck-min-badge {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 6px; padding: 6px 10px; border-radius: 6px;
+    font-size: 12px; font-weight: 700; font-family: var(--font-sans);
+    background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe;
+  }
+  .ck-min-badge.ck-min-met {
+    background: #f0fdf4; color: #166534; border-color: #bbf7d0;
+  }
+  .ck-field-error {
+    font-size: 11.5px; font-weight: 700; color: #dc2626; margin-top: 4px; line-height: 1.4;
+  }
 
   /* ── Address summary box (step 2) ── */
   .ck-addr-box {
@@ -536,6 +629,23 @@ import { SeoService } from '../../core/services/seo.service';
     font-size: 13.5px; color: var(--kg-ink); font-family: var(--font-sans); line-height: 1.5;
   }
   .ck-addr-row svg { color: var(--kg-forest); flex-shrink: 0; margin-top: 2px; }
+
+  /* ── Guest banner (logged-out only) ── */
+  .ck-guest-banner {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--kg-forest-bg); border: 1px solid var(--kg-forest-bg2);
+    border-radius: var(--r-lg); padding: 13px 18px; margin-bottom: 20px;
+    font-size: 13.5px; color: var(--kg-ink); font-family: var(--font-sans);
+  }
+  .ck-guest-banner svg { color: var(--kg-forest); flex-shrink: 0; }
+  .ck-guest-banner a { font-weight: 800; color: var(--kg-forest-dk); text-decoration: underline; }
+
+  /* ── Save-address checkbox (logged-in, new address) ── */
+  .ck-checkbox-row {
+    display: flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 600;
+    color: var(--kg-ink); font-family: var(--font-sans); cursor: pointer; margin-top: -4px;
+  }
+  .ck-checkbox-row input { width: 16px; height: 16px; accent-color: var(--kg-forest); cursor: pointer; }
 
   /* ── Sections (delivery, payment) ── */
   .ck-section { margin-bottom: 20px; }
@@ -586,6 +696,26 @@ import { SeoService } from '../../core/services/seo.service';
     font-family: var(--font-sans);
   }
   .ck-error-retry:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ── Radio off state ── */
+  .ck-radio-off { background: transparent !important; border-color: var(--kg-line) !important; }
+  .ck-radio-off::after { display: none !important; }
+  /* ── HSBC badge ── */
+  .ck-hsbc-dot {
+    width: 28px; height: 28px; border-radius: 8px; background: #ee0000;
+    color: #fff; font-size: 15px; font-weight: 900; display: grid; place-items: center;
+    flex-shrink: 0; font-family: var(--font-sans);
+  }
+  /* ── WhatsApp button in sidebar ── */
+  .ck-wa-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; background: #f0fdf4; color: #166534;
+    border: 1.5px solid #bbf7d0; border-radius: var(--r-xl);
+    padding: 12px 18px; font-size: 13.5px; font-weight: 800;
+    text-decoration: none; font-family: var(--font-sans);
+    transition: all .2s; margin-top: 12px;
+  }
+  .ck-wa-btn:hover { background: #25D366; color: #fff; border-color: #25D366; }
 
   /* ── Buttons ── */
   .ck-next-btn {
@@ -819,6 +949,8 @@ export class CheckoutComponent implements OnInit {
   error  = signal('');
   ref    = signal('');
   step   = 1;
+  // Payment method selector — default COD to keep existing behaviour
+  paymentMethod = signal<'cod' | 'bank_transfer'>('cod');
 
   // ══ Form — ALL field names PRESERVED exactly (maps to API payload) ══
   // REPORTED: country defaults to 'Finland' → updated to 'Hong Kong' (UI only)
@@ -827,56 +959,210 @@ export class CheckoutComponent implements OnInit {
   // REPORTED: postcode field is sent as 'pincode' in API payload (preserved)
   form = {
     first_name: '', last_name: '', address_line1: '', address_line2: '',
-    city: '', county: '', postcode: '', country: 'Hong Kong',
+    city: '', county: '', postcode: 'HK', country: 'Hong Kong',
     phone: '', email: '', notes: ''
   };
+
+  // ── Logged-in account integration ──
+  savedAddresses = signal<any[]>([]);
+  selectedAddressId = signal<number | 'new'>('new');
+  saveNewAddress = false;
 
   constructor(
     public cart: CartService,
     private api: ApiService,
     private settings: SettingsService,
     private router: Router,
+    public auth: AuthService,
     seo: SeoService
   ) {
     seo.setMeta({ title: 'Checkout', description: 'Complete your grocery order securely.' });
   }
 
   ngOnInit() {
-    if (this.cart.items().length === 0) this.router.navigate(['/']);
+    if (this.cart.items().length === 0) {
+      this.router.navigate(['/']);
+      return;
+    }
+    if (!this.form.city && this.hkCities.length > 0) {
+      this.form.city = this.hkCities[0].name;
+    }
+
+    if (this.auth.isLoggedIn()) {
+      const c = this.auth.customer();
+      if (c) {
+        this.form.first_name = this.form.first_name || c.first_name || '';
+        this.form.last_name = this.form.last_name || c.last_name || '';
+        this.form.phone = this.form.phone || c.phone || '';
+        this.form.email = this.form.email || c.email || '';
+      }
+      this.api.getMyAddresses().subscribe({
+        next: (r: any) => {
+          if (r.success && r.data.length) {
+            this.savedAddresses.set(r.data);
+            const def = r.data.find((a: any) => a.is_default) || r.data[0];
+            this.selectAddress(def);
+          }
+        }
+      });
+    }
+  }
+
+  selectAddress(a: any) {
+    this.selectedAddressId.set(a.id);
+    const parts = (a.full_name || '').trim().split(' ');
+    this.form.first_name = parts[0] || this.form.first_name;
+    this.form.last_name = parts.slice(1).join(' ') || this.form.last_name;
+    this.form.phone = a.phone || this.form.phone;
+    this.form.address_line1 = a.address_line1 || '';
+    this.form.address_line2 = a.address_line2 || '';
+    this.form.city = a.city || this.form.city;
+    this.form.county = a.state || '';
+    this.form.postcode = a.pincode || this.form.postcode;
+  }
+
+  selectNewAddress() {
+    this.selectedAddressId.set('new');
   }
 
   // currency_symbol is configured via SettingsService (DB → API → settings signal).
   // Fallback is 'HK$' — Raj Grocery Store operates in Hong Kong.
   get cur() { return this.settings.get('currency_symbol', 'HK$'); }
 
-  get freeAbove() { return parseFloat(this.settings.get('shipping_free_above', '50')) || 0; }
+  get hkCities(): { name: string; fee: number; minAmount?: number; min_amount?: number; minQty?: number; min_qty?: number }[] {
+    const defaultCities = [
+      { name: 'Kowloon', fee: 40, minAmount: 500 },
+      { name: 'Hong Kong Island', fee: 50, minAmount: 500 },
+      { name: 'New Territories', fee: 60, minAmount: 500 },
+      { name: 'Tsuen Wan / Kwai Tsing', fee: 45, minAmount: 500 },
+      { name: 'Sha Tin / Tai Po', fee: 55, minAmount: 500 },
+      { name: 'Tuen Mun / Yuen Long', fee: 60, minAmount: 500 },
+      { name: 'Lantau Island / Tung Chung', fee: 80, minAmount: 500 },
+      { name: 'Discovery Bay / Outlying Islands', fee: 120, minAmount: 500 }
+    ];
+    const stored = this.settings.get('hk_delivery_cities', '');
+    if (stored) {
+      try {
+        if (typeof stored === 'string') {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+        if (Array.isArray(stored) && stored.length > 0) return stored;
+      } catch (e) {
+        console.error('Failed parsing hk_delivery_cities', e);
+      }
+    }
+    return defaultCities;
+  }
+
+  get freeAbove() { 
+    return parseFloat(this.settings.get('delivery_free_above', this.settings.get('shipping_free_above', '400'))) || 400; 
+  }
 
   shippingCost() {
-    const c = parseFloat(this.settings.get('shipping_charge', '5')) || 0;
-    return this.freeAbove > 0 && this.cart.subtotal() >= this.freeAbove ? 0 : c;
+    const freeEnabled = this.settings.get('delivery_free_enabled', '1') !== '0';
+    if (!freeEnabled) {
+      // Free delivery disabled globally — just return city fee
+      if (this.form.city) {
+        const found = this.hkCities.find(c => c.name.toLowerCase() === this.form.city.toLowerCase());
+        if (found) return Number(found.fee);
+      }
+      return this.hkCities.length > 0 ? Number(this.hkCities[0].fee) : (parseFloat(this.settings.get('shipping_charge', '40')) || 40);
+    }
+
+    // Per-city free delivery threshold (minAmount = free delivery threshold)
+    if (this.form.city) {
+      const found = this.hkCities.find(c => c.name.toLowerCase() === this.form.city.toLowerCase());
+      if (found) {
+        const threshold = this.selectedCityFreeThreshold(found);
+        // If city has its own threshold, use it
+        if (threshold > 0 && this.cart.subtotal() >= threshold) return 0;
+        // If city has no threshold but global freeAbove is set
+        if (threshold === 0 && this.freeAbove > 0 && this.cart.subtotal() >= this.freeAbove) return 0;
+        return Number(found.fee);
+      }
+    }
+
+    // Fallback: global freeAbove
+    if (this.freeAbove > 0 && this.cart.subtotal() >= this.freeAbove) return 0;
+    const fallback = this.hkCities.length > 0 ? this.hkCities[0].fee : (parseFloat(this.settings.get('shipping_charge', '40')) || 40);
+    return Number(fallback);
+  }
+
+  get selectedCity() {
+    return this.hkCities.find(c => c.name.toLowerCase() === (this.form.city || '').toLowerCase());
+  }
+
+  /** Returns the free-delivery threshold for a city.
+   * minAmount (stored in DB) = the cart subtotal at which delivery becomes free.
+   * This is NOT a minimum order block — it is purely a free-delivery threshold. */
+  selectedCityFreeThreshold(sc: any): number {
+    if (!sc) return 0;
+    let amt = Number(sc.minAmount ?? sc.min_amount ?? 0);
+    if (amt === 0 && (sc.minQty || sc.min_qty)) {
+      amt = Number(sc.minQty || sc.min_qty);
+    }
+    return amt;
+  }
+
+  /** Legacy alias kept for compatibility — same as selectedCityFreeThreshold */
+  selectedCityMinAmount(sc: any): number {
+    return this.selectedCityFreeThreshold(sc);
+  }
+
+  /** Returns true if cart subtotal meets the city's free-delivery threshold */
+  isFreeDeliveryReached(city: any): boolean {
+    const threshold = this.selectedCityFreeThreshold(city);
+    if (threshold > 0) return this.cart.subtotal() >= threshold;
+    // Fall back to global threshold
+    return this.freeAbove > 0 && this.cart.subtotal() >= this.freeAbove;
   }
 
   // ══ grandTotal — PRESERVED exactly ══
   grandTotal() { return this.cart.subtotal() + this.shippingCost(); }
 
-  // ══ nextStep — validation PRESERVED exactly ══
+  // ══ nextStep — validation: only required fields, NO min-order block ══
   nextStep() {
     const f = this.form;
     if (!f.first_name || !f.last_name || !f.address_line1 || !f.city || !f.postcode || !f.phone) {
       this.error.set('Please fill in all required fields marked with *');
       return;
     }
+    // minAmount is a free-delivery threshold, NOT a checkout blocker.
+    // Orders are always allowed regardless of cart total.
     this.error.set('');
     this.step = 2;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // ══ place() — ENTIRE METHOD + PAYLOAD PRESERVED exactly ══
-  // payment_method: 'cod' — DO NOT CHANGE
+  // ══ place() — navigates to /order-success with full state on success ══
   place() {
     this.error.set('');
+    // NOTE: No minimum order check here — minAmount is only a free-delivery
+    // threshold, not a checkout blocker. Any cart total is allowed.
     this.busy.set(true);
     const f = this.form;
+    const pm = this.paymentMethod();
+
+    // Snapshot cart items BEFORE clearing
+    const cartItems = this.cart.items().map(i => ({
+      name: i.name,
+      quantity: i.quantity,
+      price: i.salePrice ?? i.price
+    }));
+    const subtotal = this.cart.subtotal();
+    const shipping = this.shippingCost();
+    const total = this.grandTotal();
+
+    const addrParts = [
+      f.address_line1,
+      f.address_line2,
+      f.city,
+      f.county,
+      f.postcode,
+      f.country
+    ].filter(Boolean);
+
     const order = {
       customer_name: `${f.first_name} ${f.last_name}`,
       customer_phone: f.phone,
@@ -888,23 +1174,49 @@ export class CheckoutComponent implements OnInit {
       pincode: f.postcode,
       country: f.country,
       notes: f.notes,
-      payment_method: 'cod',
+      payment_method: pm,
+      shipping_charge: shipping,
+      save_address: this.auth.isLoggedIn() && this.selectedAddressId() === 'new' && this.saveNewAddress,
+      shipping_address: {
+        address_line1: f.address_line1,
+        address_line2: f.address_line2,
+        city: f.city,
+        county: f.county,
+        eircode: f.postcode,
+        country: f.country
+      },
       items: this.cart.items().map(i => ({ product_id: i.id, quantity: i.quantity, price: i.salePrice ?? i.price }))
     };
+
     this.api.placeOrder(order).subscribe({
       next: (r: any) => {
         if (r.success) {
-          this.ref.set(r.data?.order_number || 'TD-' + Date.now());
+          const orderNum = r.data?.order_number || 'RGS-' + Date.now();
+          const orderId = r.data?.order_id ?? 0;
           this.cart.clearCart();
-          this.placed.set(true);
-          window.scrollTo(0, 0);
+          // Navigate to dedicated success page with full order data as router state
+          this.router.navigate(['/order-success'], {
+            state: {
+              order_id: orderId,
+              order_number: orderNum,
+              payment_method: pm,
+              total,
+              subtotal,
+              shipping,
+              discount: 0,
+              customer_name: `${f.first_name} ${f.last_name}`,
+              phone: f.phone,
+              address: addrParts.join(', '),
+              items: cartItems
+            }
+          });
         } else {
           this.error.set(r.message || 'Could not place the order. Please try again.');
         }
         this.busy.set(false);
       },
-      error: () => {
-        this.error.set('Network error — please check your connection and try again.');
+      error: (err: any) => {
+        this.error.set(err?.error?.message || 'Could not place order. Please check your inputs and try again.');
         this.busy.set(false);
       }
     });

@@ -60,7 +60,7 @@ function isActivePage(string ...$pages): string {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
             Orders
         </a>
-        <a href="customers.php" class="<?= isActivePage('customers.php') ?>">
+        <a href="customers.php" class="<?= isActivePage('customers.php', 'customer-detail.php') ?>">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.4-3.6 4.4-5 8-5s6.6 1.4 8 5"/></svg>
             Customers
         </a>
@@ -90,6 +90,10 @@ function isActivePage(string ...$pages): string {
         <a href="featured.php" class="<?= isActivePage('featured.php') ?>">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3h14a2 2 0 0 1 2 2v14l-9-4-9 4V5a2 2 0 0 1 2-2z"/></svg>
             Featured Products
+        </a>
+        <a href="new-arrivals.php" class="<?= isActivePage('new-arrivals.php') ?>">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M3 12h18"/></svg>
+            New Arrivals
         </a>
         <a href="trending.php" class="<?= isActivePage('trending.php') ?>">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
@@ -129,6 +133,10 @@ function isActivePage(string ...$pages): string {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/><path d="M4 4h4M16 4h4"/></svg>
             Product Migration
         </a>
+        <a href="customer-import.php" class="<?= isActivePage('customer-import.php') ?>">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+            Customer Import
+        </a>
 
         <!-- ─── SETTINGS ─── -->
         <div class="nav-section">Settings</div>
@@ -164,9 +172,21 @@ function isActivePage(string ...$pages): string {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
             Bulk Stock Update
         </a>
+        <a href="bulk-out-of-stock.php" class="<?= isActivePage('bulk-out-of-stock.php') ?>">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            Bulk Out of Stock by List
+        </a>
         <a href="backup.php" class="<?= isActivePage('backup.php') ?>">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             Backup &amp; Restore
+        </a>
+        <a href="help-center.php" class="<?= isActivePage('help-center.php') ?>">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            Help Center
+        </a>
+        <a href="ai-logs.php" class="<?= isActivePage('ai-logs.php') ?>" style="background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(139,92,246,.08));border-left:3px solid #6366f1;color:#6366f1;font-weight:600;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            AI Intelligence System
         </a>
 
         <!-- ─── ACCOUNT ─── -->

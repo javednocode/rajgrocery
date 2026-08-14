@@ -5,8 +5,10 @@
 const API_BASE = '/api';
 const ADMIN_BASE = '/admin';
 
-// Currency symbol — loaded from /api/settings on init; safe Unicode fallback for €
-let adminCurrencySymbol = '\u20AC';
+// Currency symbol — loaded from /api/settings on init; safe fallback to HK$ or stored setting
+let adminCurrencySymbol = localStorage.getItem('admin_currency_symbol') || 'HK$';
+window.adminCurrencySymbol = adminCurrencySymbol;
+window.CURRENCY_SYMBOL = adminCurrencySymbol;
 
 // Read token from localStorage OR cookie (set by login page)
 function getStoredToken() {
@@ -202,7 +204,9 @@ function removePreviewImage(btn, inputId, idx) {
 
 // ========== FORMAT HELPERS ==========
 function formatCurrency(amount) {
-    return adminCurrencySymbol + parseFloat(amount).toLocaleString('en-IE', { minimumFractionDigits: 2 });
+    var val = parseFloat(amount || 0);
+    if (isNaN(val)) val = 0;
+    return adminCurrencySymbol + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // Load currency symbol from site settings (runs once after auth resolves)
@@ -219,6 +223,9 @@ function loadAdminCurrencySymbol() {
             var sym = json.data.currency_symbol;
             if (sym === '\u00e2\u201a\u00ac' || sym === '\u00e2\u0082\u00ac') sym = '\u20AC';
             adminCurrencySymbol = sym;
+            window.adminCurrencySymbol = sym;
+            window.CURRENCY_SYMBOL = sym;
+            localStorage.setItem('admin_currency_symbol', sym);
         }
     })
     .catch(function() { /* keep default */ });

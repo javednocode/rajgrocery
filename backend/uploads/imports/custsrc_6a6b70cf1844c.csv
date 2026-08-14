@@ -1,0 +1,7 @@
+First Name,Last Name,Email,Phone,Company,Billing Address 1,Billing City,Billing State,Billing Country,Billing Postcode,Shipping Address 1,Shipping City,Shipping State,Shipping Country,Shipping Postcode,Date Registered,Customer ID
+Priya,Sharma,priya.sharma@example.com,+852 9123 4567,,12 Nathan Road,Tsim Sha Tsui,Kowloon,Hong Kong,00000,12 Nathan Road,Tsim Sha Tsui,Kowloon,Hong Kong,00000,2023-05-14,101
+Rahul,Verma,rahul.verma@example.com,+852 9234 5678,Verma Trading Co,45 Queens Road,Central,Hong Kong Island,Hong Kong,00000,88 Des Voeux Road,Sheung Wan,Hong Kong Island,Hong Kong,00000,2023-06-02,102
+Anjali,Kapoor,anjali.kapoor@example.com,,,"","","","","","","","","",2023-07-19,103
+Bad Row,NoEmail,,+852 9000 0000,,,,,,,,,,,,,104
+Priya,Duplicate,priya.sharma@example.com,+852 9999 9999,,,,,,,,,,,,,105
+Deepa,Nair,deepa.nair@example.com,+852 9345 6789,,7 Bowrington Road,Wan Chai,Hong Kong Island,Hong Kong,00000,7 Bowrington Road,Wan Chai,Hong Kong Island,Hong Kong,00000,not-a-date,106

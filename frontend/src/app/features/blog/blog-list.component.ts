@@ -12,7 +12,8 @@ import { environment } from '../../../environments/environment';
   <!-- Hero -->
   <section class="bl-hero">
     <div class="container">
-      <nav class="bl-crumbs"><a routerLink="/">Home</a><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Blog</span></nav>
+      <nav class="bl-crumbs"><a routerLink="/">Home</a><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Journal</span></nav>
+      <span class="bl-eyebrow">The Raj Journal</span>
       <h1>Recipes & Stories</h1>
       <p>Discover authentic Indian recipes, cooking tips, and cultural stories from our community.</p>
     </div>
@@ -105,8 +106,9 @@ import { environment } from '../../../environments/environment';
   .bl-crumbs a { color: rgba(255,255,255,.6); transition: color .2s; }
   .bl-crumbs a:hover { color: var(--kg-forest-lt); }
   .bl-crumbs svg { opacity: .35; flex-shrink: 0; }
-  .bl-hero h1 { font-family: var(--font-sans); font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: var(--kg-cream); margin-bottom: 8px; letter-spacing: -0.02em; }
-  .bl-hero p { font-size: 15px; color: rgba(255,255,255,.55); max-width: 520px; margin: 0; line-height: 1.7; }
+  .bl-eyebrow { display: inline-block; font-family: var(--font-sans); font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: var(--kg-forest-lt); margin-bottom: 12px; }
+  .bl-hero h1 { font-family: var(--font-sans); font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: #FFF; margin-bottom: 8px; letter-spacing: -0.02em; }
+  .bl-hero p { font-size: 15px; color: rgba(255,255,255,.7); max-width: 520px; margin: 0; line-height: 1.7; }
 
   /* BODY */
   .bl-body { padding: 48px 0 72px; background: var(--kg-cream); }

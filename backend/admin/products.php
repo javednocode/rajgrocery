@@ -106,6 +106,9 @@ input[type=checkbox] { width:15px; height:15px; accent-color:#2563EB; cursor:poi
             <option value="enable"> Enable Products</option>
             <option value="disable"> Disable Products</option>
         </optgroup>
+        <optgroup label="Stock">
+            <option value="out_of_stock"> Set Out of Stock</option>
+        </optgroup>
         <optgroup label="Category">
             <option value="set_category"> Move to Category</option>
             <option value="add_category"> Add to Category</option>
@@ -255,8 +258,8 @@ async function loadProducts(page = 1) {
                         </div>
                     </td>
                     <td>${p.sale_price
-                        ? `<span style="text-decoration:line-through;color:var(--admin-text-muted);font-size:12px">€${p.price}</span> <strong style="color:var(--admin-success)">€${p.sale_price}</strong>`
-                        : `<strong>€${p.price}</strong>`}</td>
+                        ? `<span style="text-decoration:line-through;color:var(--admin-text-muted);font-size:12px">${formatCurrency(p.price)}</span> <strong style="color:var(--admin-success)">${formatCurrency(p.sale_price)}</strong>`
+                        : `<strong>${formatCurrency(p.price)}</strong>`}</td>
                     <td>${p.stock <= 0
                         ? '<span class="badge badge-danger">Out of stock</span>'
                         : p.stock <= 5
@@ -348,6 +351,7 @@ function applyBulkAction() {
     if (selectedIds.size === 0) { alert('Please select at least one product'); return; }
     const labels = {
         enable: 'Enable', disable: 'Disable', delete: 'Delete',
+        out_of_stock: 'Set Out of Stock',
         mark_featured: 'Mark Featured', unmark_featured: 'Remove Featured',
         set_category: 'Move to Category', add_category: 'Add to Category', remove_category: 'Remove from Category',
     };

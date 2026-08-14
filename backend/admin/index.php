@@ -1,5 +1,20 @@
 <?php
 // Admin login page — fully self-contained, no external JS dependencies
+
+// Load the store's own name/logo from the DB, same as includes/sidebar.php.
+// Never fall back to the bundled /logo.png — that static asset is generic
+// PWA-icon art carried over from a different white-label deployment, not
+// this store's branding.
+$_loginName = 'Admin Panel';
+$_loginLogo = '';
+try {
+    require_once __DIR__ . '/../config/database.php';
+    require_once __DIR__ . '/../helpers/branding.php';
+    $_loginDb   = (new Database())->getConnection();
+    $_loginData = loadSiteSettings($_loginDb);
+    $_loginName = !empty($_loginData['site_name']) ? $_loginData['site_name'] : 'Admin Panel';
+    $_loginLogo = !empty($_loginData['site_logo']) ? $_loginData['site_logo'] : '';
+} catch (\Throwable $_e) {}
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -42,7 +57,11 @@
 
 <div class="box">
     <div class="logo-wrap">
-        <img src="/logo.png" alt="Logo" onerror="this.style.display='none'">
+        <?php if ($_loginLogo): ?>
+            <img src="../<?= htmlspecialchars(ltrim($_loginLogo, '/')) ?>" alt="<?= htmlspecialchars($_loginName) ?>" onerror="this.style.display='none'">
+        <?php else: ?>
+            <div style="font-size:22px;font-weight:700;color:#1E3A8A;"><?= htmlspecialchars($_loginName) ?></div>
+        <?php endif; ?>
     </div>
     <div class="ttl">Admin Panel</div>
     <div class="divider"><span></span><span></span><span></span></div>

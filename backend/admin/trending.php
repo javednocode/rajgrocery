@@ -124,7 +124,7 @@ function productRow(p, action) {
             <img src="${getImageUrl(p)}" onerror="this.src='assets/placeholder-product.svg'" alt="">
             <div class="prod-info">
                 <strong title="${p.name}">${p.name}</strong>
-                <span>€${parseFloat(price||0).toFixed(2)} · SKU: ${p.sku||'—'}</span>
+                <span>${formatCurrency(price||0)} · SKU: ${p.sku||'—'}</span>
             </div>
             ${btn}
         </div>

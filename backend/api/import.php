@@ -82,6 +82,11 @@ function doProcess($db) {
     $fileExt   = $opts['file_ext'] ?? 'csv';
     $duplicate = $opts['duplicate'] ?? 'skip'; // skip | update
     $download  = $opts['download_images'] ?? true;
+    // Same guard as the Bulk Stock Update tool: an "update" import shouldn't
+    // silently un-zero a product that was deliberately marked Out of Stock
+    // in the admin panel — the import file's stock figure isn't aware of
+    // that local decision. Off by default; the import UI has to opt in.
+    $includeOutOfStock = !empty($opts['include_out_of_stock']);
 
     // Chunked batch support
     $batchOffset = max(0, intval($opts['batch_offset'] ?? 0));
@@ -121,7 +126,7 @@ function doProcess($db) {
         }
 
         try {
-            $result = importProduct($db, $p, $duplicate, $download);
+            $result = importProduct($db, $p, $duplicate, $download, $includeOutOfStock);
             if ($result === 'imported') { $imported++; $log[] = ['ok', "✓ Imported: " . $p['name']]; }
             elseif ($result === 'updated') { $updated++;  $log[] = ['ok', "↻ Updated: " . $p['name']]; }
             elseif ($result === 'skipped') { $skipped++;  $log[] = ['skip', "⊘ Skipped (duplicate): " . $p['name']]; }
@@ -269,7 +274,7 @@ function mapRow($headers, $row) {
  * Import a single product row into the DB.
  * Returns 'imported' | 'updated' | 'skipped'
  */
-function importProduct($db, $p, $duplicate, $downloadImages) {
+function importProduct($db, $p, $duplicate, $downloadImages, $includeOutOfStock = false) {
     $name = trim($p['name'] ?? '');
     if (!$name) return 'skipped';
 
@@ -292,17 +297,23 @@ function importProduct($db, $p, $duplicate, $downloadImages) {
     // ── Duplicate check ──────────────────────────────────────────────────────
     $existing = null;
     if ($sku) {
-        $s = $db->prepare("SELECT id FROM products WHERE sku = :sku LIMIT 1");
+        $s = $db->prepare("SELECT id, stock FROM products WHERE sku = :sku LIMIT 1");
         $s->execute([':sku' => $sku]);
         $existing = $s->fetch();
     }
     if (!$existing) {
-        $s = $db->prepare("SELECT id FROM products WHERE slug = :slug LIMIT 1");
+        $s = $db->prepare("SELECT id, stock FROM products WHERE slug = :slug LIMIT 1");
         $s->execute([':slug' => $slug]);
         $existing = $s->fetch();
     }
 
     if ($existing && $duplicate === 'skip') return 'skipped';
+
+    // Existing product deliberately at 0 and the import wasn't told to
+    // override that — keep it at 0 instead of taking the file's figure.
+    if ($existing && (int)$existing['stock'] <= 0 && !$includeOutOfStock) {
+        $stock = (int)$existing['stock'];
+    }
 
     // ── Categories ────────────────────────────────────────────────────────────
     $catIds = resolveCategories($db, $p['categories'] ?? '');

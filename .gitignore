@@ -57,3 +57,7 @@ database/thedesi_*.sql
 *.zip
 backend/database/hostinger_*.sql
 backend/database/halal_*.sql
+rajgrocerystore-full-hostinger-build/
+backend/chunk-*.js
+backend/main-*.js
+backend/styles-*.css

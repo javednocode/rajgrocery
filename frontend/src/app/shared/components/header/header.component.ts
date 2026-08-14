@@ -6,6 +6,7 @@ import { CartService } from '../../../core/services/cart.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 import { SettingsService } from '../../../core/services/settings.service';
 import { ApiService } from '../../../core/services/api.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -26,7 +27,7 @@ import { environment } from '../../../../environments/environment';
         <nav class="kgh-announce-links" aria-label="Secondary">
           <a routerLink="/about">Our Story</a>
           <a routerLink="/faq">Help</a>
-          <a routerLink="/account">Account</a>
+          <a routerLink="/account">{{ auth.isLoggedIn() ? (auth.firstName() || 'Account') : 'Account' }}</a>
         </nav>
       </div>
     </div>
@@ -298,7 +299,7 @@ import { environment } from '../../../../environments/environment';
 
   /* Wordmark — Fraunces display over a turmeric micro-label */
   .kgh-logo { display: flex; align-items: center; flex-shrink: 0; }
-  .kgh-logo-img { height: 54px; width: auto; max-width: 210px; object-fit: contain; }
+  .kgh-logo-img { height: 84px; width: auto; max-width: 260px; object-fit: contain; }
   .kgh-word { display: flex; flex-direction: column; line-height: 1; }
   .kgh-word-main {
     font-family: var(--font-display); font-size: 26px; font-weight: 600;
@@ -655,6 +656,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     public cart: CartService,
     public wishlist: WishlistService,
     public settings: SettingsService,
+    public auth: AuthService,
     private api: ApiService,
     private router: Router,
   ) {

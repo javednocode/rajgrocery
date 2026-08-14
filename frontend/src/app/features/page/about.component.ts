@@ -36,15 +36,21 @@ import { SeoService } from '../../core/services/seo.service';
       </div>
       <div class="ab-story-img">
         <div class="ab-img-card">
-          <span class="ab-img-letter">{{ settings.get('site_name','Raj Grocery Store')[0] }}</span>
+          <img src="assets/raj_store_about.png" alt="Raj Grocery Store Interior" class="ab-store-photo" />
           <div class="ab-img-overlay">
-            <strong>{{ settings.get('site_name','Raj Grocery Store') }}</strong>
-            <span>Est. {{ settings.get('founded_year','2018') }}</span>
+            <div>
+              <strong>{{ settings.get('site_name','Raj Grocery Store') }}</strong>
+              <span>Est. {{ settings.get('founded_year','2018') }} · Hong Kong</span>
+            </div>
+            <div class="ab-badge-quality">✦ 100% Authentic</div>
           </div>
         </div>
         <div class="ab-img-float">
-          <strong>{{ settings.get('about_stat_1','2,000+') }}</strong>
-          <em>Happy Customers</em>
+          <div class="ab-float-icon">🛍️</div>
+          <div>
+            <strong>{{ settings.get('about_stat_1','2,000+') }}</strong>
+            <em>Happy Customers</em>
+          </div>
         </div>
       </div>
     </div>
@@ -155,14 +161,19 @@ import { SeoService } from '../../core/services/seo.service';
   .ab-cta { display: inline-flex; align-items: center; gap: 8px; background: var(--kg-forest); color: var(--kg-cream); padding: 14px 28px; border-radius: var(--r-full); font-family: var(--font-sans); font-size: 14px; font-weight: 800; box-shadow: var(--shadow-forest); transition: all .25s; text-decoration: none; }
   .ab-cta:hover { background: var(--kg-forest-dk); transform: translateY(-2px); }
   .ab-story-img { position: relative; }
-  .ab-img-card { background: var(--kg-dark); border-radius: 20px; height: 360px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-  .ab-img-letter { font-family: var(--font-sans); font-size: 8rem; font-weight: 800; color: rgba(255,255,255,.08); user-select: none; }
-  .ab-img-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(13,39,80,.85); padding: 18px 24px; backdrop-filter: blur(8px); }
-  .ab-img-overlay strong { display: block; font-family: var(--font-sans); font-size: 1.1rem; font-weight: 800; color: var(--kg-cream); }
-  .ab-img-overlay span { font-size: 12.5px; color: rgba(255,255,255,.55); font-family: var(--font-sans); }
-  .ab-img-float { position: absolute; top: 20px; right: -16px; background: var(--kg-paper); border-radius: 14px; padding: 14px 18px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 8px 28px rgba(13,39,80,.15); border: 1px solid var(--kg-line-lt); }
-  .ab-img-float strong { font-family: var(--font-sans); font-size: 16px; font-weight: 800; color: var(--kg-forest); }
-  .ab-img-float em { font-style: normal; font-size: 11px; color: var(--kg-faint); font-family: var(--font-sans); }
+  .ab-img-card { background: var(--kg-dark); border-radius: 24px; height: 420px; display: flex; align-items: flex-end; justify-content: stretch; position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(11,27,45,0.22); border: 1px solid rgba(255,255,255,0.1); }
+  .ab-store-photo { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; transition: transform 0.6s cubic-bezier(0.22,1,0.36,1); }
+  .ab-img-card:hover .ab-store-photo { transform: scale(1.05); }
+  .ab-img-overlay { position: relative; z-index: 2; width: 100%; background: linear-gradient(0deg, rgba(11,27,45,0.95) 0%, rgba(11,27,45,0.75) 65%, transparent 100%); padding: 28px 24px 22px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; backdrop-filter: blur(4px); }
+  .ab-img-overlay strong { display: block; font-family: var(--font-sans); font-size: 1.25rem; font-weight: 800; color: #FFF; margin-bottom: 2px; }
+  .ab-img-overlay span { font-size: 13px; color: rgba(255,255,255,.75); font-family: var(--font-sans); font-weight: 500; }
+  .ab-badge-quality { background: rgba(242,169,59,0.2); color: var(--raj-turmeric); border: 1px solid var(--raj-turmeric); padding: 6px 14px; border-radius: 999px; font-size: 11.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; }
+  .ab-img-float { position: absolute; top: 24px; right: -20px; z-index: 3; background: var(--kg-paper); border-radius: 16px; padding: 14px 20px; display: flex; align-items: center; gap: 14px; box-shadow: 0 12px 36px rgba(11,27,45,.18); border: 1px solid var(--kg-line-lt); animation: floatPulse 4s ease-in-out infinite alternate; }
+  @keyframes floatPulse { 0% { transform: translateY(0); } 100% { transform: translateY(-6px); } }
+  .ab-float-icon { font-size: 24px; background: var(--raj-leaf-bg); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+  .ab-img-float strong { display: block; font-family: var(--font-sans); font-size: 18px; font-weight: 800; color: var(--kg-forest); line-height: 1.1; }
+  .ab-img-float em { font-style: normal; font-size: 12px; color: var(--kg-muted); font-family: var(--font-sans); font-weight: 600; }
+
 
   /* VALUES */
   .ab-values-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }

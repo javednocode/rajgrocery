@@ -6,6 +6,43 @@
 
 require_once __DIR__ . '/branding.php';
 
+/**
+ * Greedy word-wrap for the fixed-width text primitive SimplePDF::text()
+ * exposes (it has no native wrapping — every other call site in this file
+ * still truncates with substr(), which is fine for short single-field
+ * values but was cutting real customer addresses off mid-word).
+ * Never splits a word; if content still doesn't fit in $maxLines, the last
+ * line is truncated with an ellipsis rather than silently dropped.
+ */
+function addrWrapLines(string $text, int $maxCharsPerLine, int $maxLines): array {
+    $text = trim($text);
+    if ($text === '') return [''];
+
+    $words = preg_split('/\s+/', $text);
+    $lines = [];
+    $current = '';
+    foreach ($words as $word) {
+        $candidate = $current === '' ? $word : $current . ' ' . $word;
+        if (mb_strlen($candidate) > $maxCharsPerLine && $current !== '') {
+            $lines[] = $current;
+            $current = $word;
+            if (count($lines) === $maxLines) break;
+        } else {
+            $current = $candidate;
+        }
+    }
+    if (count($lines) < $maxLines && $current !== '') $lines[] = $current;
+
+    if (count($lines) === $maxLines) {
+        $joinedRemainder = implode(' ', $words);
+        $consumed = implode(' ', $lines);
+        if (mb_strlen($joinedRemainder) > mb_strlen($consumed)) {
+            $lines[$maxLines - 1] = mb_substr($lines[$maxLines - 1], 0, $maxCharsPerLine - 1) . '…';
+        }
+    }
+    return $lines;
+}
+
 function generatePDFInvoice($order, $items, $cfg = []) {
     $siteName = settingOrDefault($cfg, 'site_name', 'Your Store');
     $tagline = settingOrDefault($cfg, 'site_tagline', 'White-label ecommerce storefront');
@@ -47,9 +84,12 @@ function generatePDFInvoice($order, $items, $cfg = []) {
     $pdf = new SimplePDF();
     $pdf->addPage();
 
-    // ── Header bar ──────────────────────────────────────────────────────────
-    $pdf->setFillColor(13, 24, 39);
-    $pdf->rect(10, 10, 190, 28, 'F');
+    // ── Header ───────────────────────────────────────────────────────────────
+    // No filled band here on purpose — a full-width dark rectangle is the
+    // single heaviest thing on the page to print (ink coverage + it pushed
+    // every section below it down). A thin rule under the header gives the
+    // same visual separation for a fraction of the ink.
+    $inkNavy = [13, 24, 39];
 
     if ($logoPath) {
         $info = @getimagesize($logoPath);
@@ -57,29 +97,32 @@ function generatePDFInvoice($order, $items, $cfg = []) {
         if ($info && isset($info['mime']) && $info['mime'] === 'image/png') {
             $type = 'PNG';
         }
-        $pdf->addImage($logoPath, 14, 13, 50, 22, $type);
+        $pdf->addImage($logoPath, 12, 10, 50, 22, $type);
     } else {
-        // Fallback: white text name if logo file not found
+        // Fallback: dark text name if logo file not found
         error_log('[PDF Logo] No logo file found, using text fallback');
-        $pdf->setTextColor(255, 255, 255);
+        $pdf->setTextColor(...$inkNavy);
         $pdf->setFont('Helvetica', 'B', 16);
-        $pdf->text(15, 25, $siteName);
+        $pdf->text(12, 19, "Raj Grocery Store");
         $pdf->setFont('Helvetica', '', 9);
-        $pdf->text(15, 33, substr($tagline, 0, 48));
+        $pdf->text(12, 26, "Shop 35A 9, Sung CHI, Street Hung HOM KOWLOON HONG Kong");
+        $pdf->text(12, 32, "+852 54264886");
     }
 
     // INVOICE label top-right
-    $pdf->setTextColor(255, 255, 255);
+    $pdf->setTextColor(...$inkNavy);
     $pdf->setFont('Helvetica', 'B', 11);
-    $pdf->text(148, 22, 'INVOICE');
+    $pdf->text(168, 13, 'INVOICE');
     $pdf->setFont('Helvetica', '', 9);
-    $pdf->text(143, 29, $order['order_number']);
-    $pdf->text(143, 35, date('d M Y', strtotime($order['created_at'] ?? 'now')));
+    $pdf->text(152, 20, date('d M Y', strtotime($order['created_at'] ?? 'now')));
 
+    // Separator line
+    $pdf->setDrawColor(...$inkNavy);
+    $pdf->line(10, 27, 200, 27);
     $pdf->setTextColor(0, 0, 0);
 
     // ── Customer / Billing info ──────────────────────────────────────────────
-    $y = 50;
+    $y = 34;
     $pdf->setFont('Helvetica', 'B', 9);
     $pdf->text(12, $y, 'BILL TO / SHIP TO');
     $pdf->setFont('Helvetica', '', 9);
@@ -87,7 +130,8 @@ function generatePDFInvoice($order, $items, $cfg = []) {
     $pdf->text(12, $y + 13, $order['customer_phone'] ?? '');
     $pdf->text(12, $y + 19, $order['customer_email'] ?? '');
 
-    // Address
+    // Address: 45 chars/line, max 3 lines, spaced 5mm
+    // Last addr line = y+25+(n-1)*5. For 2 lines = y+30=64; for 3 = y+35=69
     $addr = $order['shipping_address'] ?? '';
     if (is_string($addr)) {
         $addrData = json_decode($addr, true);
@@ -103,18 +147,24 @@ function generatePDFInvoice($order, $items, $cfg = []) {
     } elseif (is_array($addr)) {
         $addr = implode(', ', array_filter($addr));
     }
-    $pdf->text(12, $y + 25, substr((string)$addr, 0, 65));
+    foreach (addrWrapLines((string)$addr, 45, 3) as $i => $line) {
+        $pdf->text(12, $y + 25 + ($i * 5), $line);
+    }
 
     // Order info right side
     $pdf->setFont('Helvetica', 'B', 9);
     $pdf->text(130, $y, 'ORDER DETAILS');
     $pdf->setFont('Helvetica', '', 9);
-    $pdf->text(130, $y + 7,  'Date:    ' . date('d M Y', strtotime($order['created_at'] ?? 'now')));
-    $pdf->text(130, $y + 13, 'Method: ' . strtoupper($order['payment_method'] ?? 'COD'));
-    $pdf->text(130, $y + 19, 'Status:  ' . strtoupper($order['status'] ?? 'pending'));
+    $pdf->text(130, $y + 7,  'Invoice: ' . ($order['order_number'] ?? ''));
+    $pdf->text(130, $y + 13, 'Date:    ' . date('d M Y', strtotime($order['created_at'] ?? 'now')));
+    $pdf->text(130, $y + 19, 'Method:  ' . strtoupper($order['payment_method'] ?? 'COD'));
+    $pdf->text(130, $y + 25, 'Payment: ' . strtoupper($order['payment_status'] ?? 'pending'));
+    $pdf->text(130, $y + 31, 'Status:  ' . strtoupper($order['status'] ?? 'pending'));
 
     // ── Items Table Header ───────────────────────────────────────────────────
-    $y = 90;
+    // y=34+25+(2*5)=64 for 2-line addr; y=34+25+(3*5)=74 for 3-line addr.
+    // Table at y=74 gives ~10mm gap after a 2-line address — compact but clean.
+    $y = 74;
     $pdf->setFillColor(34, 197, 94);
     $pdf->rect(10, $y, 190, 9, 'F');
     $pdf->setTextColor(255, 255, 255);

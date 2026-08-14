@@ -518,7 +518,8 @@ function emailFooter($orderNumber, $cfg = []) {
     </div></div></body></html>';
 }
 
-function buildItemsTable($items) {
+function buildItemsTable($items, $cfg = []) {
+    $sym = settingOrDefault($cfg, 'currency_symbol', 'HK$');
     $html = '<table class="items"><thead><tr>
         <th>PRODUCT</th><th>QTY</th><th>PRICE</th><th>TOTAL</th>
     </tr></thead><tbody>';
@@ -526,27 +527,28 @@ function buildItemsTable($items) {
         $html .= '<tr>
             <td>' . htmlspecialchars($item['product_name']) . '</td>
             <td>' . (int)$item['quantity'] . '</td>
-            <td>€' . number_format($item['price'], 2) . '</td>
-            <td>€' . number_format($item['total'], 2) . '</td>
+            <td>' . htmlspecialchars($sym) . number_format($item['price'], 2) . '</td>
+            <td>' . htmlspecialchars($sym) . number_format($item['total'], 2) . '</td>
         </tr>';
     }
     $html .= '</tbody></table>';
     return $html;
 }
 
-function buildTotals($order) {
+function buildTotals($order, $cfg = []) {
+    $sym = settingOrDefault($cfg, 'currency_symbol', 'HK$');
     $html = '<div class="totals">';
-    $html .= '<div class="total-row"><span>Subtotal</span><span>€' . number_format($order['subtotal'] ?? 0, 2) . '</span></div>';
+    $html .= '<div class="total-row"><span>Subtotal</span><span>' . htmlspecialchars($sym) . number_format($order['subtotal'] ?? 0, 2) . '</span></div>';
     if (!empty($order['discount']) && $order['discount'] > 0) {
-        $html .= '<div class="total-row"><span>Discount</span><span style="color:#16a34a">-€' . number_format($order['discount'], 2) . '</span></div>';
+        $html .= '<div class="total-row"><span>Discount</span><span style="color:#16a34a">-' . htmlspecialchars($sym) . number_format($order['discount'], 2) . '</span></div>';
     }
     if (!empty($order['shipping_charge'])) {
-        $html .= '<div class="total-row"><span>Shipping</span><span>€' . number_format($order['shipping_charge'], 2) . '</span></div>';
+        $html .= '<div class="total-row"><span>Shipping</span><span>' . htmlspecialchars($sym) . number_format($order['shipping_charge'], 2) . '</span></div>';
     }
     if (!empty($order['tax'])) {
-        $html .= '<div class="total-row"><span>Tax (VAT)</span><span>€' . number_format($order['tax'], 2) . '</span></div>';
+        $html .= '<div class="total-row"><span>Tax (VAT)</span><span>' . htmlspecialchars($sym) . number_format($order['tax'], 2) . '</span></div>';
     }
-    $html .= '<div class="total-row grand"><span>TOTAL</span><span>€' . number_format($order['total'] ?? 0, 2) . '</span></div>';
+    $html .= '<div class="total-row grand"><span>TOTAL</span><span>' . htmlspecialchars($sym) . number_format($order['total'] ?? 0, 2) . '</span></div>';
     $html .= '</div>';
     return $html;
 }
@@ -565,8 +567,8 @@ function buildCustomerEmail($order, $items, $type, $cfg = []) {
     $html .= '</div>';
 
     $html .= '<h2 style="font-size:15px">Order Items</h2>';
-    $html .= buildItemsTable($items);
-    $html .= buildTotals($order);
+    $html .= buildItemsTable($items, $cfg);
+    $html .= buildTotals($order, $cfg);
 
     $html .= '<p style="font-size:12px;color:#94a3b8;margin-top:24px">📎 Your PDF invoice is attached to this email.</p>';
     $html .= '</div>';
@@ -595,8 +597,8 @@ function buildAdminEmail($order, $items, $cfg = []) {
         : (string)$addr;
     $html .= '<p style="font-size:13px;color:#374151"><strong>Delivery Address:</strong> ' . htmlspecialchars($addrStr) . '</p>';
 
-    $html .= buildItemsTable($items);
-    $html .= buildTotals($order);
+    $html .= buildItemsTable($items, $cfg);
+    $html .= buildTotals($order, $cfg);
 
     $html .= '<div style="text-align:center;margin-top:24px">';
     $adminUrl = settingOrDefault($cfg, 'admin_url', appBaseUrl($cfg) ? appBaseUrl($cfg) . '/admin/orders.php' : '/admin/orders.php');
@@ -648,6 +650,7 @@ function buildPlainText($order, $items, $cfg = []) {
     $siteName = settingOrDefault($cfg, 'site_name', 'Your Store');
     $email = settingOrDefault($cfg, 'site_email', settingOrDefault($cfg, 'contact_email', 'hello@example.com'));
     $phone = settingOrDefault($cfg, 'site_phone', '');
+    $sym = settingOrDefault($cfg, 'currency_symbol', 'HK$');
     $lines = [
         $siteName . ' - Order Confirmation',
         '=====================================',
@@ -658,12 +661,12 @@ function buildPlainText($order, $items, $cfg = []) {
         'ITEMS:',
     ];
     foreach ($items as $item) {
-        $lines[] = '- ' . $item['product_name'] . ' x' . $item['quantity'] . ' = €' . number_format($item['total'], 2);
+        $lines[] = '- ' . $item['product_name'] . ' x' . $item['quantity'] . ' = ' . $sym . number_format($item['total'], 2);
     }
     $lines[] = '';
-    $lines[] = 'Subtotal: €' . number_format($order['subtotal'] ?? 0, 2);
-    if (!empty($order['shipping_charge'])) $lines[] = 'Shipping: €' . number_format($order['shipping_charge'], 2);
-    $lines[] = 'TOTAL: €' . number_format($order['total'] ?? 0, 2);
+    $lines[] = 'Subtotal: ' . $sym . number_format($order['subtotal'] ?? 0, 2);
+    if (!empty($order['shipping_charge'])) $lines[] = 'Shipping: ' . $sym . number_format($order['shipping_charge'], 2);
+    $lines[] = 'TOTAL: ' . $sym . number_format($order['total'] ?? 0, 2);
     $lines[] = '';
     $lines[] = 'Questions? ' . $email . ($phone !== '' ? ' | ' . $phone : '');
     return implode("\n", $lines);

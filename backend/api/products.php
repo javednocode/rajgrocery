@@ -379,6 +379,58 @@ function clearAllTrending($db) {
     successResponse(['cleared' => $stmt->rowCount()], 'All trending products cleared');
 }
 
+function getNewArrivals($db) {
+    $limit = min(20, (int)($_GET['limit'] ?? 8));
+    $cacheKey = "products_new_arrivals_{$limit}";
+
+    $cached = cacheGet($cacheKey);
+    if ($cached !== null) { successResponse($cached); return; }
+
+    $stmt = $db->prepare("
+        SELECT p.id, p.name, p.slug, p.price, p.sale_price, p.stock,
+            p.brand, p.is_new, p.sales_count, p.unit
+        FROM products p
+        WHERE p.is_active = 1 AND p.is_new = 1
+        ORDER BY p.created_at DESC
+        LIMIT :lim
+    ");
+    $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+    $products = $stmt->fetchAll();
+
+    if (!empty($products)) {
+        $primaryMap = batchLoadPrimaryImages($db, array_column($products, 'id'));
+        foreach ($products as &$p) {
+            $p['primary_image'] = $primaryMap[$p['id']] ?? null;
+        }
+        unset($p);
+    }
+
+    cacheSet($cacheKey, $products, 300);
+    successResponse($products);
+}
+
+function toggleProductNew($db, $id) {
+    $data = getJsonInput();
+    $val  = isset($data['is_new']) ? (int)$data['is_new'] : null;
+    if ($val === null) errorResponse('is_new value required (0 or 1)', 400);
+
+    $stmt = $db->prepare("UPDATE products SET is_new = :n WHERE id = :id");
+    $stmt->execute([':n' => $val, ':id' => (int)$id]);
+    if ($stmt->rowCount() === 0) errorResponse('Product not found', 404);
+
+    cacheClearPattern('products_new_arrivals_');
+    successResponse(['id' => (int)$id, 'is_new' => $val],
+        $val ? 'Product added to new arrivals' : 'Product removed from new arrivals');
+}
+
+function clearAllNew($db) {
+    $stmt = $db->prepare("UPDATE products SET is_new = 0 WHERE is_new = 1");
+    $stmt->execute();
+    cacheClearPattern('products_new_arrivals_');
+    successResponse(['cleared' => $stmt->rowCount()], 'All new arrivals cleared');
+}
+
 function searchProducts($db) {
     $q = trim($_GET['q'] ?? '');
     if (strlen($q) < 2) errorResponse('Search query too short', 400);
@@ -537,6 +589,14 @@ function createProduct($db) {
     // Clear all product caches on create
     cacheClearPattern('products_');
     cacheClearPattern('cat_products_');
+    // Log activity
+    try {
+        require_once __DIR__ . '/../helpers/activity_log.php';
+        ensureActivityLogsTable($db);
+        logActivity($db, 'product_created', 'products', $pid, $name,
+            null, 'active',
+            'New product added: ' . $name . ' (Stock: ' . (int)($data['stock']??0) . ')');
+    } catch (\Throwable $e) {}
     successResponse(['id'=>$pid,'slug'=>$slug], 'Product created', 201);
 }
 
@@ -590,10 +650,28 @@ function updateProduct($db, $id) {
     // Invalidate caches
     cacheClearPattern('products_');
     cacheClearPattern('cat_products_');
+    // Log activity
+    try {
+        require_once __DIR__ . '/../helpers/activity_log.php';
+        ensureActivityLogsTable($db);
+        $newStock = (int)($data['stock'] ?? 0);
+        logActivity($db, 'product_updated', 'products', $id, $name,
+            null, null,
+            'Product updated: ' . $name . ' (Stock: ' . $newStock . ')');
+        if ($newStock === 0) {
+            logActivity($db, 'product_out_of_stock', 'products', $id, $name,
+                'in_stock', 'out_of_stock',
+                'Product manually set to out of stock: ' . $name);
+        }
+    } catch (\Throwable $e) {}
     successResponse(['id'=>$id,'slug'=>$slug], 'Product updated');
 }
 
 function deleteProduct($db, $id) {
+    // Get name before deleting
+    $nameRow = $db->prepare("SELECT name FROM products WHERE id = :id");
+    $nameRow->execute([':id' => $id]);
+    $productName = ($nameRow->fetch()['name'] ?? 'Unknown Product');
     $is = $db->prepare("SELECT image_path FROM product_images WHERE product_id = :pid"); $is->execute([':pid'=>$id]);
     while ($img = $is->fetch()) deleteImage($img['image_path']);
     $vs = $db->prepare("SELECT image_path FROM product_variations WHERE product_id = :pid AND image_path IS NOT NULL"); $vs->execute([':pid'=>$id]);
@@ -602,6 +680,14 @@ function deleteProduct($db, $id) {
     if ($stmt->rowCount()===0) errorResponse('Product not found', 404);
     cacheClearPattern('products_');
     cacheClearPattern('cat_products_');
+    // Log activity
+    try {
+        require_once __DIR__ . '/../helpers/activity_log.php';
+        ensureActivityLogsTable($db);
+        logActivity($db, 'product_deleted', 'products', $id, $productName,
+            'active', 'deleted',
+            'Product permanently deleted: ' . $productName);
+    } catch (\Throwable $e) {}
     successResponse(null, 'Product deleted');
 }
 
@@ -735,6 +821,76 @@ function deleteVariation($db, $variationId) {
     successResponse(null, 'Variation deleted');
 }
 
+/**
+ * Match a pasted list of SKUs/product names against the catalog — used by
+ * the "Bulk Out of Stock by List" admin tool so a large re-mark job (after
+ * something silently un-zeroed a batch of products) doesn't require
+ * hand-picking checkboxes across dozens of paginated screens.
+ *
+ * Preview-only: returns what WOULD match, makes no changes. The admin
+ * reviews the matched/unmatched lists, then the actual stock=0 write goes
+ * through the existing, already-safe bulkProductAction 'out_of_stock' case
+ * with the confirmed product IDs.
+ */
+function matchProductsByList($db) {
+    $data  = getJsonInput();
+    $lines = $data['lines'] ?? [];
+    if (!is_array($lines)) errorResponse('lines must be an array', 400);
+
+    // Normalise once: trim, collapse internal whitespace, casefold. Applied
+    // identically to both the pasted line and the catalog value so minor
+    // copy-paste differences (double spaces, mixed case) don't cause a
+    // false miss, without resorting to fuzzy/partial matching that could
+    // silently match the wrong product.
+    $normalise = function (string $s): string {
+        return mb_strtolower(trim(preg_replace('/\s+/', ' ', $s)));
+    };
+
+    $wanted = [];
+    foreach ($lines as $line) {
+        $line = trim((string)$line);
+        if ($line === '') continue;
+        $wanted[$line] = $normalise($line);
+    }
+    if (empty($wanted)) errorResponse('No product lines provided', 400);
+
+    $rows = $db->query("SELECT id, name, sku, stock, is_active FROM products")->fetchAll();
+    $bySku  = [];
+    $byName = [];
+    foreach ($rows as $r) {
+        if (!empty($r['sku']))  $bySku[$normalise($r['sku'])]   = $r;
+        $byName[$normalise($r['name'])] = $r;
+    }
+
+    $matched   = [];
+    $unmatched = [];
+    $seenIds   = [];
+    foreach ($wanted as $original => $norm) {
+        $hit = $bySku[$norm] ?? $byName[$norm] ?? null;
+        if ($hit) {
+            if (isset($seenIds[$hit['id']])) continue; // same product listed twice
+            $seenIds[$hit['id']] = true;
+            $matched[] = [
+                'input'         => $original,
+                'product_id'    => (int)$hit['id'],
+                'name'          => $hit['name'],
+                'sku'           => $hit['sku'],
+                'current_stock' => (int)$hit['stock'],
+                'already_zero'  => (int)$hit['stock'] <= 0,
+            ];
+        } else {
+            $unmatched[] = $original;
+        }
+    }
+
+    successResponse([
+        'matched'   => $matched,
+        'unmatched' => $unmatched,
+        'matched_count'   => count($matched),
+        'unmatched_count' => count($unmatched),
+    ]);
+}
+
 function bulkProductAction($db) {
     $data = getJsonInput();
     $action = $data['action'] ?? '';
@@ -756,6 +912,15 @@ function bulkProductAction($db) {
             cacheClearPattern('products_');
             cacheClearPattern('cat_products_');
             successResponse(['affected' => count($ids)], 'Products disabled');
+            break;
+        case 'out_of_stock':
+            // Only zeroes stock — is_active is untouched, so these stay
+            // visible on the storefront with the existing Out of Stock badge
+            // instead of disappearing.
+            $db->exec("UPDATE products SET stock = 0 WHERE id IN ($placeholders)");
+            cacheClearPattern('products_');
+            cacheClearPattern('cat_products_');
+            successResponse(['affected' => count($ids)], 'Products marked out of stock');
             break;
         case 'delete':
             $db->exec("DELETE FROM product_categories WHERE product_id IN ($placeholders)");

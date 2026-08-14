@@ -3,6 +3,7 @@ import { RouteReuseStrategy, provideRouter, withInMemoryScrolling, withViewTrans
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
 import { httpCacheInterceptor } from './core/interceptors/http-cache.interceptor';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { AppRouteReuseStrategy } from './core/strategies/app-route-reuse.strategy';
 import { SelectivePreloadingStrategy } from './core/strategies/selective-preloading.strategy';
 
@@ -18,7 +19,7 @@ export const appConfig: ApplicationConfig = {
         anchorScrolling: 'enabled'
       })
     ),
-    provideHttpClient(withInterceptors([httpCacheInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, httpCacheInterceptor])),
     { provide: RouteReuseStrategy, useClass: AppRouteReuseStrategy }
   ]
 };

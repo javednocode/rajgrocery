@@ -10,24 +10,50 @@
  * GET    /api/backup/status          — backup configuration status
  */
 
-define('BACKUP_DIR', __DIR__ . '/../../backups/');
+define('BACKUP_DIR', __DIR__ . '/../backups/');
 
 // ─── Create Backup ────────────────────────────────────────────────────────────
 
 function createBackup(): void {
     requireAuth();
+
+    // Prevent any stray output from corrupting the JSON response
+    while (ob_get_level()) ob_end_clean();
+
+    // Give plenty of time for large DBs
+    @set_time_limit(300);
+    @ini_set('memory_limit', '256M');
+
     $siteId = defined('ECOMMERCE_SITE_ID') ? ECOMMERCE_SITE_ID : 1;
     $data   = getJsonInput();
     $type   = $data['type'] ?? 'full'; // full | database | files
 
-    @mkdir(BACKUP_DIR, 0750, true);
+    if (!@mkdir(BACKUP_DIR, 0750, true) && !is_dir(BACKUP_DIR)) {
+        errorResponse('Cannot create backup directory. Check server permissions.', 500);
+    }
 
-    // Load DB credentials from config
-    $config = require __DIR__ . '/../../config/database.php';
-    $dbHost = $config['host'] ?? 'localhost';
-    $dbName = $config['dbname'] ?? $config['name'] ?? '';
-    $dbUser = $config['username'] ?? $config['user'] ?? '';
-    $dbPass = $config['password'] ?? $config['pass'] ?? '';
+    if (!is_writable(BACKUP_DIR)) {
+        errorResponse('Backup directory is not writable. Check folder permissions.', 500);
+    }
+
+    // Load DB credentials using same logic as Database class
+    $isLocal = (
+        php_sapi_name() === 'cli-server' ||
+        ($_SERVER['SERVER_NAME'] ?? '') === 'localhost' ||
+        ($_SERVER['SERVER_ADDR'] ?? '') === '127.0.0.1' ||
+        strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false
+    );
+    if ($isLocal && !getenv('DB_NAME')) {
+        $dbHost = 'localhost';
+        $dbName = 'reuse_ecom_db';
+        $dbUser = 'root';
+        $dbPass = '';
+    } else {
+        $dbHost = getenv('DB_HOST') ?: 'localhost';
+        $dbName = getenv('DB_NAME') ?: 'u298651808_webcraftstechb';
+        $dbUser = getenv('DB_USER') ?: 'u298651808_webcraftstechb';
+        $dbPass = getenv('DB_PASS') ?: 'Jj@9610022011..';
+    }
 
     if (empty($dbName)) errorResponse('Database configuration not found', 500);
 
@@ -35,56 +61,46 @@ function createBackup(): void {
     $prefix    = "backup_site{$siteId}_{$type}_{$timestamp}";
     $results   = [];
 
-    // ── Database backup via mysqldump ────────────────────────────────────────
+    // ── Database backup (PHP-based — reliable on shared hosting) ─────────────
     if (in_array($type, ['full', 'database'])) {
-        $sqlFile = BACKUP_DIR . $prefix . '.sql';
-        $gzFile  = $sqlFile . '.gz';
-
-        // Build mysqldump command
-        $passArg = $dbPass ? '-p' . escapeshellarg($dbPass) : '';
-        $cmd = sprintf(
-            'mysqldump --host=%s --user=%s %s --single-transaction --skip-lock-tables --routines --triggers %s 2>&1',
-            escapeshellarg($dbHost),
-            escapeshellarg($dbUser),
-            $passArg,
-            escapeshellarg($dbName)
-        );
-
-        $output = [];
-        $exitCode = 0;
-        exec("$cmd | gzip > " . escapeshellarg($gzFile), $output, $exitCode);
-
-        if ($exitCode !== 0 || !is_file($gzFile)) {
-            // Fallback: PHP-based backup
-            $phpBackup = _phpDatabaseBackup($dbHost, $dbUser, $dbPass, $dbName, $siteId);
-            if ($phpBackup) {
-                $sqlFile = BACKUP_DIR . $prefix . '_php.sql';
-                file_put_contents($sqlFile, $phpBackup);
-                $results['database'] = ['file' => basename($sqlFile), 'size' => filesize($sqlFile), 'method' => 'php'];
-            } else {
-                errorResponse('Database backup failed. Check mysqldump availability.', 500);
+        $phpBackup = _phpDatabaseBackup($dbHost, $dbUser, $dbPass, $dbName, $siteId);
+        if ($phpBackup) {
+            $sqlFile = BACKUP_DIR . $prefix . '_php.sql';
+            if (file_put_contents($sqlFile, $phpBackup) === false) {
+                errorResponse('Failed to write backup file. Disk may be full or directory not writable.', 500);
             }
+            $results['database'] = [
+                'file'   => basename($sqlFile),
+                'size'   => filesize($sqlFile),
+                'method' => 'php',
+            ];
         } else {
-            $results['database'] = ['file' => basename($gzFile), 'size' => filesize($gzFile), 'method' => 'mysqldump'];
+            errorResponse('Database backup failed. Could not connect to database or read tables.', 500);
         }
     }
 
     // ── Files backup ─────────────────────────────────────────────────────────
     if (in_array($type, ['full', 'files'])) {
-        $uploadsDir = __DIR__ . '/../../uploads/';
+        $uploadsDir = __DIR__ . '/../uploads/';
         if (is_dir($uploadsDir)) {
             $zipFile = BACKUP_DIR . $prefix . '_uploads.zip';
             $zip     = new ZipArchive();
             if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
-                $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($uploadsDir));
+                $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($uploadsDir,
+                    RecursiveDirectoryIterator::SKIP_DOTS));
                 foreach ($files as $file) {
                     if (!$file->isDir()) {
-                        $zip->addFile($file->getPathname(), 'uploads/' . $file->getFilename());
+                        $relative = ltrim(str_replace($uploadsDir, '', $file->getPathname()), '/\\');
+                        $zip->addFile($file->getPathname(), 'uploads/' . $relative);
                     }
                 }
                 $zip->close();
                 $results['files'] = ['file' => basename($zipFile), 'size' => filesize($zipFile)];
+            } else {
+                $results['files'] = ['error' => 'ZipArchive failed to open file'];
             }
+        } else {
+            $results['files'] = ['error' => 'uploads/ directory not found'];
         }
     }
 
@@ -215,11 +231,20 @@ function restoreBackup(): void {
     $targetFile = BACKUP_DIR . $filename;
     if (!is_file($targetFile)) errorResponse('Backup file not found', 404);
 
-    $config = require __DIR__ . '/../../config/database.php';
-    $dbHost = $config['host'] ?? 'localhost';
-    $dbName = $config['dbname'] ?? $config['name'] ?? '';
-    $dbUser = $config['username'] ?? $config['user'] ?? '';
-    $dbPass = $config['password'] ?? $config['pass'] ?? '';
+    $isLocalR = (
+        php_sapi_name() === 'cli-server' ||
+        ($_SERVER['SERVER_NAME'] ?? '') === 'localhost' ||
+        ($_SERVER['SERVER_ADDR'] ?? '') === '127.0.0.1' ||
+        strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false
+    );
+    if ($isLocalR && !getenv('DB_NAME')) {
+        $dbHost = 'localhost'; $dbName = 'reuse_ecom_db'; $dbUser = 'root'; $dbPass = '';
+    } else {
+        $dbHost = getenv('DB_HOST') ?: 'localhost';
+        $dbName = getenv('DB_NAME') ?: 'u298651808_webcraftstechb';
+        $dbUser = getenv('DB_USER') ?: 'u298651808_webcraftstechb';
+        $dbPass = getenv('DB_PASS') ?: 'Jj@9610022011..';
+    }
 
     if (str_ends_with($filename, '.sql.gz')) {
         $passArg = $dbPass ? '-p' . escapeshellarg($dbPass) : '';

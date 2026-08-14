@@ -881,7 +881,10 @@ import { environment } from '../../../environments/environment';
     .pd-price-main { font-size: 1.7rem; }
     .pd-crumbs { font-size: 10.5px; margin-bottom: 20px; }
     .pd-related-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .pd-thumbs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    /* overflow-y pinned deliberately — leaving it to default lets the browser
+       compute it to auto, turning this thumbnail rail into a hidden vertical
+       scroll container that swallows page scroll on mobile. */
+    .pd-thumbs { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; padding-bottom: 4px; scrollbar-width: none; }
     .pd-thumbs::-webkit-scrollbar { display: none; }
     .pd-thumb { width: 60px; height: 60px; flex-shrink: 0; }
     .pd-tabs { margin-bottom: 32px; }

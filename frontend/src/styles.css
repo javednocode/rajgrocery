@@ -115,8 +115,8 @@
   --kg-warm:       var(--raj-warm);
   --kg-sand:       var(--raj-sand);
   --kg-sand-2:     var(--raj-sand-2);
-  --kg-dark:       var(--raj-dark);
-  --kg-dark-2:     var(--raj-dark-2);
+  --kg-dark:       #0B1B2D;
+  --kg-dark-2:     #11253C;
   --kg-forest:     var(--raj-leaf);
   --kg-forest-dk:  var(--raj-leaf-dk);
   --kg-forest-lt:  var(--raj-leaf-lt);
@@ -160,7 +160,7 @@
   --bg-white:     var(--raj-paper);
   --bg-warm:      var(--raj-warm);
   --bg-grey:      var(--raj-sand);
-  --bg-dark:      var(--raj-dark);
+  --bg-dark:      #0B1B2D;
   --border:       var(--raj-line);
   --border-lt:    var(--raj-line-lt);
   --border-warm:  var(--raj-line-warm);

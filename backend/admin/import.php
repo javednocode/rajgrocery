@@ -132,6 +132,13 @@
         </select>
       </div>
       <div class="opt-card">
+        <label>Out of Stock Products</label>
+        <select id="optStockOverride" class="form-control">
+          <option value="0">Leave alone (recommended)</option>
+          <option value="1">Update from file anyway</option>
+        </select>
+      </div>
+      <div class="opt-card">
         <label>Product Images</label>
         <select id="optImages" class="form-control">
           <option value="1">Download images from URLs</option>
@@ -333,6 +340,7 @@ async function startImport() {
       file_token:       _fileToken,
       file_ext:         _fileExt,
       duplicate:        document.getElementById('optDuplicate').value,
+      include_out_of_stock: document.getElementById('optStockOverride').value === '1',
       download_images:  document.getElementById('optImages').value === '1',
       default_status:   document.getElementById('optStatus').value,
       batch_offset:     offset,

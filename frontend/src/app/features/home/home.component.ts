@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, effect, ElementRef, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/services/api.service';
 import { SeoService } from '../../core/services/seo.service';
@@ -91,22 +91,26 @@ import { environment } from '../../../environments/environment';
                         loading="eager" fetchpriority="high"
                         (error)="onHeroImgErr(b.id)" />
                     } @else {
-                      <div class="hm-hero-frame-fallback">
-                        <div class="hm-hero-fallback-inner">
-                          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="8.5" cy="10" r="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M21 15l-5-4.5L7 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                          <strong>{{ settings.get('site_name','Raj Grocery Store') }}</strong>
-                          <p>Banner image unavailable<br>Re-upload it from the Admin Panel</p>
+                      <div class="hm-hero-signature" aria-hidden="true">
+                        <span class="hm-hs-blob hm-hs-blob-1"></span>
+                        <span class="hm-hs-blob hm-hs-blob-2"></span>
+                        <span class="hm-hs-blob hm-hs-blob-3"></span>
+                        <div class="hm-hs-mark">
+                          <span class="hm-hs-name">{{ settings.get('site_name','Raj Grocery Store') }}</span>
+                          <span class="hm-hs-tag">Fresh Indian groceries, delivered across Hong Kong</span>
                         </div>
                       </div>
                     }
                   </div>
                 }
               } @else {
-                <div class="hm-hero-slide active hm-hero-frame-fallback">
-                  <div class="hm-hero-fallback-inner">
-                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="8.5" cy="10" r="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M21 15l-5-4.5L7 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <strong>{{ settings.get('site_name','Raj Grocery Store') }}</strong>
-                    <p>Upload a hero banner or video<br>from the Admin Panel</p>
+                <div class="hm-hero-slide active hm-hero-signature" aria-hidden="true">
+                  <span class="hm-hs-blob hm-hs-blob-1"></span>
+                  <span class="hm-hs-blob hm-hs-blob-2"></span>
+                  <span class="hm-hs-blob hm-hs-blob-3"></span>
+                  <div class="hm-hs-mark">
+                    <span class="hm-hs-name">{{ settings.get('site_name','Raj Grocery Store') }}</span>
+                    <span class="hm-hs-tag">Fresh Indian groceries, delivered across Hong Kong</span>
                   </div>
                 </div>
               }
@@ -193,7 +197,7 @@ import { environment } from '../../../environments/environment';
         </a>
       </div>
       @if (featured().length) {
-        <div class="hm-grid-4">
+        <div class="hm-grid-8">
           @for (p of featured().slice(0, 8); track p.id; let i = $index) {
             <div kgFx="rise-sm" [fxOrder]="i % 4">
               <app-product-card [product]="p" />
@@ -201,8 +205,8 @@ import { environment } from '../../../environments/environment';
           }
         </div>
       } @else if (!worldLoaded()) {
-        <div class="hm-grid-4">
-          @for (s of [1,2,3,4]; track s) { <div class="skeleton hm-skel-card"></div> }
+        <div class="hm-grid-8">
+          @for (s of [1,2,3,4,5,6,7,8]; track s) { <div class="skeleton hm-skel-card"></div> }
         </div>
       } @else {
         <p class="hm-empty-note">Products are being added — check back soon.</p>
@@ -347,8 +351,8 @@ import { environment } from '../../../environments/environment';
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           </a>
         </div>
-        <div class="hm-grid-4">
-          @for (p of recentProducts().slice(0, 4); track p.id; let i = $index) {
+        <div class="hm-grid-8">
+          @for (p of recentProducts().slice(0, 8); track p.id; let i = $index) {
             <div kgFx="rise-sm" [fxOrder]="i">
               <app-product-card [product]="p" />
             </div>
@@ -758,21 +762,36 @@ import { environment } from '../../../environments/environment';
   @keyframes hmKen { from { transform: scale(1); } to { transform: scale(1.07); } }
 
   /* Also used nested inside a slide when an uploaded still 404s, so it has
-     to fill its own box rather than relying on the slide's inset. */
-  .hm-hero-frame-fallback {
+     to fill its own box rather than relying on the slide's inset.
+     No admin banner configured yet? This is the customer-facing default —
+     a branded moment built entirely from existing tokens/keyframes, not a
+     "please upload an image" placeholder. */
+  .hm-hero-signature {
     position: absolute; inset: 0;
     width: 100%; height: 100%;
-    display: grid; place-items: center;
+    display: grid; place-items: center; overflow: hidden;
     background:
-      repeating-linear-gradient(45deg, var(--raj-warm) 0 12px, var(--raj-sand) 12px 24px);
+      radial-gradient(ellipse 65% 90% at 18% 12%, rgba(29,111,163,.20) 0%, transparent 70%),
+      radial-gradient(ellipse 55% 80% at 86% 92%, rgba(242,169,59,.24) 0%, transparent 72%),
+      var(--raj-warm);
   }
-  .hm-hero-fallback-inner { text-align: center; color: var(--raj-faint); padding: 24px; }
-  .hm-hero-fallback-inner svg { margin: 0 auto 12px; display: block; }
-  .hm-hero-fallback-inner strong {
-    display: block; font-family: var(--font-display); font-size: 21px;
-    font-weight: 600; color: var(--raj-muted); margin-bottom: 6px;
+  .hm-hs-blob { position: absolute; border-radius: 50%; filter: blur(1px); }
+  .hm-hs-blob-1 { width: 130px; height: 130px; left: 6%; top: 12%; background: var(--raj-leaf-bg2); opacity: .55; animation: kgFloatSlow 9s ease-in-out infinite; }
+  .hm-hs-blob-2 { width: 88px; height: 88px; right: 10%; top: 20%; background: var(--raj-turmeric-bg); opacity: .6; animation: kgFloat 7.5s ease-in-out infinite; }
+  .hm-hs-blob-3 { width: 160px; height: 160px; right: -34px; bottom: -44px; background: var(--raj-chilli-bg); opacity: .4; animation: kgFloatSlow 11s ease-in-out infinite reverse; }
+  .hm-hs-mark { position: relative; z-index: 1; text-align: center; padding: 24px; }
+  .hm-hs-name {
+    display: block; font-family: var(--font-display); font-weight: 600;
+    font-size: clamp(1.7rem, 3.4vw, 2.5rem); color: var(--raj-ink);
+    letter-spacing: -0.01em; margin-bottom: 10px;
   }
-  .hm-hero-fallback-inner p { font-size: 12.5px; line-height: 1.6; color: var(--raj-faint); }
+  .hm-hs-tag {
+    display: block; font-family: var(--font-sans); font-size: 12px; font-weight: 800;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--raj-turmeric-dk);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hm-hs-blob { animation: none !important; }
+  }
 
   .hm-hero-dots {
     position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
@@ -820,6 +839,10 @@ import { environment } from '../../../environments/environment';
   .hm-empty-block p { font-size: 14.5px; color: var(--raj-muted); margin-bottom: 20px; }
 
   .hm-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  /* Featured Products only — New Arrivals stays on .hm-grid-4 (it only ever
+     shows 4 items), so this is a separate class rather than widening the
+     shared one. */
+  .hm-grid-8 { display: grid; grid-template-columns: repeat(8, 1fr); gap: 16px; }
   .hm-skel-card { aspect-ratio: 3 / 4.4; border-radius: var(--r-lg); }
 
   /* ═══════════════════════════════════════════════════════════
@@ -946,8 +969,23 @@ import { environment } from '../../../environments/environment';
   .hm-caro-wrap::before { left: 0; background: linear-gradient(90deg, var(--raj-paper), transparent); }
   .hm-caro-wrap::after  { right: 0; background: linear-gradient(270deg, var(--raj-paper), transparent); }
   .hm-caro {
-    display: flex; gap: 20px; overflow-x: auto; scroll-behavior: smooth;
-    scroll-snap-type: x mandatory; padding: 4px 0 10px;
+    display: flex; gap: 20px; scroll-behavior: smooth;
+    /* "proximity" (not "mandatory") + contain — a mandatory X-axis snap
+       here would fight a mostly-vertical trackpad scroll gesture and make
+       the page feel stuck on this section until the snap resolved. */
+    scroll-snap-type: x proximity; overscroll-behavior-x: contain;
+    /* overflow-y MUST be declared, not left to default. Per CSS spec, when
+       one axis is non-visible the other computes from visible to auto — so
+       "overflow-x: auto" alone silently made this a VERTICAL scroll
+       container too. The kgFx reveal translates items down 24px, which
+       overflowed it by ~14px, and "scrollbar-width: none" hid the evidence.
+       Result: a wheel/trackpad scroll over this section was swallowed by an
+       invisible scrollbar and the page appeared to freeze on Best Sellers.
+       Pinning overflow-y makes this strictly a horizontal rail. */
+    overflow-x: auto; overflow-y: hidden;
+    /* Room so overflow-y:hidden doesn't crop the card's -4px hover lift or
+       its 0 8px 24px drop shadow. */
+    padding: 10px 0 26px;
     scrollbar-width: none; -ms-overflow-style: none;
   }
   .hm-caro::-webkit-scrollbar { display: none; }
@@ -1213,12 +1251,14 @@ import { environment } from '../../../environments/environment';
   @media (max-width: 1180px) {
     .hm-cats-grid { grid-template-columns: repeat(4, 1fr); }
     .hm-hero-inner { gap: 44px; }
+    .hm-grid-8 { grid-template-columns: repeat(6, 1fr); }
   }
   @media (max-width: 1024px) {
     .hm-hero-inner { grid-template-columns: 1fr; gap: 40px; padding: 52px 24px 68px; }
     .hm-hero-title { max-width: 18ch; }
     .hm-hero-cue { display: none; }
     .hm-grid-4 { grid-template-columns: repeat(3, 1fr); }
+    .hm-grid-8 { grid-template-columns: repeat(4, 1fr); }
     .hm-why-grid { grid-template-columns: repeat(2, 1fr); }
     .hm-svc-grid { grid-template-columns: repeat(2, 1fr); }
     .hm-blog-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1232,6 +1272,7 @@ import { environment } from '../../../environments/environment';
   @media (max-width: 760px) {
     .hm-cats-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
     .hm-grid-4 { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .hm-grid-8 { grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .hm-rev-grid { grid-template-columns: 1fr; }
     .hm-blog-grid { grid-template-columns: 1fr; }
     .hm-store-inner { padding: 32px 26px; flex-direction: column; align-items: flex-start; }
@@ -1358,12 +1399,19 @@ export class HomeComponent implements OnInit, OnDestroy {
     public settings: SettingsService,
     private api: ApiService,
     private seo: SeoService,
-  ) {}
+  ) {
+    // _loadTestimonials() reads live settings synchronously and writes a
+    // signal once — calling it from ngOnInit() (before SettingsService's own
+    // async fetch resolves) permanently freezes it on SettingsService's
+    // internal fallback copy. Re-run it once real settings are in.
+    effect(() => {
+      if (this.settings.loaded()) this._loadTestimonials();
+    });
+  }
 
   ngOnInit() {
     this.seo.resetMeta();
     this.api.getBlogs(1).subscribe({ next: (r: any) => { if (r.success) this.blogs.set((r.data || []).slice(0, 3)); }, error: () => {} });
-    this._loadTestimonials();
     this.loadCatalogue();
   }
 
@@ -1413,7 +1461,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       error: () => { clearTimeout(safetyTimer); this.worldLoaded.set(true); }
     });
     this.api.getTrendingProducts(8).subscribe({ next: (r: any) => { if (r.success) this.trending.set(r.data || []); }, error: () => {} });
-    this.api.getProducts({ limit: 4, sort: 'newest' }).subscribe({ next: (r: any) => { if (r.success) this.recentProducts.set(r.data || []); }, error: () => {} });
+    this.api.getNewArrivals(8).subscribe({ next: (r: any) => { if (r.success) this.recentProducts.set(r.data || []); }, error: () => {} });
   }
 
   ngOnDestroy() {
@@ -1555,8 +1603,16 @@ export class HomeComponent implements OnInit, OnDestroy {
         text: this.settings.get(`${k}_text`, ''),
         photo: this.settings.get(`${k}_photo`, ''),
       }))
-      .filter(t => t.name && t.text);
+      // Unconfigured slots still ship with setup placeholder copy ("Update
+      // this review...", "Customer A.", "City") rather than being empty —
+      // never show that as if it were a real testimonial.
+      .filter(t => t.name && t.text && !this.reviewJunk(t.text) && !this.reviewJunk(t.city));
     this.testimonials.set(fromSettings);
+  }
+
+  private reviewJunk(v: string): boolean {
+    const s = String(v || '').trim();
+    return /update this review/i.test(s) || /^city$/i.test(s);
   }
 
   revPair(): any[] {

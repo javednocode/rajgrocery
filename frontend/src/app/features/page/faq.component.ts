@@ -14,6 +14,7 @@ interface Faq { q: string; a: string; open?: boolean; }
   <section class="fq-hero">
     <div class="container">
       <nav class="fq-crumbs"><a routerLink="/">Home</a><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>FAQ</span></nav>
+      <span class="fq-eyebrow">Help Center</span>
       <h1>Frequently Asked Questions</h1>
       <p>Everything you need to know about shopping with us. Can't find your answer? <a routerLink="/contact">Contact us</a></p>
     </div>
@@ -80,10 +81,11 @@ interface Faq { q: string; a: string; open?: boolean; }
   .fq-crumbs { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: rgba(255,255,255,.38); margin-bottom: 16px; }
   .fq-crumbs a { color: rgba(255,255,255,.6); transition: color .2s; } .fq-crumbs a:hover { color: var(--kg-forest-lt); }
   .fq-crumbs svg { opacity: .35; flex-shrink: 0; }
-  .fq-hero h1 { font-family: var(--font-sans); font-size: clamp(1.7rem, 3.5vw, 2.6rem); font-weight: 800; color: var(--kg-cream); margin-bottom: 10px; letter-spacing: -0.02em; }
-  .fq-hero p { font-size: 15px; color: rgba(255,255,255,.55); max-width: 520px; line-height: 1.7; }
+  .fq-eyebrow { display: inline-block; font-family: var(--font-sans); font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: var(--kg-forest-lt); margin-bottom: 12px; }
+  .fq-hero h1 { font-family: var(--font-sans); font-size: clamp(1.7rem, 3.5vw, 2.6rem); font-weight: 800; color: #FFF; margin-bottom: 10px; letter-spacing: -0.02em; }
+  .fq-hero p { font-size: 15px; color: rgba(255,255,255,.7); max-width: 520px; line-height: 1.7; }
   .fq-hero p a { color: var(--kg-forest-lt); font-weight: 700; transition: color .2s; }
-  .fq-hero p a:hover { color: var(--kg-cream); }
+  .fq-hero p a:hover { color: #FFF; }
 
   /* BODY */
   .fq-body { padding: 48px 0 64px; background: var(--kg-cream); }

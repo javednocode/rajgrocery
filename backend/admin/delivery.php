@@ -1,12 +1,11 @@
-<?php $pageTitle = 'Delivery Settings'; include 'includes/header.php'; ?>
+<?php $pageTitle = 'Delivery Settings & HK Town Dropdown'; include 'includes/header.php'; ?>
 
 <style>
-.delivery-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-@media(max-width:640px){ .delivery-grid{grid-template-columns:1fr;} }
+.delivery-grid { display:grid; grid-template-columns: 2fr 1fr; gap:20px; }
+@media(max-width:900px){ .delivery-grid{grid-template-columns:1fr;} }
 
-.dcard { background:var(--card-bg,#1a2332); border-radius:12px; padding:24px; border:1px solid rgba(255,255,255,.07); }
-.dcard-full { grid-column:1/-1; }
-.dcard h3 { margin:0 0 18px; color:#e2e8f0; font-size:14px; font-weight:700; display:flex; align-items:center; gap:8px; }
+.dcard { background:var(--card-bg,#1a2332); border-radius:12px; padding:24px; border:1px solid rgba(255,255,255,.07); height: fit-content; }
+.dcard h3 { margin:0 0 18px; color:#e2e8f0; font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px; letter-spacing: -0.01em; }
 
 .form-group { margin-bottom:16px; }
 .form-group label { display:block; font-size:12px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.7px; margin-bottom:6px; }
@@ -14,16 +13,17 @@
   width:100%; padding:10px 12px; background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.1); border-radius:8px;
   color:#e2e8f0; font-size:13px; box-sizing:border-box; outline:none;
-  transition:border-color .2s; font-family:inherit;
+  transition:all .2s; font-family:inherit;
 }
-.form-group input:focus { border-color:#3b82f6; }
-.field-hint { font-size:11px; color:#64748b; margin-top:4px; }
-.euro-wrap { position:relative; }
-.euro-wrap::before { content:'€'; position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#64748b; pointer-events:none; font-size:13px; }
-.euro-wrap input { padding-left:26px !important; }
+.form-group input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.15); }
+.field-hint { font-size:11px; color:#64748b; margin-top:4px; line-height: 1.4; }
+
+.hkd-wrap { position:relative; }
+.hkd-wrap::before { content:'HK$'; position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#64748b; pointer-events:none; font-size:13px; font-weight: 700; }
+.hkd-wrap input { padding-left:46px !important; }
 
 .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid rgba(255,255,255,.06); margin-bottom:14px; }
-.toggle-row:last-of-type { margin-bottom:14px; }
+.toggle-row:last-of-type { border-bottom:none; margin-bottom:4px; }
 .toggle-label { font-size:13px; color:#cbd5e1; font-weight:600; }
 .toggle-label small { display:block; color:#64748b; font-size:11px; margin-top:2px; font-weight:400; }
 
@@ -35,183 +35,111 @@
 .tswitch input:checked + .tslider { background:#22c55e; }
 .tswitch input:checked + .tslider::before { transform:translateX(20px); }
 
-/* Zone chips */
-.zones-row { display:flex; gap:12px; }
-.zone-chip { flex:1; padding:16px 12px; border-radius:10px; text-align:center; }
-.zone-icon { font-size:24px; margin-bottom:6px; }
-.zone-name { font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em; }
-.zone-fee  { font-size:20px; font-weight:800; color:#f1f5f9; margin-top:4px; }
-.zone-note { font-size:10px; color:#64748b; margin-top:3px; }
-.zone-local    { background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.2); }
-.zone-outside { background:rgba(251,146,60,.1); border:1px solid rgba(251,146,60,.2); }
+/* Table for cities */
+.city-table { width:100%; border-collapse:collapse; margin-bottom:18px; }
+.city-table th { font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:.08em; padding:12px 8px; border-bottom:1px solid rgba(255,255,255,.1); text-align:left; }
+.city-table td { padding:10px 8px; border-bottom:1px solid rgba(255,255,255,.05); vertical-align:middle; }
+.city-table input { width:100%; padding:9px 12px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:8px; color:#f1f5f9; font-size:13px; font-weight:600; outline:none; transition:border-color .2s; }
+.city-table input:focus { border-color:#3b82f6; }
+.city-fee-input, .city-min-input { width: 110px !important; }
 
-/* Preview */
-.preview-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.05); font-size:13px; }
-.preview-row:last-child { border:none; }
-.pv-free { color:#4ade80; font-weight:700; }
-.pv-fee  { color:#fb923c; font-weight:700; }
+.btn-add-row {
+  background:rgba(59,130,246,.15); color:#60a5fa; border:1px dashed rgba(59,130,246,.4);
+  border-radius:8px; padding:10px 18px; font-size:13px; font-weight:700; cursor:pointer; transition:all .2s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-add-row:hover { background:rgba(59,130,246,.25); color:#93c5fd; border-color: #60a5fa; }
+
+.btn-delete-row {
+  background:rgba(239,68,68,.15); color:#f87171; border:none; width:34px; height:34px;
+  border-radius:8px; display:grid; place-items:center; cursor:pointer; transition:all .2s;
+}
+.btn-delete-row:hover { background:rgba(239,68,68,.25); transform:scale(1.05); }
 
 /* Save bar */
-.save-bar { display:flex; align-items:center; justify-content:space-between; margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,.06); }
-.btn-save-delivery { background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; border:none; border-radius:10px; padding:12px 32px; font-size:14px; font-weight:700; cursor:pointer; transition:all .2s; }
-.btn-save-delivery:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(59,130,246,.4); }
+.save-bar { display:flex; align-items:center; justify-content:space-between; margin-top:24px; padding:18px 24px; background: rgba(15, 23, 42, 0.6); border:1px solid rgba(255,255,255,.08); border-radius: 12px; }
+.btn-save-delivery { background:linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff; border:none; border-radius:10px; padding:12px 36px; font-size:14px; font-weight:700; cursor:pointer; transition:all .2s; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); }
+.btn-save-delivery:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(37, 99, 235, 0.5); }
 .btn-save-delivery:disabled { opacity:.6; cursor:not-allowed; transform:none; }
-.save-status { font-size:13px; font-weight:600; }
+.save-status { font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px; }
 .save-ok  { color:#4ade80; }
 .save-err { color:#f87171; }
-.detection-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+.info-banner {
+  background: linear-gradient(135deg, rgba(59,130,246,.15), rgba(30,58,138,.2));
+  border: 1px solid rgba(59,130,246,.3); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;
+  color: #93c5fd; font-size: 13.5px; line-height: 1.5; display: flex; align-items: center; gap: 14px;
+}
 </style>
 
 <div style="margin-bottom:22px">
-  <div style="font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:4px"> Delivery Settings</div>
-  <div style="font-size:14px;color:#64748b">Configure delivery zones, fees and free delivery thresholds</div>
+  <div style="font-size:24px;font-weight:800;color:#f1f5f9;margin-bottom:4px">📍 Hong Kong Town / City Delivery Charges</div>
+  <div style="font-size:14px;color:#64748b">Manage the town/city dropdown options displayed during customer checkout and set dynamic shipping fees per region.</div>
 </div>
 
-<div id="pageMsg" style="display:none;margin-bottom:16px;padding:12px 16px;border-radius:8px;font-size:13px;font-weight:600"></div>
-
-<!-- Zone Overview (live preview) -->
-<div class="dcard" style="margin-bottom:20px">
-  <h3> Current Zone Overview</h3>
-  <div class="zones-row">
-    <div class="zone-chip zone-local">
-      <div class="zone-icon"></div>
-      <div class="zone-name">Local delivery</div>
-      <div class="zone-fee" id="previewLocalFee">€2.95</div>
-      <div class="zone-note">Free above <span id="previewFreeAbove">€50</span></div>
-    </div>
-    <div class="zone-chip zone-outside">
-      <div class="zone-icon"></div>
-      <div class="zone-name">Standard delivery</div>
-      <div class="zone-fee" id="previewOutsideFee">€4.95</div>
-      <div class="zone-note">+<span id="previewSmallFee">€1.50</span> for orders under <span id="previewSmallMin">€25</span></div>
-    </div>
+<div class="info-banner">
+  <span style="font-size: 22px;">💡</span>
+  <div>
+    <strong>Dynamic Checkout Integration:</strong> The towns and delivery charges you define below directly power the town/city dropdown menu on the customer checkout page. When a customer selects their region, the shipping fee will adjust automatically. The <em>"Free Delivery Above"</em> column sets the cart threshold above which delivery becomes <strong>FREE</strong> for that area — it does <em>not</em> block orders below that amount.
   </div>
 </div>
 
 <div class="delivery-grid">
-
-  <!-- Free Delivery -->
+  <!-- Left: City / Town Rates Manager -->
   <div class="dcard">
-    <h3> Free Delivery</h3>
+    <h3>🏙️ Checkout Town / City Dropdown & Fees</h3>
+    <p style="font-size:13px;color:#94a3b8;margin-bottom:16px;">Add or modify Hong Kong areas, districts, or cities. Customers will pick from these options at checkout.</p>
+    
+    <table class="city-table" id="cityTable">
+      <thead>
+        <tr>
+          <th>Hong Kong Town / City / Region</th>
+          <th>Delivery Fee (HK$)</th>
+          <th>Free Delivery Above (HK$)</th>
+          <th style="width:50px;text-align:center;">Action</th>
+        </tr>
+      </thead>
+      <tbody id="cityRows">
+        <!-- populated by JS -->
+      </tbody>
+    </table>
+
+    <button type="button" class="btn-add-row" onclick="addNewRow('', 40, 500)">
+      <span>➕</span> Add New Town / City Option
+    </button>
+  </div>
+
+  <!-- Right: General & Free Delivery Rules -->
+  <div class="dcard">
+    <h3>🎉 Free Delivery & Default Settings</h3>
+    
     <div class="toggle-row">
       <div class="toggle-label">
-        Enable Free Delivery
-        <small>Local delivery orders above threshold get free delivery</small>
+        Enable Free Delivery Threshold
+        <small>Orders exceeding the threshold amount get FREE delivery across all towns</small>
       </div>
       <label class="tswitch">
         <input type="checkbox" id="delivery_free_enabled">
         <span class="tslider"></span>
       </label>
     </div>
-    <div class="form-group">
-      <label>Free Delivery Threshold</label>
-      <div class="euro-wrap">
-        <input type="number" id="delivery_free_above" step="0.01" min="0" placeholder="50">
-      </div>
-      <div class="field-hint">Local delivery orders above this = free delivery</div>
-    </div>
-  </div>
 
-  <!-- Delivery Fees -->
-  <div class="dcard">
-    <h3> Delivery Fees</h3>
     <div class="form-group">
-      <label>Local Delivery Fee</label>
-      <div class="euro-wrap">
-        <input type="number" id="delivery_local_fee" step="0.01" min="0" placeholder="2.95">
+      <label>Free Delivery Order Minimum</label>
+      <div class="hkd-wrap">
+        <input type="number" id="delivery_free_above" step="1" min="0" placeholder="400">
       </div>
-      <div class="field-hint">Charged when order is below free delivery threshold</div>
+      <div class="field-hint">When cart subtotal reaches this amount, delivery fee becomes HK$0.00.</div>
     </div>
-    <div class="form-group">
-      <label>Standard Delivery Fee</label>
-      <div class="euro-wrap">
-        <input type="number" id="delivery_standard_fee" step="0.01" min="0" placeholder="4.95">
-      </div>
-      <div class="field-hint">Charged when an address is outside your configured local zone</div>
-    </div>
-  </div>
 
-  <!-- Zone Detection -->
-  <div class="dcard">
-    <h3> Zone Detection</h3>
-    <div class="form-group">
-      <label>Local Zone Label</label>
-      <input type="text" id="delivery_local_zone_label" placeholder="Local delivery">
-    </div>
-    <div class="form-group">
-      <label>Standard Zone Label</label>
-      <input type="text" id="delivery_standard_zone_label" placeholder="Standard delivery">
-    </div>
-    <div class="form-group">
-      <label>Local Keywords</label>
-      <input type="text" id="delivery_local_keywords" placeholder="city name, county, neighborhood">
-      <div class="field-hint">Comma-separated city/county words that should count as local</div>
-    </div>
-    <div class="form-group">
-      <label>Local Postcode Prefixes</label>
-      <input type="text" id="delivery_local_postcode_prefixes" placeholder="123, AB, XY">
-      <div class="field-hint">Comma-separated postal/eircode prefixes for your local delivery zone</div>
-    </div>
-  </div>
+    <div style="margin:24px 0;height:1px;background:rgba(255,255,255,.08)"></div>
 
-  <!-- Small Order Surcharge -->
-  <div class="dcard">
-    <h3> Small Order Surcharge</h3>
-    <div class="toggle-row">
-      <div class="toggle-label">
-        Enable Small Order Fee
-        <small>Extra fee for small orders outside Local delivery</small>
-      </div>
-      <label class="tswitch">
-        <input type="checkbox" id="delivery_small_order_enabled">
-        <span class="tslider"></span>
-      </label>
-    </div>
     <div class="form-group">
-      <label>Small Order Minimum</label>
-      <div class="euro-wrap">
-        <input type="number" id="delivery_small_order_min" step="0.01" min="0" placeholder="25">
+      <label>Default / Starting Delivery Fee</label>
+      <div class="hkd-wrap">
+        <input type="number" id="shipping_charge" step="1" min="0" placeholder="40">
       </div>
-      <div class="field-hint">Orders below this get the extra fee</div>
-    </div>
-    <div class="form-group">
-      <label>Small Order Extra Fee</label>
-      <div class="euro-wrap">
-        <input type="number" id="delivery_small_order_fee" step="0.01" min="0" placeholder="1.50">
-      </div>
-      <div class="field-hint">Added on top of delivery fee for small orders</div>
-    </div>
-  </div>
-
-  <!-- Pricing Preview -->
-  <div class="dcard">
-    <h3> Pricing Preview</h3>
-    <div class="preview-row"><span style="color:#94a3b8"> Local delivery — €55 order</span><span class="pv-free">FREE</span></div>
-    <div class="preview-row"><span style="color:#94a3b8"> Local delivery — €30 order</span><span class="pv-fee" id="prev2">€2.95</span></div>
-    <div class="preview-row"><span style="color:#94a3b8"> Standard delivery — €40 order</span><span class="pv-fee" id="prev3">€4.95</span></div>
-    <div class="preview-row"><span style="color:#94a3b8"> Standard delivery — €18 order</span><span class="pv-fee" id="prev4">€6.45</span></div>
-  </div>
-
-</div><!-- /delivery-grid -->
-
-<!-- Detection Info -->
-<div class="dcard" style="margin-top:20px">
-  <h3> Local delivery Detection Rules</h3>
-  <div class="detection-grid">
-    <div style="background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.15);border-radius:10px;padding:14px">
-      <div style="font-size:12px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px"> Detected as Local delivery</div>
-      <div style="font-size:12px;color:#94a3b8;line-height:2">
-        Postal code starts with any configured local prefix<br>
-        OR city/county contains any configured local keyword<br>
-        OR checkout explicitly sends the local zone
-      </div>
-    </div>
-    <div style="background:rgba(251,146,60,.07);border:1px solid rgba(251,146,60,.15);border-radius:10px;padding:14px">
-      <div style="font-size:12px;font-weight:700;color:#fb923c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px"> Detected as Standard delivery</div>
-      <div style="font-size:12px;color:#94a3b8;line-height:2">
-        Address does not match local prefixes or keywords<br>
-        OR checkout explicitly sends the standard zone
-      </div>
+      <div class="field-hint">Fallback shipping rate shown in shopping cart before the customer selects their town/city.</div>
     </div>
   </div>
 </div>
@@ -219,18 +147,21 @@
 <!-- Save Bar -->
 <div class="save-bar">
   <span class="save-status" id="saveStatus"></span>
-  <button class="btn-save-delivery" id="saveBtn" onclick="saveDeliverySettings()"> Save Delivery Settings</button>
+  <button class="btn-save-delivery" id="saveBtn" onclick="saveDeliverySettings()">💾 Save Delivery Settings</button>
 </div>
 
 <script>
 const API = window.location.origin + '/api';
-const DELIVERY_KEYS = [
-  'delivery_free_above','delivery_free_enabled',
-  'delivery_local_fee','delivery_standard_fee',
-  'delivery_small_order_min','delivery_small_order_fee',
-  'delivery_small_order_enabled',
-  'delivery_local_zone_label','delivery_standard_zone_label',
-  'delivery_local_keywords','delivery_local_postcode_prefixes'
+
+const DEFAULT_CITIES = [
+  { name: 'Kowloon', fee: 40, minAmount: 500 },
+  { name: 'Hong Kong Island', fee: 50, minAmount: 500 },
+  { name: 'New Territories', fee: 60, minAmount: 500 },
+  { name: 'Tsuen Wan / Kwai Tsing', fee: 45, minAmount: 500 },
+  { name: 'Sha Tin / Tai Po', fee: 55, minAmount: 500 },
+  { name: 'Tuen Mun / Yuen Long', fee: 60, minAmount: 500 },
+  { name: 'Lantau Island / Tung Chung', fee: 80, minAmount: 500 },
+  { name: 'Discovery Bay / Outlying Islands', fee: 120, minAmount: 500 }
 ];
 
 async function loadDeliverySettings() {
@@ -238,26 +169,65 @@ async function loadDeliverySettings() {
     const token = localStorage.getItem('admin_token') || '';
     const res = await fetch(`${API}/settings`, { headers: { 'Authorization': 'Bearer ' + token } });
     const data = await res.json();
-    if (!data.success) return;
-    const s = data.data;
+    const s = data.success ? data.data : {};
 
-    // Populate fields
-    setVal('delivery_free_above',        s.delivery_free_above        || '50');
-    setVal('delivery_local_fee',     s.delivery_local_fee     || '2.95');
-    setVal('delivery_standard_fee',  s.delivery_standard_fee  || '4.95');
-    setVal('delivery_small_order_min',   s.delivery_small_order_min   || '25');
-    setVal('delivery_small_order_fee',   s.delivery_small_order_fee   || '1.50');
-    setVal('delivery_local_zone_label',  s.delivery_local_zone_label  || 'Local delivery');
-    setVal('delivery_standard_zone_label', s.delivery_standard_zone_label || 'Standard delivery');
-    setVal('delivery_local_keywords',    s.delivery_local_keywords    || '');
-    setVal('delivery_local_postcode_prefixes', s.delivery_local_postcode_prefixes || '');
-    setChk('delivery_free_enabled',      s.delivery_free_enabled      !== '0');
-    setChk('delivery_small_order_enabled', s.delivery_small_order_enabled !== '0');
+    // Populate general settings
+    setVal('delivery_free_above', s.delivery_free_above || s.shipping_free_above || '400');
+    setVal('shipping_charge',     s.shipping_charge     || s.delivery_local_fee   || '40');
+    setChk('delivery_free_enabled', s.delivery_free_enabled !== '0');
 
-    updatePreview(s);
+    // Populate cities
+    let cities = DEFAULT_CITIES;
+    if (s.hk_delivery_cities) {
+      try {
+        const parsed = typeof s.hk_delivery_cities === 'string' ? JSON.parse(s.hk_delivery_cities) : s.hk_delivery_cities;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          cities = parsed;
+        }
+      } catch (e) {
+        console.error('Failed to parse hk_delivery_cities, using defaults', e);
+      }
+    }
+    
+    renderCities(cities);
   } catch(e) {
     console.error('Load error:', e);
+    renderCities(DEFAULT_CITIES);
   }
+}
+
+function renderCities(cities) {
+  const tbody = document.getElementById('cityRows');
+  tbody.innerHTML = '';
+  cities.forEach(c => {
+    let amt = c.minAmount ?? c.min_amount;
+    if (amt === undefined || (amt === 0 && (c.minQty || c.min_qty))) {
+      amt = c.minQty || c.min_qty;
+    }
+    addNewRow(c.name, c.fee, amt !== undefined ? amt : 500);
+  });
+}
+
+function addNewRow(name = '', fee = 40, minAmount = 500) {
+  const tbody = document.getElementById('cityRows');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="text" class="city-name-field" placeholder="e.g. Kowloon, Hong Kong Island" value="${name.replace(/"/g, '&quot;')}"></td>
+    <td>
+      <div class="hkd-wrap">
+        <input type="number" class="city-fee-field city-fee-input" step="1" min="0" value="${fee}">
+      </div>
+    </td>
+    <td>
+      <div class="hkd-wrap">
+        <input type="number" class="city-minamount-field city-min-input" step="1" min="0" value="${minAmount}" placeholder="0" title="Cart subtotal above which delivery becomes FREE for this area (0 = use global threshold)">
+      </div>
+    </td>
+    <td style="text-align:center;">
+      <button type="button" class="btn-delete-row" title="Remove row" onclick="this.closest('tr').remove();">🗑️</button>
+    </td>
+  `;
+  tbody.appendChild(tr);
 }
 
 function setVal(id, val) { const el = document.getElementById(id); if(el) el.value = val; }
@@ -265,42 +235,47 @@ function setChk(id, val) { const el = document.getElementById(id); if(el) el.che
 function getVal(id) { return document.getElementById(id)?.value || ''; }
 function getChk(id) { return document.getElementById(id)?.checked ? '1' : '0'; }
 
-function updatePreview(s) {
-  const localFee    = parseFloat(s.delivery_local_fee    || s.delivery_local_fee    || 2.95);
-  const standardFee = parseFloat(s.delivery_standard_fee || s.delivery_standard_fee || 4.95);
-  const smallFee   = parseFloat(s.delivery_small_order_fee  || s.delivery_small_order_fee  || 1.50);
-  const smallMin   = parseFloat(s.delivery_small_order_min  || s.delivery_small_order_min  || 25);
-  const freeAbove  = parseFloat(s.delivery_free_above       || s.delivery_free_above       || 50);
-
-  document.getElementById('previewLocalFee').textContent  = '€' + localFee.toFixed(2);
-  document.getElementById('previewOutsideFee').textContent = '€' + standardFee.toFixed(2);
-  document.getElementById('previewSmallFee').textContent = '€' + smallFee.toFixed(2);
-  document.getElementById('previewSmallMin').textContent = '€' + smallMin.toFixed(0);
-  document.getElementById('previewFreeAbove').textContent = '€' + freeAbove.toFixed(0);
-  document.getElementById('prev2').textContent = '€' + localFee.toFixed(2);
-  document.getElementById('prev3').textContent = '€' + standardFee.toFixed(2);
-  document.getElementById('prev4').textContent = '€' + (standardFee + smallFee).toFixed(2);
-}
-
 async function saveDeliverySettings() {
   const btn = document.getElementById('saveBtn');
   const status = document.getElementById('saveStatus');
   btn.disabled = true;
-  btn.textContent = 'Saving...';
+  btn.textContent = 'Saving Settings...';
   status.textContent = '';
 
+  // Gather cities from table
+  const rows = document.querySelectorAll('#cityRows tr');
+  const cities = [];
+  rows.forEach(r => {
+    const name = r.querySelector('.city-name-field')?.value?.trim();
+    const fee = parseFloat(r.querySelector('.city-fee-field')?.value || '0');
+    const minAmount = parseFloat(r.querySelector('.city-minamount-field')?.value || '0');
+    if (name) {
+      cities.push({
+        name,
+        fee: isNaN(fee) ? 40 : fee,
+        minAmount: isNaN(minAmount) ? 500 : minAmount
+      });
+    }
+  });
+
+  if (cities.length === 0) {
+    alert('Please add at least one town / city option for checkout.');
+    btn.disabled = false;
+    btn.textContent = '💾 Save Delivery Settings';
+    return;
+  }
+
+  const freeAbove = getVal('delivery_free_above') || '400';
+  const defaultFee = getVal('shipping_charge') || (cities[0] ? cities[0].fee : '40');
+
   const payload = {
-    delivery_free_above:          getVal('delivery_free_above'),
-    delivery_free_enabled:        getChk('delivery_free_enabled'),
-    delivery_local_fee:       getVal('delivery_local_fee'),
-    delivery_standard_fee:    getVal('delivery_standard_fee'),
-    delivery_small_order_min:     getVal('delivery_small_order_min'),
-    delivery_small_order_fee:     getVal('delivery_small_order_fee'),
-    delivery_small_order_enabled: getChk('delivery_small_order_enabled'),
-    delivery_local_zone_label:    getVal('delivery_local_zone_label'),
-    delivery_standard_zone_label: getVal('delivery_standard_zone_label'),
-    delivery_local_keywords:      getVal('delivery_local_keywords'),
-    delivery_local_postcode_prefixes: getVal('delivery_local_postcode_prefixes'),
+    hk_delivery_cities: JSON.stringify(cities),
+    delivery_free_above: freeAbove,
+    shipping_free_above: freeAbove,
+    delivery_free_enabled: getChk('delivery_free_enabled'),
+    shipping_charge: defaultFee,
+    delivery_local_fee: defaultFee,
+    delivery_standard_fee: defaultFee
   };
 
   try {
@@ -313,35 +288,23 @@ async function saveDeliverySettings() {
     const data = await res.json();
     if (data.success) {
       status.className = 'save-status save-ok';
-      status.textContent = ' Settings saved successfully!';
-      updatePreview(payload);
+      status.innerHTML = '✅ Delivery charges and HK Town dropdown saved successfully!';
     } else {
       status.className = 'save-status save-err';
-      status.textContent = ' ' + (data.message || 'Save failed');
+      status.textContent = '❌ ' + (data.message || 'Save failed');
     }
   } catch(e) {
     status.className = 'save-status save-err';
-    status.textContent = ' Network error — try again';
+    status.textContent = '❌ Network error — please try again';
   }
 
   btn.disabled = false;
-  btn.textContent = ' Save Delivery Settings';
+  btn.textContent = '💾 Save Delivery Settings';
 }
 
-// Live preview as user types
-['delivery_local_fee','delivery_standard_fee','delivery_small_order_fee','delivery_small_order_min','delivery_free_above'].forEach(id => {
-  document.getElementById(id)?.addEventListener('input', () => {
-    updatePreview({
-      delivery_local_fee:    getVal('delivery_local_fee'),
-      delivery_standard_fee: getVal('delivery_standard_fee'),
-      delivery_small_order_fee:  getVal('delivery_small_order_fee'),
-      delivery_small_order_min:  getVal('delivery_small_order_min'),
-      delivery_free_above:       getVal('delivery_free_above'),
-    });
-  });
+document.addEventListener('DOMContentLoaded', () => {
+  loadDeliverySettings();
 });
-
-loadDeliverySettings();
 </script>
 
 <?php include 'includes/footer.php'; ?>

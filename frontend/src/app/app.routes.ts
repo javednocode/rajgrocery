@@ -7,6 +7,7 @@ export const routes: Routes = [
   { path: 'product/:slug', data: { reuse: true }, loadComponent: () => import('./features/product/product-detail.component').then(m => m.ProductDetailComponent) },
   { path: 'cart', data: { preload: true, preloadDelay: 1600 }, loadComponent: () => import('./features/cart/cart.component').then(m => m.CartComponent) },
   { path: 'checkout', loadComponent: () => import('./features/checkout/checkout.component').then(m => m.CheckoutComponent) },
+  { path: 'order-success', loadComponent: () => import('./features/order-success/order-success.component').then(m => m.OrderSuccessComponent) },
   { path: 'blog', loadComponent: () => import('./features/blog/blog-list.component').then(m => m.BlogListComponent) },
   { path: 'blog/:slug', loadComponent: () => import('./features/blog/blog-detail.component').then(m => m.BlogDetailComponent) },
   { path: 'search', data: { preload: true, preloadDelay: 2200 }, loadComponent: () => import('./features/search/search.component').then(m => m.SearchComponent) },

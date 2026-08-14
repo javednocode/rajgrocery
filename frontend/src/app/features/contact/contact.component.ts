@@ -16,6 +16,7 @@ import { ApiService } from '../../core/services/api.service';
       <nav class="co-crumbs">
         <a routerLink="/">Home</a><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Contact</span>
       </nav>
+      <span class="co-eyebrow">Get In Touch</span>
       <h1>Contact {{ settings.get('site_name', 'Us') }}</h1>
       <p>Have a question, order issue, or wholesale enquiry? We're here to help — typically reply within a few hours.</p>
     </div>
@@ -167,8 +168,9 @@ import { ApiService } from '../../core/services/api.service';
   .co-crumbs a { color: rgba(255,255,255,.6); transition: color .2s; }
   .co-crumbs a:hover { color: var(--kg-forest-lt); }
   .co-crumbs svg { opacity: .35; flex-shrink: 0; }
-  .co-hero h1 { font-family: var(--font-sans); font-size: clamp(1.7rem, 3.5vw, 2.6rem); font-weight: 800; color: var(--kg-cream); margin-bottom: 10px; letter-spacing: -0.02em; }
-  .co-hero p { font-size: 15px; color: rgba(255,255,255,.55); max-width: 520px; line-height: 1.7; }
+  .co-eyebrow { display: inline-block; font-family: var(--font-sans); font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: var(--kg-forest-lt); margin-bottom: 12px; }
+  .co-hero h1 { font-family: var(--font-sans); font-size: clamp(1.7rem, 3.5vw, 2.6rem); font-weight: 800; color: #FFF; margin-bottom: 10px; letter-spacing: -0.02em; }
+  .co-hero p { font-size: 15px; color: rgba(255,255,255,.7); max-width: 520px; line-height: 1.7; }
 
   /* BODY */
   .co-body { padding: 48px 0 64px; background: var(--kg-cream); }

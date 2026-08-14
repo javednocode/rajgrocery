@@ -514,6 +514,17 @@ function pm_import_product(PDO $db, int $jobId, string $batchId, array $raw, str
     $slug = pm_unique_slug($db, $p['name'], $targetId);
 
     if ($targetId) {
+        // Same guard as Bulk Stock Update / CSV Import: a re-scrape/re-sync
+        // shouldn't silently un-zero a product deliberately marked Out of
+        // Stock locally — the source page/feed has no idea that was a
+        // manual decision made in this admin panel.
+        $existingStockStmt = $db->prepare("SELECT stock FROM products WHERE id = :id");
+        $existingStockStmt->execute([':id' => $targetId]);
+        $existingStock = (int)$existingStockStmt->fetchColumn();
+        if ($existingStock <= 0) {
+            $p['stock'] = $existingStock;
+        }
+
         $stmt = $db->prepare("UPDATE products SET
             name=:name, slug=:slug, short_description=:short, description=:desc, price=:price,
             sale_price=:sale, sku=:sku, stock=:stock, weight=:weight, brand=:brand,

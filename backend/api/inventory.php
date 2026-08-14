@@ -50,7 +50,7 @@ function adjustStock(
     $siteId = defined('ECOMMERCE_SITE_ID') ? ECOMMERCE_SITE_ID : 1;
 
     if ($variantId) {
-        $row = $db->prepare("SELECT stock FROM product_variants WHERE id = :vid FOR UPDATE");
+        $row = $db->prepare("SELECT stock FROM product_variations WHERE id = :vid FOR UPDATE");
         $row->execute([':vid' => $variantId]);
         $cur = $row->fetch();
         if (!$cur) return ['success' => false, 'error' => 'Variant not found'];
@@ -58,19 +58,19 @@ function adjustStock(
         $before = (int)$cur['stock'];
         $after  = max(0, $before + $qtyChange);
 
-        $db->prepare("UPDATE product_variants SET stock = :s WHERE id = :vid")
+        $db->prepare("UPDATE product_variations SET stock = :s WHERE id = :vid")
            ->execute([':s' => $after, ':vid' => $variantId]);
     } else {
-        $row = $db->prepare("SELECT stock FROM products WHERE id = :pid AND site_id = :s FOR UPDATE");
-        $row->execute([':pid' => $productId, ':s' => $siteId]);
+        $row = $db->prepare("SELECT stock FROM products WHERE id = :pid FOR UPDATE");
+        $row->execute([':pid' => $productId]);
         $cur = $row->fetch();
         if (!$cur) return ['success' => false, 'error' => 'Product not found'];
 
         $before = (int)$cur['stock'];
         $after  = max(0, $before + $qtyChange);
 
-        $db->prepare("UPDATE products SET stock = :s WHERE id = :pid AND site_id = :sid")
-           ->execute([':s' => $after, ':pid' => $productId, ':sid' => $siteId]);
+        $db->prepare("UPDATE products SET stock = :s WHERE id = :pid")
+           ->execute([':s' => $after, ':pid' => $productId]);
     }
 
     // Write audit trail — create table if it doesn't exist yet
@@ -113,14 +113,14 @@ function getInventory(PDO $db): void {
     $filter = $_GET['filter'] ?? 'all'; // all | low | out
     $q      = $_GET['q'] ?? '';
 
-    $where  = ["p.site_id = :s"];
-    $params = [':s' => $siteId];
+    $where  = [];
+    $params = [];
 
     if ($filter === 'out')  $where[] = "p.stock = 0";
     if ($filter === 'low')  $where[] = "p.stock > 0 AND p.stock <= COALESCE(p.low_stock_threshold, 5)";
     if ($q) { $where[] = "p.name LIKE :q"; $params[':q'] = '%' . $q . '%'; }
 
-    $clause = 'WHERE ' . implode(' AND ', $where);
+    $clause = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
     $count  = $db->prepare("SELECT COUNT(*) FROM products p $clause");
     $count->execute($params);
     $total  = (int)$count->fetchColumn();
@@ -130,7 +130,7 @@ function getInventory(PDO $db): void {
         p.is_active, p.price,
         (SELECT pi.image_path FROM product_images pi
          WHERE pi.product_id = p.id AND pi.is_primary = 1 LIMIT 1) AS image_path,
-        (SELECT COUNT(*) FROM product_variants WHERE product_id = p.id AND is_active = 1) AS variant_count
+        (SELECT COUNT(*) FROM product_variations WHERE product_id = p.id AND is_active = 1) AS variant_count
         FROM products p $clause
         ORDER BY p.stock ASC, p.name ASC
         LIMIT :lim OFFSET :off");
@@ -143,11 +143,10 @@ function getInventory(PDO $db): void {
     $products = $stmt->fetchAll();
 
     // Alerts summary
-    $alertStmt = $db->prepare("SELECT
+    $alertStmt = $db->query("SELECT
         SUM(CASE WHEN stock = 0 THEN 1 ELSE 0 END) AS out_of_stock,
         SUM(CASE WHEN stock > 0 AND stock <= COALESCE(low_stock_threshold, 5) THEN 1 ELSE 0 END) AS low_stock
-        FROM products WHERE site_id = :s AND is_active = 1");
-    $alertStmt->execute([':s' => $siteId]);
+        FROM products WHERE is_active = 1");
     $alerts = $alertStmt->fetch();
 
     paginatedResponse($products, $total, $page, $perPage, [
@@ -159,17 +158,14 @@ function getInventory(PDO $db): void {
 }
 
 function getInventoryAlerts(PDO $db): void {
-    $siteId = defined('ECOMMERCE_SITE_ID') ? ECOMMERCE_SITE_ID : 1;
-
-    $stmt = $db->prepare("SELECT p.id, p.name, p.sku, p.stock, p.low_stock_threshold,
+    $stmt = $db->query("SELECT p.id, p.name, p.sku, p.stock, p.low_stock_threshold,
         CASE WHEN p.stock = 0 THEN 'out_of_stock'
              WHEN p.stock <= COALESCE(p.low_stock_threshold, 5) THEN 'low_stock'
              ELSE 'ok' END AS stock_status
         FROM products p
-        WHERE p.site_id = :s AND p.is_active = 1
+        WHERE p.is_active = 1
           AND (p.stock = 0 OR p.stock <= COALESCE(p.low_stock_threshold, 5))
         ORDER BY p.stock ASC, p.name");
-    $stmt->execute([':s' => $siteId]);
     successResponse($stmt->fetchAll());
 }
 
@@ -212,18 +208,14 @@ function getProductInventory(PDO $db, int $productId): void {
     ensureInventorySchema($db);
     $siteId = defined('ECOMMERCE_SITE_ID') ? ECOMMERCE_SITE_ID : 1;
 
-    $prodStmt = $db->prepare("SELECT id, name, sku, stock, low_stock_threshold FROM products WHERE id = :pid AND site_id = :s");
-    $prodStmt->execute([':pid' => $productId, ':s' => $siteId]);
+    $prodStmt = $db->prepare("SELECT id, name, sku, stock, low_stock_threshold FROM products WHERE id = :pid");
+    $prodStmt->execute([':pid' => $productId]);
     $product = $prodStmt->fetch();
     if (!$product) errorResponse('Product not found', 404);
 
-    $varStmt = $db->prepare("SELECT v.id, v.sku, v.stock, v.reserved_stock, v.low_stock_threshold,
-        GROUP_CONCAT(CONCAT(a.name, ':', av.value) SEPARATOR ' / ') AS label
-        FROM product_variants v
-        LEFT JOIN variant_attribute_values vav ON vav.variant_id = v.id
-        LEFT JOIN product_attribute_values av  ON av.id = vav.value_id
-        LEFT JOIN product_attributes a         ON a.id  = vav.attribute_id
-        WHERE v.product_id = :pid GROUP BY v.id ORDER BY v.sort_order");
+    $varStmt = $db->prepare("SELECT id, sku, stock, 0 AS reserved_stock, 5 AS low_stock_threshold, name AS label
+        FROM product_variations
+        WHERE product_id = :pid ORDER BY sort_order");
     $varStmt->execute([':pid' => $productId]);
     $product['variants'] = $varStmt->fetchAll();
 

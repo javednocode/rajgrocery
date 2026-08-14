@@ -51,7 +51,7 @@
                     <input type="text" id="heroName" class="form-control" placeholder="Auto-filled from catalog">
                 </div>
                 <div class="form-group">
-                    <label>Price (€) *</label>
+                    <label>Price *</label>
                     <input type="number" id="heroPrice" class="form-control" step="0.01" placeholder="0.00">
                 </div>
             </div>
@@ -106,7 +106,7 @@ async function loadHeroProducts() {
                     <strong>${p.product_name}</strong>
                     ${p.product_id ? '<br><span style="font-size:11px;color:var(--admin-primary)"> From catalog</span>' : ''}
                 </td>
-                <td>€${parseFloat(p.price).toFixed(2)}</td>
+                <td>${formatCurrency(p.price)}</td>
                 <td>${p.badge ? `<span class="badge badge-primary">${p.badge}</span>` : '—'}</td>
                 <td>${p.product_id ? `<span class="badge badge-success">Yes #${p.product_id}</span>` : '—'}</td>
                 <td>${p.is_featured==1 ? '<span class="badge badge-success">Wide</span>' : 'Normal'}</td>
@@ -139,7 +139,7 @@ function searchProducts(q) {
              style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--admin-border);transition:background 0.15s;"
              onmouseover="this.style.background='var(--admin-hover)'" onmouseout="this.style.background=''">
             <div style="font-weight:600;font-size:13px;">${p.name}</div>
-            <div style="font-size:12px;color:var(--admin-text-muted);">€${parseFloat(p.sale_price || p.price).toFixed(2)} • SKU: ${p.sku || 'N/A'}</div>
+            <div style="font-size:12px;color:var(--admin-text-muted);">${formatCurrency(p.sale_price || p.price)} • SKU: ${p.sku || 'N/A'}</div>
         </div>
     `).join('');
     dd.style.display = 'block';

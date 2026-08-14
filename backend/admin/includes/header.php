@@ -45,8 +45,8 @@ $_sidebarName = 'Store'; // Default — overridden by JS from /api/settings
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $pageTitle ?? 'Admin' ?> — <?= htmlspecialchars($_sidebarName ?? 'Store') ?> Admin</title>
-    <link rel="stylesheet" href="assets/admin.css?v=5">
-    <script src="assets/admin.js?v=5"></script>
+    <link rel="stylesheet" href="assets/admin.css?v=6">
+    <script src="assets/admin.js?v=6"></script>
     <?php if (($pageTitle ?? '') === 'Dashboard'): ?>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <?php endif; ?>

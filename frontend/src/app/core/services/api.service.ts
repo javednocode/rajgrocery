@@ -43,6 +43,11 @@ export class ApiService {
       .pipe(timeout(10000), retry(1), catchError(() => of({ success: true, data: [] })));
   }
 
+  getNewArrivals(limit = 8): Observable<any> {
+    return this.http.get(`${this.baseUrl}/products/new-arrivals?limit=${limit}`)
+      .pipe(timeout(10000), retry(1), catchError(() => of({ success: true, data: [] })));
+  }
+
   getProductBySlug(slug: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/products/slug/${slug}`);
   }
@@ -93,13 +98,22 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/pages?active=1`);
   }
 
-  // ── Orders ──
   placeOrder(orderData: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/orders`, orderData);
   }
 
   trackOrder(orderNumber: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/orders/track/${orderNumber}`);
+  }
+
+  getOrderById(id: number): Observable<any> {
+    return this.http.get(`${this.baseUrl}/orders/${id}`);
+  }
+
+  uploadPaymentScreenshot(orderId: number, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('screenshot', file);
+    return this.http.post(`${this.baseUrl}/orders/${orderId}/payment-screenshot`, formData);
   }
 
   // ── Coupons ──
@@ -110,6 +124,60 @@ export class ApiService {
   // ── Customer registration ──
   registerCustomer(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/customers/register`, data);
+  }
+
+  // ── Customer account (storefront self-service auth) ──
+  registerAccount(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/customer/register`, data);
+  }
+
+  loginAccount(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/customer/login`, data);
+  }
+
+  getMyProfile(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/customer/me`);
+  }
+
+  updateMyProfile(data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/customer/me`, data);
+  }
+
+  getMyAddresses(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/customer/addresses`);
+  }
+
+  createMyAddress(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/customer/addresses`, data);
+  }
+
+  updateMyAddress(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/customer/addresses/${id}`, data);
+  }
+
+  deleteMyAddress(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/customer/addresses/${id}`);
+  }
+
+  getMyOrders(page = 1): Observable<any> {
+    return this.http.get(`${this.baseUrl}/customer/orders?page=${page}`);
+  }
+
+  getMyOrderById(id: number): Observable<any> {
+    return this.http.get(`${this.baseUrl}/customer/orders/${id}`);
+  }
+
+  // ── Password Reset ──
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/customer/forgot-password`, { email });
+  }
+
+  verifyOtp(email: string, otp: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/customer/verify-otp`, { email, otp });
+  }
+
+  resetPassword(email: string, reset_token: string, new_password: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/customer/reset-password`, { email, reset_token, new_password });
   }
 
   // ── Delivery ──

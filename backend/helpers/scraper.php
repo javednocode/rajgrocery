@@ -419,7 +419,7 @@ function pm_extract_product_from_html(string $url, string $html): array {
     if ($price === '') $price = pm_xpath_attr($xp, '//*[@itemprop="price"]', 'content');
     if ($price === '') {
         $body = pm_xpath_text($xp, '//body');
-        if (preg_match('/(?:[$€£]\s?|USD\s?|EUR\s?|GBP\s?)(\d+(?:[,.]\d{1,2})?)/i', $body, $m)) {
+        if (preg_match('/(?:[$€£]\s?|HK\$?\s?|USD\s?|HKD\s?|EUR\s?|GBP\s?)(\d+(?:[,.]\d{1,2})?)/i', $body, $m)) {
             $price = $m[1];
         }
     }

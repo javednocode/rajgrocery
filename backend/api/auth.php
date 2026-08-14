@@ -33,7 +33,8 @@ function handleLogin($db) {
             'id' => $admin['id'],
             'email' => $admin['email'],
             'role' => $admin['role'],
-            'name' => $admin['name']
+            'name' => $admin['name'],
+            'type' => 'admin'
         ]);
 
         successResponse([
@@ -87,7 +88,8 @@ function updateAdminProfile($db) {
             'id' => $adminId,
             'email' => $email,
             'role' => $payload['role'],
-            'name' => $name
+            'name' => $name,
+            'type' => 'admin'
         ]);
         
         successResponse([

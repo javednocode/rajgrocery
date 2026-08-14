@@ -72,7 +72,7 @@
     <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <div>
             <strong style="font-size:14px;"> Quick Action: Set ALL products to 999 stock</strong>
-            <div style="font-size:12px;color:var(--admin-text-muted);margin-top:2px;">Most common after WooCommerce import — one click, all done</div>
+            <div style="font-size:12px;color:var(--admin-text-muted);margin-top:2px;">Most common after WooCommerce import — one click, all done. Won't touch products you've marked Out of Stock unless the box below is checked.</div>
         </div>
         <button class="btn btn-primary" onclick="quickSetAll(999)">Set All → 999 In Stock</button>
     </div>
@@ -137,6 +137,10 @@
             </div>
         </div>
         <div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--admin-text-dim);cursor:pointer;margin-bottom:12px;">
+                <input type="checkbox" id="includeOOS" style="width:16px;height:16px;cursor:pointer;">
+                Also update products currently Out of Stock
+            </label>
             <button class="btn btn-primary" style="padding:12px 28px;font-size:15px;" onclick="confirmUpdate()">
                  Apply Bulk Update
             </button>
@@ -238,6 +242,7 @@ function flattenCats(cats, prefix='') {
 function confirmUpdate() {
     const qty = parseInt(document.getElementById('stockQty').value);
     if (isNaN(qty) || qty < 0) { showAlert('Enter a valid stock quantity (0 or more)', 'danger'); return; }
+    const includeOOS = document.getElementById('includeOOS').checked;
 
     let modeLabel = '';
     if (currentMode === 'all') modeLabel = 'ALL products';
@@ -252,8 +257,12 @@ function confirmUpdate() {
         modeLabel = `${ids.length} selected product(s)`;
     }
 
+    const oosNote = includeOOS
+        ? 'Products currently marked <strong>Out of Stock will also be included</strong>.'
+        : 'Products currently marked <strong>Out of Stock will be left alone</strong>.';
+
     document.getElementById('confirmText').innerHTML =
-        `This will set stock to <strong>${qty}</strong> and mark <strong>In Stock</strong> for <strong>${modeLabel}</strong>.<br><br>This cannot be undone.`;
+        `This will set stock to <strong>${qty}</strong> and mark <strong>In Stock</strong> for <strong>${modeLabel}</strong>.<br><br>${oosNote}<br><br>This cannot be undone.`;
     document.getElementById('confirmOverlay').style.display = 'flex';
 }
 
@@ -264,7 +273,7 @@ function closeConfirm() {
 async function doUpdate() {
     closeConfirm();
     const qty = parseInt(document.getElementById('stockQty').value);
-    const body = { quantity: qty, mode: currentMode };
+    const body = { quantity: qty, mode: currentMode, include_out_of_stock: document.getElementById('includeOOS').checked };
 
     if (currentMode === 'category') {
         body.category_id = parseInt(document.getElementById('categorySelect').value);
@@ -282,7 +291,8 @@ async function doUpdate() {
         box.className = 'result-box';
         box.style.display = 'block';
         document.getElementById('resultMsg').innerHTML =
-            ` <strong>${res.data.affected} product(s)</strong> updated → stock set to <strong>${qty}</strong>, all marked <strong>In Stock</strong>`;
+            ` <strong>${res.data.affected} product(s)</strong> updated → stock set to <strong>${qty}</strong>, all marked <strong>In Stock</strong>` +
+            (res.data.included_out_of_stock ? '' : ' <span style="font-weight:400;color:var(--admin-text-muted);">(products already marked Out of Stock were left alone)</span>');
         box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         // Reload product list if in selected mode
         if (currentMode === 'selected') { allProducts = []; loadProducts(); }

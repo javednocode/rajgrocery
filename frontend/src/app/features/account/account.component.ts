@@ -1,251 +1,441 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { WishlistService } from '../../core/services/wishlist.service';
 import { CartService } from '../../core/services/cart.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { SeoService } from '../../core/services/seo.service';
 import { ApiService } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
+
+type AuthTab = 'login' | 'register';
+
+interface AddressForm {
+  label: string;
+  full_name: string;
+  phone: string;
+  address_line1: string;
+  address_line2: string;
+  city: string;
+  state: string;
+  pincode: string;
+  is_default: boolean;
+}
 
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [RouterLink],
-  template: `
-  <!-- Hero -->
-  <section class="ac-hero">
-    <div class="container">
-      <div class="ac-hero-inner">
-        <div class="ac-avatar">{{ initials() }}</div>
-        <div>
-          <h1>My Account</h1>
-          <p>Welcome back! Manage your wishlist, orders and preferences.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Body -->
-  <section class="ac-body">
-    <div class="container ac-layout">
-
-      <!-- Quick Stats -->
-      <div class="ac-stats">
-        <div class="ac-stat">
-          <span class="ac-stat-num">{{ wishlist.count() }}</span>
-          <span class="ac-stat-label">Saved Items</span>
-        </div>
-        <div class="ac-stat">
-          <span class="ac-stat-num">{{ cart.itemCount() }}</span>
-          <span class="ac-stat-label">In Basket</span>
-        </div>
-        <div class="ac-stat">
-          <span class="ac-stat-num">{{ cur }}{{ cart.subtotal().toFixed(2) }}</span>
-          <span class="ac-stat-label">Basket Value</span>
-        </div>
-      </div>
-
-      <div class="ac-grid">
-
-        <!-- Main: Wishlist -->
-        <div class="ac-main">
-          <div class="ac-section-head">
-            <h2>Saved Items
-              @if (wishlist.count() > 0) {
-                <span class="ac-badge">{{ wishlist.count() }}</span>
-              }
-            </h2>
-          </div>
-
-          @if (wishlist.items().length === 0) {
-            <div class="ac-empty">
-              <div class="ac-empty-icon">🤍</div>
-              <h3>Nothing saved yet</h3>
-              <p>Tap the heart on any product to save it here for later.</p>
-              <a routerLink="/categories" class="ac-cta-btn">Browse Products</a>
-            </div>
-          } @else {
-            <div class="ac-wgrid">
-              @for (w of wishlist.items(); track w.id) {
-                <div class="ac-wcard">
-                  <a [routerLink]="['/product', w.slug]" class="ac-wimg">
-                    @if (w.image) {
-                      <img [src]="w.image" [alt]="w.name" loading="lazy" />
-                    } @else {
-                      <span class="ac-wph">🛍️</span>
-                    }
-                  </a>
-                  <div class="ac-winfo">
-                    <a [routerLink]="['/product', w.slug]" class="ac-wname">{{ w.name }}</a>
-                    <strong class="ac-wprice">{{ cur }}{{ (w.salePrice ?? w.price).toFixed(2) }}</strong>
-                    <div class="ac-wactions">
-                      <a [routerLink]="['/product', w.slug]" class="ac-view-btn">View Product</a>
-                      <button (click)="wishlist.remove(w.id)" class="ac-del-btn" aria-label="Remove from wishlist">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              }
-            </div>
-          }
-        </div>
-
-        <!-- Sidebar -->
-        <aside class="ac-side">
-
-          <!-- Basket -->
-          <div class="ac-card">
-            <div class="ac-card-icon">🛒</div>
-            <h3>Your Basket</h3>
-            <p>{{ cart.itemCount() }} item{{ cart.itemCount() === 1 ? '' : 's' }} worth {{ cur }}{{ cart.subtotal().toFixed(2) }}</p>
-            <div class="ac-card-actions">
-              <a routerLink="/cart" class="ac-card-btn">View Basket</a>
-              @if (cart.itemCount() > 0) {
-                <a routerLink="/checkout" class="ac-card-btn ac-card-btn-primary">Checkout</a>
-              }
-            </div>
-          </div>
-
-          <!-- Quick links -->
-          <div class="ac-card">
-            <div class="ac-card-icon">🔗</div>
-            <h3>Quick Links</h3>
-            <div class="ac-links">
-              <a routerLink="/categories" class="ac-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                Browse All Categories
-              </a>
-              <a routerLink="/blog" class="ac-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="2"/></svg>
-                Recipes & Blog
-              </a>
-              <a routerLink="/contact" class="ac-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.59 2h3a2 2 0 0 1 2 1.72" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                Contact Support
-              </a>
-            </div>
-          </div>
-
-          <!-- Need help -->
-          <div class="ac-card ac-card-dark">
-            <div class="ac-card-icon">💬</div>
-            <h3>Need Help?</h3>
-            <p>Our friendly team responds within a few hours, 7 days a week.</p>
-            <a routerLink="/contact" class="ac-card-btn ac-card-btn-white">Get in Touch</a>
-          </div>
-        </aside>
-      </div>
-    </div>
-  </section>
-  `,
-  styles: [`
-  .container { max-width: 1300px; margin: 0 auto; padding: 0 24px; width: 100%; }
-  @media(min-width:1200px){.container{padding:0 48px}}
-
-  /* HERO */
-  .ac-hero { background: var(--raj-ink-2); padding: 48px 0 56px; }
-  .ac-hero-inner { display: flex; align-items: center; gap: 24px; }
-  .ac-avatar {
-    width: 72px; height: 72px; border-radius: 50%;
-    background: var(--raj-leaf);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Fraunces', Georgia, serif; font-size: 1.6rem; color: #fff; flex-shrink: 0;
-    box-shadow: 0 6px 20px rgba(27,76,140,.35);
-  }
-  .ac-hero h1 { font-family: 'Fraunces', Georgia, serif; font-size: clamp(1.6rem, 3vw, 2.5rem); font-weight: 400; color: #fff; margin-bottom: 6px; }
-  .ac-hero p { font-size: 15px; color: rgba(255,255,255,.6); margin: 0; }
-
-  /* BODY */
-  .ac-body { padding: 40px 0 64px; background: #FFFFFF; }
-
-  /* STATS ROW */
-  .ac-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 32px; }
-  .ac-stat { background: #fff; border: 1.5px solid var(--raj-line); border-radius: 16px; padding: 20px; text-align: center; }
-  .ac-stat-num { display: block; font-family: 'Manrope', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--raj-leaf); margin-bottom: 4px; }
-  .ac-stat-label { font-size: 12.5px; font-weight: 700; color: var(--raj-faint); text-transform: uppercase; letter-spacing: .1em; font-family: 'Manrope', sans-serif; }
-
-  /* MAIN GRID */
-  .ac-layout { }
-  .ac-grid { display: grid; grid-template-columns: 1fr 300px; gap: 28px; align-items: start; }
-
-  /* SECTION HEAD */
-  .ac-section-head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-  .ac-section-head h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.3rem; font-weight: 400; color: var(--raj-ink); display: flex; align-items: center; gap: 10px; }
-  .ac-badge { font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 800; background: var(--raj-leaf-bg); color: var(--raj-leaf); padding: 3px 10px; border-radius: 999px; }
-
-  /* EMPTY */
-  .ac-empty { background: #fff; border: 1.5px solid var(--raj-line); border-radius: 20px; padding: 60px 40px; text-align: center; }
-  .ac-empty-icon { font-size: 3rem; margin-bottom: 14px; }
-  .ac-empty h3 { font-family: 'Fraunces', Georgia, serif; font-size: 1.4rem; color: var(--raj-ink); margin-bottom: 8px; }
-  .ac-empty p { font-size: 14px; color: var(--raj-muted); margin-bottom: 24px; line-height: 1.7; }
-  .ac-cta-btn { display: inline-flex; background: var(--raj-leaf); color: #fff; padding: 12px 28px; border-radius: 999px; font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 800; transition: background .2s; }
-  .ac-cta-btn:hover { background: var(--raj-leaf-dk); }
-
-  /* WISHLIST GRID */
-  .ac-wgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .ac-wcard { display: flex; gap: 14px; background: #fff; border: 1.5px solid var(--raj-line); border-radius: 16px; padding: 14px; transition: all .3s; }
-  .ac-wcard:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(17,24,39,.1); border-color: rgba(27,76,140,.25); }
-  .ac-wimg { width: 80px; height: 80px; border-radius: 10px; background: var(--raj-warm); overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .ac-wimg img { width: 100%; height: 100%; object-fit: contain; }
-  .ac-wph { font-size: 2rem; }
-  .ac-winfo { min-width: 0; display: flex; flex-direction: column; gap: 4px; flex: 1; }
-  .ac-wname { font-size: 13.5px; font-weight: 700; color: var(--raj-ink); line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; transition: color .2s; }
-  .ac-wname:hover { color: var(--raj-leaf); }
-  .ac-wprice { font-family: 'Manrope', sans-serif; font-size: 15px; font-weight: 800; color: var(--raj-leaf); }
-  .ac-wactions { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 8px; }
-  .ac-view-btn { font-size: 12px; font-weight: 700; color: var(--raj-ink); background: var(--raj-warm); padding: 5px 12px; border-radius: 999px; transition: all .2s; }
-  .ac-view-btn:hover { background: var(--raj-leaf); color: #fff; }
-  .ac-del-btn { width: 28px; height: 28px; border-radius: 8px; background: var(--raj-leaf-bg); border: none; color: var(--raj-leaf); display: grid; place-items: center; cursor: pointer; transition: all .2s; }
-  .ac-del-btn:hover { background: var(--raj-chilli-bg); color: var(--raj-chilli); }
-
-  /* SIDEBAR */
-  .ac-side { display: flex; flex-direction: column; gap: 16px; position: sticky; top: calc(var(--header-height,156px) + 20px); }
-  .ac-card { background: #fff; border: 1.5px solid var(--raj-line); border-radius: 20px; padding: 22px; }
-  .ac-card-icon { font-size: 22px; margin-bottom: 10px; }
-  .ac-card h3 { font-family: 'Fraunces', Georgia, serif; font-size: 1.1rem; color: var(--raj-ink); margin-bottom: 6px; }
-  .ac-card p { font-size: 13.5px; color: var(--raj-muted); line-height: 1.6; margin-bottom: 16px; }
-  .ac-card-actions { display: flex; flex-direction: column; gap: 8px; }
-  .ac-card-btn { display: flex; align-items: center; justify-content: center; padding: 10px 16px; border-radius: 10px; font-family: 'Manrope', sans-serif; font-size: 13.5px; font-weight: 700; background: var(--raj-warm); color: var(--raj-ink); transition: all .2s; }
-  .ac-card-btn:hover { background: var(--raj-line); }
-  .ac-card-btn-primary { background: var(--raj-leaf); color: #fff; box-shadow: 0 4px 12px rgba(27,76,140,.25); }
-  .ac-card-btn-primary:hover { background: var(--raj-leaf-dk); }
-  .ac-card-btn-white { background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.25); }
-  .ac-card-btn-white:hover { background: rgba(255,255,255,.25); }
-  .ac-card-dark { background: var(--raj-ink-2); border-color: transparent; }
-  .ac-card-dark h3 { color: #fff; }
-  .ac-card-dark p { color: rgba(255,255,255,.65); margin-bottom: 16px; }
-  .ac-links { display: flex; flex-direction: column; gap: 4px; }
-  .ac-link { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; font-weight: 600; color: var(--raj-ink); transition: all .2s; font-family: 'Manrope', sans-serif; }
-  .ac-link:hover { background: var(--raj-leaf-bg); color: var(--raj-leaf); }
-  .ac-link svg { flex-shrink: 0; color: var(--raj-faint); }
-  .ac-link:hover svg { color: var(--raj-leaf); }
-
-  @media (max-width: 900px) {
-    .ac-grid { grid-template-columns: 1fr; }
-    .ac-side { position: static; }
-    .ac-wgrid { grid-template-columns: 1fr; }
-    .ac-stats { grid-template-columns: repeat(3,1fr); }
-  }
-  @media (max-width: 480px) {
-    .ac-stats { grid-template-columns: 1fr; }
-    .ac-wgrid { grid-template-columns: 1fr; }
-    .ac-hero-inner { flex-direction: column; align-items: flex-start; }
-  }
-
-  @media (max-width: 640px) {
-    .ac-hero { padding: 26px 0 30px; }
-  }
-  `]
+  imports: [RouterLink, FormsModule],
+  templateUrl: './account.component.html',
+  styleUrl: './account.component.css'
 })
-export class AccountComponent {
+export class AccountComponent implements OnInit {
+  // ── Auth card ──
+  authTab = signal<AuthTab>('login');
+  authBusy = signal(false);
+  authError = signal('');
+  loginForm = { email: '', password: '' };
+  registerForm = { first_name: '', last_name: '', email: '', phone: '', password: '' };
+
+  // ── Forgot Password ──
+  forgotStep = signal<'email' | 'otp' | 'newpass' | null>(null);
+  forgotEmail = signal('');
+  forgotOtp = signal('');
+  forgotResetToken = signal('');
+  forgotNewPassword = signal('');
+  forgotConfirmPassword = signal('');
+  forgotBusy = signal(false);
+  forgotError = signal('');
+  forgotMessage = signal('');
+
+  // ── Order history ──
+  orders = signal<any[]>([]);
+  ordersLoading = signal(false);
+  ordersPage = signal(1);
+  ordersTotalPages = signal(1);
+  expandedOrderId = signal<number | null>(null);
+
+  // ── Addresses ──
+  addresses = signal<any[]>([]);
+  addressesLoading = signal(false);
+  showAddressForm = signal(false);
+  editingAddressId = signal<number | null>(null);
+  addressForm: AddressForm = this.emptyAddressForm();
+  addressBusy = signal(false);
+  addressError = signal('');
+
+  // ── Profile ──
+  profileForm = { first_name: '', last_name: '', phone: '', email: '' };
+  profileBusy = signal(false);
+  profileMessage = signal('');
+  profileError = signal('');
+  showPasswordForm = signal(false);
+  passwordForm = { current_password: '', new_password: '', confirm_password: '' };
+  passwordBusy = signal(false);
+  passwordError = signal('');
+  passwordMessage = signal('');
+
   constructor(
     public wishlist: WishlistService,
     public cart: CartService,
+    public auth: AuthService,
     private settings: SettingsService,
+    private api: ApiService,
+    private route: ActivatedRoute,
+    private router: Router,
     seo: SeoService
   ) {
-    seo.setMeta({ title: 'My Account', description: 'Manage your wishlist, basket and account preferences.' });
+    seo.setMeta({ title: 'My Account', description: 'Manage your orders, addresses, wishlist and account preferences.' });
   }
+
   get cur() { return this.settings.get('currency_symbol', 'HK$'); }
-  initials(): string { return '✦'; }
+
+  ngOnInit() {
+    if (this.auth.isLoggedIn()) {
+      // AuthService only refreshes its cached profile once per app boot,
+      // so total_orders can go stale after an order placed earlier in
+      // the same SPA session (no full reload in between). Refetch on
+      // every visit to this page so the stats row is never behind the
+      // Order History list right below it.
+      this.auth.refreshMe();
+      this.loadOrders();
+      this.loadAddresses();
+      this.syncProfileForm();
+    }
+
+    // /wishlist keeps loading this same component; ?tab=... lets any
+    // section be deep-linked. Both resolve to a fragment so Angular's own
+    // anchorScrolling (app.config.ts) does the scroll — a manual
+    // scrollIntoView() here would race the router's scrollPositionRestoration:
+    // 'top' on every navigation and land in the wrong place.
+    const isWishlistRoute = this.router.url.split('?')[0].split('#')[0] === '/wishlist';
+    const tab = this.route.snapshot.queryParamMap.get('tab');
+    const target = isWishlistRoute ? 'wishlist' : tab;
+    if (target) {
+      this.router.navigate([], { relativeTo: this.route, fragment: 'ac-' + target, replaceUrl: true });
+    }
+  }
+
+  initials(): string {
+    const c = this.auth.customer();
+    if (!c) return '✦';
+    const a = (c.first_name || c.name || '?')[0] || '';
+    const b = (c.last_name || '')[0] || '';
+    return (a + b).toUpperCase() || '✦';
+  }
+
+  formatDate(raw: string): string {
+    if (!raw) return '';
+    const d = new Date(raw.replace(' ', 'T'));
+    if (isNaN(d.getTime())) return raw;
+    return d.toLocaleDateString('en-HK', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  statusLabel(s: string): string {
+    return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+  }
+
+  // ── Auth ──
+  submitLogin() {
+    this.authError.set('');
+    this.authBusy.set(true);
+    this.auth.login(this.loginForm).subscribe({
+      next: (r: any) => {
+        this.authBusy.set(false);
+        if (r.success) {
+          this.loginForm = { email: '', password: '' };
+          this.loadOrders();
+          this.loadAddresses();
+          this.syncProfileForm();
+        } else {
+          this.authError.set(r.message || 'Invalid email or password.');
+        }
+      },
+      error: (err) => {
+        this.authBusy.set(false);
+        this.authError.set(err?.error?.message || 'Invalid email or password.');
+      }
+    });
+  }
+
+  submitRegister() {
+    this.authError.set('');
+    this.authBusy.set(true);
+    this.auth.register(this.registerForm).subscribe({
+      next: (r: any) => {
+        this.authBusy.set(false);
+        if (r.success) {
+          this.registerForm = { first_name: '', last_name: '', email: '', phone: '', password: '' };
+          this.loadOrders();
+          this.loadAddresses();
+          this.syncProfileForm();
+        } else {
+          this.authError.set(r.message || 'Could not create your account.');
+        }
+      },
+      error: (err) => {
+        this.authBusy.set(false);
+        this.authError.set(err?.error?.message || 'Could not create your account.');
+      }
+    });
+  }
+
+  logout() {
+    this.auth.logout();
+    this.orders.set([]);
+    this.addresses.set([]);
+  }
+
+  // ── Forgot Password ──
+  startForgotPassword() {
+    this.forgotStep.set('email');
+    this.forgotEmail.set(this.loginForm.email || '');
+    this.forgotOtp.set('');
+    this.forgotResetToken.set('');
+    this.forgotNewPassword.set('');
+    this.forgotConfirmPassword.set('');
+    this.forgotError.set('');
+    this.forgotMessage.set('');
+  }
+
+  cancelForgotPassword() {
+    this.forgotStep.set(null);
+    this.forgotError.set('');
+    this.forgotMessage.set('');
+  }
+
+  submitForgotEmail() {
+    const email = this.forgotEmail().trim();
+    if (!email) { this.forgotError.set('Please enter your email address.'); return; }
+    this.forgotError.set('');
+    this.forgotBusy.set(true);
+    this.api.forgotPassword(email).subscribe({
+      next: (r: any) => {
+        this.forgotBusy.set(false);
+        this.forgotMessage.set(r.message || 'If an account exists, you will receive a code.');
+        this.forgotStep.set('otp');
+      },
+      error: (err) => {
+        this.forgotBusy.set(false);
+        this.forgotError.set(err?.error?.message || 'Could not send reset code. Please try again.');
+      }
+    });
+  }
+
+  submitForgotOtp() {
+    const otp = this.forgotOtp().trim();
+    if (!otp || otp.length < 6) { this.forgotError.set('Please enter the 6-digit code.'); return; }
+    this.forgotError.set('');
+    this.forgotMessage.set('');
+    this.forgotBusy.set(true);
+    this.api.verifyOtp(this.forgotEmail(), otp).subscribe({
+      next: (r: any) => {
+        this.forgotBusy.set(false);
+        if (r.success) {
+          this.forgotResetToken.set(r.data.reset_token);
+          this.forgotMessage.set('Code verified! Set your new password.');
+          this.forgotStep.set('newpass');
+        } else {
+          this.forgotError.set(r.message || 'Invalid code.');
+        }
+      },
+      error: (err) => {
+        this.forgotBusy.set(false);
+        this.forgotError.set(err?.error?.message || 'Invalid code. Please try again.');
+      }
+    });
+  }
+
+  submitNewPassword() {
+    const pw = this.forgotNewPassword();
+    const cpw = this.forgotConfirmPassword();
+    if (pw.length < 8) { this.forgotError.set('Password must be at least 8 characters.'); return; }
+    if (pw !== cpw) { this.forgotError.set('Passwords do not match.'); return; }
+    this.forgotError.set('');
+    this.forgotMessage.set('');
+    this.forgotBusy.set(true);
+    this.api.resetPassword(this.forgotEmail(), this.forgotResetToken(), pw).subscribe({
+      next: (r: any) => {
+        this.forgotBusy.set(false);
+        if (r.success) {
+          this.forgotMessage.set(r.message || 'Password reset successfully! You can now log in.');
+          this.forgotStep.set(null);
+          this.authError.set('');
+          // Pre-fill the login email
+          this.loginForm.email = this.forgotEmail();
+          this.loginForm.password = '';
+          this.authTab.set('login');
+        } else {
+          this.forgotError.set(r.message || 'Could not reset password.');
+        }
+      },
+      error: (err) => {
+        this.forgotBusy.set(false);
+        this.forgotError.set(err?.error?.message || 'Could not reset password. Please try again.');
+      }
+    });
+  }
+
+  resendOtp() {
+    this.forgotError.set('');
+    this.forgotMessage.set('');
+    this.forgotBusy.set(true);
+    this.api.forgotPassword(this.forgotEmail()).subscribe({
+      next: (r: any) => {
+        this.forgotBusy.set(false);
+        this.forgotMessage.set('A new code has been sent to your email.');
+        this.forgotOtp.set('');
+      },
+      error: (err) => {
+        this.forgotBusy.set(false);
+        this.forgotError.set(err?.error?.message || 'Could not resend code.');
+      }
+    });
+  }
+
+  // ── Order history ──
+  loadOrders(page = 1) {
+    this.ordersLoading.set(true);
+    this.api.getMyOrders(page).subscribe({
+      next: (r: any) => {
+        this.ordersLoading.set(false);
+        if (r.success) {
+          this.orders.set(page === 1 ? r.data : [...this.orders(), ...r.data]);
+          this.ordersPage.set(page);
+          this.ordersTotalPages.set(r.meta?.total_pages || 1);
+        }
+      },
+      error: () => this.ordersLoading.set(false)
+    });
+  }
+
+  loadMoreOrders() {
+    if (this.ordersPage() < this.ordersTotalPages()) this.loadOrders(this.ordersPage() + 1);
+  }
+
+  toggleOrder(id: number) {
+    this.expandedOrderId.set(this.expandedOrderId() === id ? null : id);
+  }
+
+  // ── Addresses ──
+  private emptyAddressForm(): AddressForm {
+    return { label: 'Home', full_name: '', phone: '', address_line1: '', address_line2: '', city: '', state: '', pincode: '', is_default: false };
+  }
+
+  loadAddresses() {
+    this.addressesLoading.set(true);
+    this.api.getMyAddresses().subscribe({
+      next: (r: any) => { this.addressesLoading.set(false); if (r.success) this.addresses.set(r.data); },
+      error: () => this.addressesLoading.set(false)
+    });
+  }
+
+  startAddAddress() {
+    this.editingAddressId.set(null);
+    this.addressForm = this.emptyAddressForm();
+    this.addressError.set('');
+    this.showAddressForm.set(true);
+  }
+
+  startEditAddress(a: any) {
+    this.editingAddressId.set(a.id);
+    this.addressForm = {
+      label: a.label, full_name: a.full_name, phone: a.phone,
+      address_line1: a.address_line1, address_line2: a.address_line2 || '',
+      city: a.city, state: a.state, pincode: a.pincode, is_default: !!a.is_default
+    };
+    this.addressError.set('');
+    this.showAddressForm.set(true);
+  }
+
+  cancelAddressForm() {
+    this.showAddressForm.set(false);
+    this.editingAddressId.set(null);
+  }
+
+  saveAddress() {
+    this.addressError.set('');
+    this.addressBusy.set(true);
+    const id = this.editingAddressId();
+    const req = id ? this.api.updateMyAddress(id, this.addressForm) : this.api.createMyAddress(this.addressForm);
+    req.subscribe({
+      next: (r: any) => {
+        this.addressBusy.set(false);
+        if (r.success) {
+          this.showAddressForm.set(false);
+          this.editingAddressId.set(null);
+          this.loadAddresses();
+        } else {
+          this.addressError.set(r.message || 'Could not save this address.');
+        }
+      },
+      error: (err) => {
+        this.addressBusy.set(false);
+        this.addressError.set(err?.error?.message || 'Could not save this address.');
+      }
+    });
+  }
+
+  setDefaultAddress(a: any) {
+    this.api.updateMyAddress(a.id, { is_default: true }).subscribe({ next: () => this.loadAddresses() });
+  }
+
+  deleteAddress(a: any) {
+    if (!confirm('Remove this address?')) return;
+    this.api.deleteMyAddress(a.id).subscribe({ next: () => this.loadAddresses() });
+  }
+
+  // ── Profile ──
+  syncProfileForm() {
+    const c = this.auth.customer();
+    if (c) {
+      this.profileForm = { first_name: c.first_name || '', last_name: c.last_name || '', phone: c.phone || '', email: c.email || '' };
+    }
+  }
+
+  saveProfile() {
+    this.profileError.set('');
+    this.profileMessage.set('');
+    this.profileBusy.set(true);
+    this.auth.updateProfile(this.profileForm).subscribe({
+      next: (r: any) => {
+        this.profileBusy.set(false);
+        if (r.success) this.profileMessage.set('Profile updated.');
+        else this.profileError.set(r.message || 'Could not update your profile.');
+      },
+      error: (err) => {
+        this.profileBusy.set(false);
+        this.profileError.set(err?.error?.message || 'Could not update your profile.');
+      }
+    });
+  }
+
+  savePassword() {
+    this.passwordError.set('');
+    this.passwordMessage.set('');
+    if (this.passwordForm.new_password !== this.passwordForm.confirm_password) {
+      this.passwordError.set('New passwords do not match.');
+      return;
+    }
+    this.passwordBusy.set(true);
+    this.auth.updateProfile({
+      current_password: this.passwordForm.current_password,
+      new_password: this.passwordForm.new_password
+    }).subscribe({
+      next: (r: any) => {
+        this.passwordBusy.set(false);
+        if (r.success) {
+          this.passwordMessage.set('Password updated.');
+          this.passwordForm = { current_password: '', new_password: '', confirm_password: '' };
+          this.showPasswordForm.set(false);
+        } else {
+          this.passwordError.set(r.message || 'Could not update your password.');
+        }
+      },
+      error: (err) => {
+        this.passwordBusy.set(false);
+        this.passwordError.set(err?.error?.message || 'Could not update your password.');
+      }
+    });
+  }
 }

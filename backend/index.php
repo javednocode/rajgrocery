@@ -146,6 +146,21 @@ if (preg_match('#^/api/products/trending/clear/?$#', $uri)) {
     if ($method === 'POST') { requireAuth(); clearAllTrending(getDB()); }
     exit;
 }
+if (preg_match('#^/api/products/new-arrivals/?$#', $uri)) {
+    require_once __DIR__ . '/api/products.php';
+    getNewArrivals(getDB());
+    exit;
+}
+if (preg_match('#^/api/products/new-arrivals/clear/?$#', $uri)) {
+    require_once __DIR__ . '/api/products.php';
+    if ($method === 'POST') { requireAuth(); clearAllNew(getDB()); }
+    exit;
+}
+if (preg_match('#^/api/products/(\d+)/new-arrival/?$#', $uri, $m)) {
+    require_once __DIR__ . '/api/products.php';
+    if ($method === 'POST') { requireAuth(); toggleProductNew(getDB(), $m[1]); }
+    exit;
+}
 if (preg_match('#^/api/products/search/?$#', $uri)) {
     require_once __DIR__ . '/api/products.php';
     searchProducts(getDB());
@@ -154,6 +169,11 @@ if (preg_match('#^/api/products/search/?$#', $uri)) {
 if (preg_match('#^/api/products/bulk/?$#', $uri)) {
     require_once __DIR__ . '/api/products.php';
     if ($method === 'POST') { requireAuth(); bulkProductAction(getDB()); }
+    exit;
+}
+if (preg_match('#^/api/products/match-list/?$#', $uri)) {
+    require_once __DIR__ . '/api/products.php';
+    if ($method === 'POST') { requireAuth(); matchProductsByList(getDB()); }
     exit;
 }
 if (preg_match('#^/api/products/slug/([a-z0-9-]+)$#', $uri, $m)) {
@@ -390,6 +410,13 @@ if (preg_match('#^/api/orders/track/([A-Z0-9-]+)$#', $uri, $m)) {
     trackOrder(getDB(), $m[1]);
     exit;
 }
+if (preg_match('#^/api/orders/(\d+)/print-invoice$#', $uri, $m)) {
+    // Auth handled inside printOrderInvoiceHTML via session/cookie
+    // (popup windows cannot send Authorization headers)
+    require_once __DIR__ . '/api/orders.php';
+    if ($method === 'GET') printOrderInvoiceHTML(getDB(), $m[1]);
+    exit;
+}
 if (preg_match('#^/api/orders/(\d+)/invoice$#', $uri, $m)) {
     requireAuth();
     require_once __DIR__ . '/api/orders.php';
@@ -408,11 +435,31 @@ if (preg_match('#^/api/orders/(\d+)/send-emails$#', $uri, $m)) {
     if ($method === 'POST') sendOrderNotifications(getDB(), $m[1]);
     exit;
 }
+if (preg_match('#^/api/orders/(\d+)/payment-screenshot$#', $uri, $m) && $method === 'POST') {
+    require_once __DIR__ . '/api/orders.php';
+    uploadPaymentScreenshot(getDB(), $m[1]);
+    exit;
+}
 if (preg_match('#^/api/orders/(\d+)$#', $uri, $m)) {
     require_once __DIR__ . '/api/orders.php';
     if ($method === 'GET') getOrderById(getDB(), $m[1]);
     if ($method === 'PUT') { requireAuth(); updateOrder(getDB(), $m[1]); }
     if ($method === 'DELETE') { requireAuth(); deleteOrder(getDB(), $m[1]); }
+    exit;
+}
+if (preg_match('#^/api/orders/(\d+)/restore$#', $uri, $m)) {
+    require_once __DIR__ . '/api/orders.php';
+    if ($method === 'POST') { requireAuth(); restoreOrder(getDB(), $m[1]); }
+    exit;
+}
+if (preg_match('#^/api/orders/(\d+)/permanent$#', $uri, $m)) {
+    require_once __DIR__ . '/api/orders.php';
+    if ($method === 'DELETE') { requireAuth(); permanentDeleteOrder(getDB(), $m[1]); }
+    exit;
+}
+if (preg_match('#^/api/orders/trash/?$#', $uri)) {
+    require_once __DIR__ . '/api/orders.php';
+    if ($method === 'GET') { requireAuth(); getDeletedOrders(getDB()); }
     exit;
 }
 if (preg_match('#^/api/orders/?$#', $uri)) {
@@ -431,6 +478,85 @@ if (preg_match('#^/api/customers/register/?$#', $uri)) {
 if (preg_match('#^/api/customers/?$#', $uri)) {
     require_once __DIR__ . '/api/customers.php';
     if ($method === 'GET') { requireAuth(); getCustomers(getDB()); }
+    exit;
+}
+if (preg_match('#^/api/customers/(\d+)/password/?$#', $uri, $m)) {
+    require_once __DIR__ . '/api/customers.php';
+    if ($method === 'PUT' || $method === 'POST') { requireAuth(); adminResetCustomerPassword(getDB(), (int)$m[1]); }
+    exit;
+}
+if (preg_match('#^/api/customers/(\d+)/?$#', $uri, $m)) {
+    require_once __DIR__ . '/api/customers.php';
+    if ($method === 'GET') { requireAuth(); getCustomer(getDB(), (int)$m[1]); }
+    exit;
+}
+
+// Customer Self-Service (storefront auth, profile, addresses, my-orders)
+if (preg_match('#^/api/customer/register/?$#', $uri)) {
+    require_once __DIR__ . '/api/customer_auth.php';
+    if ($method === 'POST') customerRegister(getDB());
+    exit;
+}
+if (preg_match('#^/api/customer/login/?$#', $uri)) {
+    require_once __DIR__ . '/api/customer_auth.php';
+    if ($method === 'POST') customerLogin(getDB());
+    exit;
+}
+if (preg_match('#^/api/customer/forgot-password/?$#', $uri)) {
+    require_once __DIR__ . '/api/password_reset.php';
+    if ($method === 'POST') customerForgotPassword(getDB());
+    exit;
+}
+if (preg_match('#^/api/customer/verify-otp/?$#', $uri)) {
+    require_once __DIR__ . '/api/password_reset.php';
+    if ($method === 'POST') customerVerifyOtp(getDB());
+    exit;
+}
+if (preg_match('#^/api/customer/reset-password/?$#', $uri)) {
+    require_once __DIR__ . '/api/password_reset.php';
+    if ($method === 'POST') customerResetPassword(getDB());
+    exit;
+}
+if (preg_match('#^/api/customer/me/?$#', $uri)) {
+    require_once __DIR__ . '/api/customer_auth.php';
+    $customer = requireCustomerAuth();
+    if ($method === 'GET') getMyProfile(getDB(), (int)$customer['id']);
+    if ($method === 'PUT') updateMyProfile(getDB(), (int)$customer['id']);
+    exit;
+}
+if (preg_match('#^/api/customer/addresses/(\d+)/?$#', $uri, $m)) {
+    require_once __DIR__ . '/api/addresses.php';
+    $customer = requireCustomerAuth();
+    if ($method === 'PUT') updateMyAddress(getDB(), (int)$customer['id'], (int)$m[1]);
+    if ($method === 'DELETE') deleteMyAddress(getDB(), (int)$customer['id'], (int)$m[1]);
+    exit;
+}
+if (preg_match('#^/api/customer/addresses/?$#', $uri)) {
+    require_once __DIR__ . '/api/addresses.php';
+    $customer = requireCustomerAuth();
+    if ($method === 'GET') getMyAddresses(getDB(), (int)$customer['id']);
+    if ($method === 'POST') createMyAddress(getDB(), (int)$customer['id']);
+    exit;
+}
+if (preg_match('#^/api/customer/orders/(\d+)/?$#', $uri, $m)) {
+    require_once __DIR__ . '/api/orders.php';
+    $customer = requireCustomerAuth();
+    if ($method === 'GET') getMyOrderById(getDB(), (int)$customer['id'], (int)$m[1]);
+    exit;
+}
+if (preg_match('#^/api/customer/orders/?$#', $uri)) {
+    require_once __DIR__ . '/api/orders.php';
+    $customer = requireCustomerAuth();
+    if ($method === 'GET') getMyOrders(getDB(), (int)$customer['id']);
+    exit;
+}
+
+// Customer Import System
+if (preg_match('#^/api/customer-import(?:/.*)?$#', $uri)) {
+    @set_time_limit(300);
+    @ini_set('memory_limit', '512M');
+    require_once __DIR__ . '/api/customer_import.php';
+    customerImportHandle(getDB(), $method, $uri);
     exit;
 }
 

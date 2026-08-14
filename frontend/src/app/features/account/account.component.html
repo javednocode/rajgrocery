@@ -1,0 +1,494 @@
+<!-- Hero -->
+<section class="ac-hero">
+  <div class="container">
+    <div class="ac-hero-inner">
+      <div class="ac-avatar">{{ initials() }}</div>
+      <div class="ac-hero-text">
+        <h1>{{ auth.isLoggedIn() ? ('Welcome back, ' + auth.firstName()) : 'My Account' }}</h1>
+        <p>
+          @if (auth.isLoggedIn()) {
+            Manage your orders, addresses and account details.
+          } @else {
+            Log in to see your order history and addresses next time — or just checkout as a guest.
+          }
+        </p>
+      </div>
+      @if (auth.isLoggedIn()) {
+        <button class="ac-logout-btn" (click)="logout()" type="button">Log Out</button>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Body -->
+<section class="ac-body">
+  <div class="container ac-layout">
+
+    <!-- Quick Stats -->
+    <div class="ac-stats" [class.ac-stats-4]="auth.isLoggedIn()">
+      @if (auth.isLoggedIn()) {
+        <div class="ac-stat">
+          <span class="ac-stat-num">{{ auth.customer()?.total_orders ?? 0 }}</span>
+          <span class="ac-stat-label">Orders</span>
+        </div>
+      }
+      <div class="ac-stat">
+        <span class="ac-stat-num">{{ wishlist.count() }}</span>
+        <span class="ac-stat-label">Saved Items</span>
+      </div>
+      <div class="ac-stat">
+        <span class="ac-stat-num">{{ cart.itemCount() }}</span>
+        <span class="ac-stat-label">In Basket</span>
+      </div>
+      <div class="ac-stat">
+        <span class="ac-stat-num">{{ cur }}{{ cart.subtotal().toFixed(2) }}</span>
+        <span class="ac-stat-label">Basket Value</span>
+      </div>
+    </div>
+
+    <div class="ac-grid">
+
+      <!-- Main -->
+      <div class="ac-main">
+
+        @if (!auth.isLoggedIn()) {
+          <!-- Auth card -->
+          <div class="ac-section ac-auth-card" id="ac-auth">
+            <div class="ac-auth-tabs">
+              <button type="button" class="ac-auth-tab" [class.active]="authTab()==='login'" (click)="authTab.set('login')">Log In</button>
+              <button type="button" class="ac-auth-tab" [class.active]="authTab()==='register'" (click)="authTab.set('register')">Create Account</button>
+            </div>
+
+            @if (authTab() === 'login' && !forgotStep()) {
+              <form class="ac-form" (ngSubmit)="submitLogin()">
+                <div class="ac-field">
+                  <label for="li-email">Email</label>
+                  <input id="li-email" type="email" [(ngModel)]="loginForm.email" name="email" required autocomplete="email" placeholder="you@example.com" />
+                </div>
+                <div class="ac-field">
+                  <label for="li-pass">Password</label>
+                  <input id="li-pass" type="password" [(ngModel)]="loginForm.password" name="password" required autocomplete="current-password" placeholder="••••••••" />
+                </div>
+                @if (authError()) { <div class="ac-form-error">{{ authError() }}</div> }
+                <button class="ac-submit-btn" type="submit" [disabled]="authBusy()">
+                  {{ authBusy() ? 'Logging in…' : 'Log In' }}
+                </button>
+                <button type="button" class="ac-forgot-link" (click)="startForgotPassword()">Forgot Password?</button>
+              </form>
+            } @else if (forgotStep()) {
+              <!-- Forgot Password Flow -->
+              <div class="ac-forgot-flow">
+                <div class="ac-forgot-steps">
+                  <div class="ac-step" [class.active]="forgotStep()==='email'" [class.done]="forgotStep()==='otp' || forgotStep()==='newpass'">
+                    <span class="ac-step-num">1</span><span class="ac-step-text">Email</span>
+                  </div>
+                  <div class="ac-step-line" [class.active]="forgotStep()==='otp' || forgotStep()==='newpass'"></div>
+                  <div class="ac-step" [class.active]="forgotStep()==='otp'" [class.done]="forgotStep()==='newpass'">
+                    <span class="ac-step-num">2</span><span class="ac-step-text">Verify</span>
+                  </div>
+                  <div class="ac-step-line" [class.active]="forgotStep()==='newpass'"></div>
+                  <div class="ac-step" [class.active]="forgotStep()==='newpass'">
+                    <span class="ac-step-num">3</span><span class="ac-step-text">Reset</span>
+                  </div>
+                </div>
+
+                @if (forgotStep() === 'email') {
+                  <form class="ac-form" (ngSubmit)="submitForgotEmail()">
+                    <h3 class="ac-forgot-title">Reset Your Password</h3>
+                    <p class="ac-forgot-desc">Enter your email address and we'll send you a 6-digit code to reset your password.</p>
+                    <div class="ac-field">
+                      <label for="fp-email">Email address</label>
+                      <input id="fp-email" type="email" [ngModel]="forgotEmail()" (ngModelChange)="forgotEmail.set($event)" name="email" required autocomplete="email" placeholder="you@example.com" />
+                    </div>
+                    @if (forgotError()) { <div class="ac-form-error">{{ forgotError() }}</div> }
+                    @if (forgotMessage()) { <div class="ac-form-success">{{ forgotMessage() }}</div> }
+                    <button class="ac-submit-btn" type="submit" [disabled]="forgotBusy()">
+                      {{ forgotBusy() ? 'Sending…' : 'Send Reset Code' }}
+                    </button>
+                    <button type="button" class="ac-forgot-link" (click)="cancelForgotPassword()">← Back to Login</button>
+                  </form>
+                }
+
+                @if (forgotStep() === 'otp') {
+                  <form class="ac-form" (ngSubmit)="submitForgotOtp()">
+                    <h3 class="ac-forgot-title">Enter Verification Code</h3>
+                    <p class="ac-forgot-desc">We've sent a 6-digit code to <strong>{{ forgotEmail() }}</strong>. Check your inbox (and spam folder).</p>
+                    <div class="ac-field">
+                      <label for="fp-otp">6-digit code</label>
+                      <input id="fp-otp" type="text" [ngModel]="forgotOtp()" (ngModelChange)="forgotOtp.set($event)" name="otp" required maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" placeholder="000000" class="ac-otp-input" />
+                    </div>
+                    @if (forgotError()) { <div class="ac-form-error">{{ forgotError() }}</div> }
+                    @if (forgotMessage()) { <div class="ac-form-success">{{ forgotMessage() }}</div> }
+                    <button class="ac-submit-btn" type="submit" [disabled]="forgotBusy()">
+                      {{ forgotBusy() ? 'Verifying…' : 'Verify Code' }}
+                    </button>
+                    <div class="ac-forgot-actions">
+                      <button type="button" class="ac-forgot-link" (click)="resendOtp()" [disabled]="forgotBusy()">Resend Code</button>
+                      <button type="button" class="ac-forgot-link" (click)="cancelForgotPassword()">← Back to Login</button>
+                    </div>
+                  </form>
+                }
+
+                @if (forgotStep() === 'newpass') {
+                  <form class="ac-form" (ngSubmit)="submitNewPassword()">
+                    <h3 class="ac-forgot-title">Set New Password</h3>
+                    <p class="ac-forgot-desc">Code verified! Choose a new password for your account.</p>
+                    <div class="ac-field">
+                      <label for="fp-newpw">New password</label>
+                      <input id="fp-newpw" type="password" [ngModel]="forgotNewPassword()" (ngModelChange)="forgotNewPassword.set($event)" name="new_password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters" />
+                    </div>
+                    <div class="ac-field">
+                      <label for="fp-confirmpw">Confirm new password</label>
+                      <input id="fp-confirmpw" type="password" [ngModel]="forgotConfirmPassword()" (ngModelChange)="forgotConfirmPassword.set($event)" name="confirm_password" required minlength="8" autocomplete="new-password" placeholder="Re-enter new password" />
+                    </div>
+                    @if (forgotError()) { <div class="ac-form-error">{{ forgotError() }}</div> }
+                    @if (forgotMessage()) { <div class="ac-form-success">{{ forgotMessage() }}</div> }
+                    <button class="ac-submit-btn" type="submit" [disabled]="forgotBusy()">
+                      {{ forgotBusy() ? 'Resetting…' : 'Reset Password' }}
+                    </button>
+                    <button type="button" class="ac-forgot-link" (click)="cancelForgotPassword()">← Back to Login</button>
+                  </form>
+                }
+              </div>
+            } @else {
+              <form class="ac-form" (ngSubmit)="submitRegister()">
+                <div class="ac-row2">
+                  <div class="ac-field">
+                    <label for="rg-fn">First name</label>
+                    <input id="rg-fn" [(ngModel)]="registerForm.first_name" name="first_name" required autocomplete="given-name" placeholder="Priya" />
+                  </div>
+                  <div class="ac-field">
+                    <label for="rg-ln">Last name</label>
+                    <input id="rg-ln" [(ngModel)]="registerForm.last_name" name="last_name" required autocomplete="family-name" placeholder="Sharma" />
+                  </div>
+                </div>
+                <div class="ac-field">
+                  <label for="rg-email">Email</label>
+                  <input id="rg-email" type="email" [(ngModel)]="registerForm.email" name="email" required autocomplete="email" placeholder="you@example.com" />
+                </div>
+                <div class="ac-field">
+                  <label for="rg-phone">Phone</label>
+                  <input id="rg-phone" type="tel" [(ngModel)]="registerForm.phone" name="phone" required autocomplete="tel" placeholder="+852 9XXX XXXX" />
+                </div>
+                <div class="ac-field">
+                  <label for="rg-pass">Password</label>
+                  <input id="rg-pass" type="password" [(ngModel)]="registerForm.password" name="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters" />
+                </div>
+                @if (authError()) { <div class="ac-form-error">{{ authError() }}</div> }
+                <button class="ac-submit-btn" type="submit" [disabled]="authBusy()">
+                  {{ authBusy() ? 'Creating account…' : 'Create Account' }}
+                </button>
+              </form>
+            }
+
+            <p class="ac-guest-note">
+              Prefer not to log in? You can still checkout as a guest — creating an account just saves your addresses and order history for next time.
+            </p>
+          </div>
+        }
+
+        @if (auth.isLoggedIn()) {
+          <!-- Order History -->
+          <div class="ac-section" id="ac-orders">
+            <div class="ac-section-head"><h2>Order History</h2></div>
+
+            @if (ordersLoading() && orders().length === 0) {
+              <div class="ac-loading">Loading your orders…</div>
+            } @else if (orders().length === 0) {
+              <div class="ac-empty">
+                <div class="ac-empty-icon">🧾</div>
+                <h3>No orders yet</h3>
+                <p>When you place an order, it'll show up here.</p>
+                <a routerLink="/categories" class="ac-cta-btn">Start Shopping</a>
+              </div>
+            } @else {
+              <div class="ac-orders-list">
+                @for (o of orders(); track o.id) {
+                  <div class="ac-order-card">
+                    <button type="button" class="ac-order-head" (click)="toggleOrder(o.id)">
+                      <div class="ac-order-main">
+                        <strong>{{ o.order_number }}</strong>
+                        <span class="ac-order-date">{{ formatDate(o.created_at) }}</span>
+                      </div>
+                      <span class="ac-status-badge" [attr.data-status]="o.status">{{ statusLabel(o.status) }}</span>
+                      <span class="ac-order-total">{{ cur }}{{ (+o.total).toFixed(2) }}</span>
+                      <svg class="ac-order-chevron" [class.open]="expandedOrderId()===o.id" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    @if (expandedOrderId() === o.id) {
+                      <div class="ac-order-items">
+                        @for (it of o.items; track it.id) {
+                          <div class="ac-order-item">
+                            <span class="ac-oi-name">{{ it.product_name }}</span>
+                            <span class="ac-oi-qty">×{{ it.quantity }}</span>
+                            <span class="ac-oi-price">{{ cur }}{{ (+it.total).toFixed(2) }}</span>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+              @if (ordersPage() < ordersTotalPages()) {
+                <button type="button" class="ac-loadmore-btn" (click)="loadMoreOrders()" [disabled]="ordersLoading()">
+                  {{ ordersLoading() ? 'Loading…' : 'Load more orders' }}
+                </button>
+              }
+            }
+          </div>
+
+          <!-- Saved Addresses -->
+          <div class="ac-section" id="ac-addresses">
+            <div class="ac-section-head">
+              <h2>Saved Addresses</h2>
+              @if (!showAddressForm()) {
+                <button type="button" class="ac-add-btn" (click)="startAddAddress()">+ Add Address</button>
+              }
+            </div>
+
+            @if (showAddressForm()) {
+              <form class="ac-address-form" (ngSubmit)="saveAddress()">
+                <div class="ac-row2">
+                  <div class="ac-field">
+                    <label for="ad-label">Label</label>
+                    <input id="ad-label" [(ngModel)]="addressForm.label" name="label" placeholder="Home, Office…" />
+                  </div>
+                  <div class="ac-field">
+                    <label for="ad-fn">Full name</label>
+                    <input id="ad-fn" [(ngModel)]="addressForm.full_name" name="full_name" required />
+                  </div>
+                </div>
+                <div class="ac-field">
+                  <label for="ad-phone">Phone</label>
+                  <input id="ad-phone" type="tel" [(ngModel)]="addressForm.phone" name="phone" required />
+                </div>
+                <div class="ac-field">
+                  <label for="ad-l1">Street address</label>
+                  <input id="ad-l1" [(ngModel)]="addressForm.address_line1" name="address_line1" required />
+                </div>
+                <div class="ac-field">
+                  <label for="ad-l2">Floor / Flat / Block (optional)</label>
+                  <input id="ad-l2" [(ngModel)]="addressForm.address_line2" name="address_line2" />
+                </div>
+                <div class="ac-row2">
+                  <div class="ac-field">
+                    <label for="ad-city">Town / City</label>
+                    <input id="ad-city" [(ngModel)]="addressForm.city" name="city" required />
+                  </div>
+                  <div class="ac-field">
+                    <label for="ad-state">District / Area</label>
+                    <input id="ad-state" [(ngModel)]="addressForm.state" name="state" required />
+                  </div>
+                </div>
+                <div class="ac-field">
+                  <label for="ad-pin">Postal Code / Area</label>
+                  <input id="ad-pin" [(ngModel)]="addressForm.pincode" name="pincode" required />
+                </div>
+                <label class="ac-checkbox-row">
+                  <input type="checkbox" [(ngModel)]="addressForm.is_default" name="is_default" />
+                  Set as default address
+                </label>
+                @if (addressError()) { <div class="ac-form-error">{{ addressError() }}</div> }
+                <div class="ac-form-actions">
+                  <button type="button" class="ac-cancel-btn" (click)="cancelAddressForm()">Cancel</button>
+                  <button type="submit" class="ac-submit-btn" [disabled]="addressBusy()">
+                    {{ addressBusy() ? 'Saving…' : 'Save Address' }}
+                  </button>
+                </div>
+              </form>
+            }
+
+            @if (!addressesLoading() && addresses().length === 0 && !showAddressForm()) {
+              <div class="ac-empty">
+                <div class="ac-empty-icon">📍</div>
+                <h3>No addresses saved</h3>
+                <p>Add an address to speed up checkout next time.</p>
+              </div>
+            }
+
+            @if (addresses().length > 0) {
+              <div class="ac-address-list">
+                @for (a of addresses(); track a.id) {
+                  <div class="ac-address-card">
+                    <div class="ac-address-head">
+                      <strong>{{ a.label }}</strong>
+                      @if (a.is_default) { <span class="ac-default-badge">Default</span> }
+                    </div>
+                    <p>{{ a.full_name }}</p>
+                    <p>{{ a.address_line1 }}{{ a.address_line2 ? ', ' + a.address_line2 : '' }}, {{ a.city }}, {{ a.state }} {{ a.pincode }}</p>
+                    <p>{{ a.phone }}</p>
+                    <div class="ac-address-actions">
+                      @if (!a.is_default) {
+                        <button type="button" (click)="setDefaultAddress(a)">Set as default</button>
+                      }
+                      <button type="button" (click)="startEditAddress(a)">Edit</button>
+                      <button type="button" class="ac-danger-link" (click)="deleteAddress(a)">Delete</button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Profile -->
+          <div class="ac-section" id="ac-profile">
+            <div class="ac-section-head"><h2>Profile</h2></div>
+
+            <form class="ac-address-form" (ngSubmit)="saveProfile()">
+              <div class="ac-row2">
+                <div class="ac-field">
+                  <label for="pf-fn">First name</label>
+                  <input id="pf-fn" [(ngModel)]="profileForm.first_name" name="first_name" required />
+                </div>
+                <div class="ac-field">
+                  <label for="pf-ln">Last name</label>
+                  <input id="pf-ln" [(ngModel)]="profileForm.last_name" name="last_name" required />
+                </div>
+              </div>
+              <div class="ac-row2">
+                <div class="ac-field">
+                  <label for="pf-phone">Phone</label>
+                  <input id="pf-phone" type="tel" [(ngModel)]="profileForm.phone" name="phone" required />
+                </div>
+                <div class="ac-field">
+                  <label for="pf-email">Email</label>
+                  <input id="pf-email" type="email" [(ngModel)]="profileForm.email" name="email" required />
+                </div>
+              </div>
+              @if (profileMessage()) { <div class="ac-form-success">{{ profileMessage() }}</div> }
+              @if (profileError()) { <div class="ac-form-error">{{ profileError() }}</div> }
+              <button type="submit" class="ac-submit-btn" [disabled]="profileBusy()">
+                {{ profileBusy() ? 'Saving…' : 'Save Changes' }}
+              </button>
+            </form>
+
+            <div class="ac-password-block">
+              @if (!showPasswordForm()) {
+                <button type="button" class="ac-add-btn" (click)="showPasswordForm.set(true)">Change Password</button>
+              } @else {
+                <form class="ac-address-form" (ngSubmit)="savePassword()">
+                  <div class="ac-field">
+                    <label for="pw-cur">Current password</label>
+                    <input id="pw-cur" type="password" [(ngModel)]="passwordForm.current_password" name="current_password" required autocomplete="current-password" />
+                  </div>
+                  <div class="ac-row2">
+                    <div class="ac-field">
+                      <label for="pw-new">New password</label>
+                      <input id="pw-new" type="password" [(ngModel)]="passwordForm.new_password" name="new_password" required minlength="8" autocomplete="new-password" />
+                    </div>
+                    <div class="ac-field">
+                      <label for="pw-confirm">Confirm new password</label>
+                      <input id="pw-confirm" type="password" [(ngModel)]="passwordForm.confirm_password" name="confirm_password" required autocomplete="new-password" />
+                    </div>
+                  </div>
+                  @if (passwordMessage()) { <div class="ac-form-success">{{ passwordMessage() }}</div> }
+                  @if (passwordError()) { <div class="ac-form-error">{{ passwordError() }}</div> }
+                  <div class="ac-form-actions">
+                    <button type="button" class="ac-cancel-btn" (click)="showPasswordForm.set(false)">Cancel</button>
+                    <button type="submit" class="ac-submit-btn" [disabled]="passwordBusy()">
+                      {{ passwordBusy() ? 'Updating…' : 'Update Password' }}
+                    </button>
+                  </div>
+                </form>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Saved Items (wishlist) — unchanged, works logged in or out -->
+        <div class="ac-section" id="ac-wishlist">
+          <div class="ac-section-head">
+            <h2>Saved Items
+              @if (wishlist.count() > 0) {
+                <span class="ac-badge">{{ wishlist.count() }}</span>
+              }
+            </h2>
+          </div>
+
+          @if (wishlist.items().length === 0) {
+            <div class="ac-empty">
+              <div class="ac-empty-icon">🤍</div>
+              <h3>Nothing saved yet</h3>
+              <p>Tap the heart on any product to save it here for later.</p>
+              <a routerLink="/categories" class="ac-cta-btn">Browse Products</a>
+            </div>
+          } @else {
+            <div class="ac-wgrid">
+              @for (w of wishlist.items(); track w.id) {
+                <div class="ac-wcard">
+                  <a [routerLink]="['/product', w.slug]" class="ac-wimg">
+                    @if (w.image) {
+                      <img [src]="w.image" [alt]="w.name" loading="lazy" />
+                    } @else {
+                      <span class="ac-wph">🛍️</span>
+                    }
+                  </a>
+                  <div class="ac-winfo">
+                    <a [routerLink]="['/product', w.slug]" class="ac-wname">{{ w.name }}</a>
+                    <strong class="ac-wprice">{{ cur }}{{ (w.salePrice ?? w.price).toFixed(2) }}</strong>
+                    <div class="ac-wactions">
+                      <a [routerLink]="['/product', w.slug]" class="ac-view-btn">View Product</a>
+                      <button (click)="wishlist.remove(w.id)" class="ac-del-btn" aria-label="Remove from wishlist">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="ac-side">
+
+        <!-- Basket -->
+        <div class="ac-card">
+          <div class="ac-card-icon">🛒</div>
+          <h3>Your Basket</h3>
+          <p>{{ cart.itemCount() }} item{{ cart.itemCount() === 1 ? '' : 's' }} worth {{ cur }}{{ cart.subtotal().toFixed(2) }}</p>
+          <div class="ac-card-actions">
+            <a routerLink="/cart" class="ac-card-btn">View Basket</a>
+            @if (cart.itemCount() > 0) {
+              <a routerLink="/checkout" class="ac-card-btn ac-card-btn-primary">Checkout</a>
+            }
+          </div>
+        </div>
+
+        <!-- Quick links -->
+        <div class="ac-card">
+          <div class="ac-card-icon">🔗</div>
+          <h3>Quick Links</h3>
+          <div class="ac-links">
+            <a routerLink="/categories" class="ac-link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Browse All Categories
+            </a>
+            <a routerLink="/blog" class="ac-link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="2"/></svg>
+              Recipes & Blog
+            </a>
+            <a routerLink="/contact" class="ac-link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.59 2h3a2 2 0 0 1 2 1.72" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Contact Support
+            </a>
+          </div>
+        </div>
+
+        <!-- Need help + WhatsApp -->
+        <div class="ac-card ac-card-dark">
+          <div class="ac-card-icon">💬</div>
+          <h3>Need Help?</h3>
+          <p>Our friendly team responds within a few hours, 7 days a week.</p>
+          <a routerLink="/contact" class="ac-card-btn ac-card-btn-white">Get in Touch</a>
+          <a href="https://wa.me/85254264886" target="_blank" rel="noopener noreferrer" class="ac-wa-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+            </svg>
+            Chat on WhatsApp
+          </a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

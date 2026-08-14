@@ -9,14 +9,20 @@ include 'includes/header.php';
 
 <style>
 .inv-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
-.inv-stat { background:var(--admin-surface); border:1px solid var(--admin-border); border-radius:12px; padding:20px; display:flex; align-items:center; gap:14px; }
-.inv-stat .stat-icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.inv-stat {
+    background:var(--glass-bg); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur);
+    border:1px solid var(--glass-border); box-shadow:var(--glass-shadow);
+    border-radius:var(--admin-radius); padding:20px; display:flex; align-items:center; gap:14px;
+    transition:transform .25s ease, box-shadow .25s ease;
+}
+.inv-stat:hover { transform:translateY(-2px); }
+.inv-stat .stat-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; box-shadow: inset 0 1px 0 rgba(255,255,255,.5); }
 .inv-stat .stat-body strong { display:block; font-size:22px; font-weight:700; color:var(--admin-text); }
 .inv-stat .stat-body span { font-size:12px; color:var(--admin-muted); }
 .stock-bar { height:6px; border-radius:3px; background:var(--admin-border); overflow:hidden; margin-top:4px; }
 .stock-bar-fill { height:100%; border-radius:3px; transition:width .4s; }
 .filter-tabs { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
-.filter-tab { padding:8px 16px; border-radius:8px; border:1px solid var(--admin-border); background:var(--admin-surface); font-size:13px; cursor:pointer; color:var(--admin-text); transition:all .15s; }
+.filter-tab { padding:8px 16px; border-radius:8px; border:1px solid var(--admin-border); background:var(--glass-bg); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); font-size:13px; cursor:pointer; color:var(--admin-text); transition:all .15s; }
 .filter-tab.active { background:var(--admin-primary); color:#fff; border-color:var(--admin-primary); }
 </style>
 

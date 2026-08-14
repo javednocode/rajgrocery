@@ -1,27 +1,33 @@
 <?php $pageTitle = isset($_GET['id']) ? 'Edit Product' : 'Add Product'; include 'includes/header.php'; ?>
 
 <style>
-/* ── Quill dark theme fix ─────────────────────────────── */
+/* ── Quill: matches the admin panel's light/glass theme, and capped so
+   an empty description doesn't take up most of the viewport. Was a
+   leftover dark-theme block from before the panel was relit — background
+   colors were hardcoded (#1e2740/#141d32) instead of the --admin-* tokens,
+   so it kept rendering dark inside an otherwise light page. ── */
 .ql-toolbar.ql-snow {
-    background: #1e2740;
+    background: var(--admin-surface-2);
     border: 1px solid var(--admin-border) !important;
     border-radius: 8px 8px 0 0;
 }
 .ql-container.ql-snow {
-    background: #141d32;
+    background: var(--admin-surface);
     border: 1px solid var(--admin-border) !important;
+    border-top: none !important;
     border-radius: 0 0 8px 8px;
-    min-height: 200px;
     font-size: 14px;
-    color: #e2e8f0;
+    color: var(--admin-text);
 }
-.ql-editor { min-height: 200px; }
-.ql-snow .ql-stroke { stroke: #94a3b8; }
-.ql-snow .ql-fill  { fill:   #94a3b8; }
-.ql-snow .ql-picker-label { color: #94a3b8; }
-.ql-snow .ql-picker-options { background:#1e2740; border-color:var(--admin-border); }
-.ql-snow .ql-picker-item { color:#e2e8f0; }
-.ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-label { border-color:var(--admin-border); }
+/* height (not min-height) + overflow — a fixed, scrollable box regardless
+   of content length, instead of growing to fit. */
+.ql-editor { height: 200px; max-height: 200px; overflow-y: auto; }
+.ql-snow .ql-stroke { stroke: var(--admin-text-muted); }
+.ql-snow .ql-fill  { fill:   var(--admin-text-muted); }
+.ql-snow .ql-picker-label { color: var(--admin-text-muted); }
+.ql-snow .ql-picker-options { background: var(--admin-surface); border-color: var(--admin-border); }
+.ql-snow .ql-picker-item { color: var(--admin-text); }
+.ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-label { border-color: var(--admin-border); }
 
 /* ── Variation list rows ──────────────────────────────── */
 .variation-item {
@@ -213,7 +219,13 @@
                     </div>
                     <div class="form-group">
                         <label for="description">Full Description</label>
-                        <textarea id="description" name="description" class="form-control" rows="8"></textarea>
+                        <!-- Quill needs a real container div — initializing it directly on a
+                             textarea (the previous markup) makes it manipulate the textarea's
+                             DOM in unsupported ways, which is what was causing the runaway
+                             height. The textarea stays, hidden, purely so the existing
+                             value-sync-on-submit code keeps working unchanged. -->
+                        <textarea id="description" name="description" class="form-control" rows="8" style="display:none"></textarea>
+                        <div id="description-editor"></div>
                     </div>
                 </div>
             </div>
@@ -222,9 +234,9 @@
                 <div class="card-header"><h3>Pricing &amp; Inventory</h3></div>
                 <div class="card-body">
                     <div class="form-row-3">
-                        <div class="form-group"><label for="price">Price (€) *</label><input type="number" id="price" name="price" class="form-control" step="0.01" required></div>
-                        <div class="form-group"><label for="sale_price">Sale Price (€)</label><input type="number" id="sale_price" name="sale_price" class="form-control" step="0.01"></div>
-                        <div class="form-group"><label for="cost_price">Cost Price (€)</label><input type="number" id="cost_price" name="cost_price" class="form-control" step="0.01"></div>
+                        <div class="form-group"><label for="price">Price *</label><input type="number" id="price" name="price" class="form-control" step="0.01" required></div>
+                        <div class="form-group"><label for="sale_price">Sale Price</label><input type="number" id="sale_price" name="sale_price" class="form-control" step="0.01"></div>
+                        <div class="form-group"><label for="cost_price">Cost Price</label><input type="number" id="cost_price" name="cost_price" class="form-control" step="0.01"></div>
                     </div>
                     <div class="form-row-3">
                         <div class="form-group"><label for="sku">SKU</label><input type="text" id="sku" name="sku" class="form-control"></div>
@@ -338,7 +350,7 @@
             <div class="var-section-label">Pricing & Stock</div>
             <div class="var-form-grid-3" style="margin-bottom:14px;">
                 <div class="form-group" style="margin:0;">
-                    <label style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Price (€) *</label>
+                    <label style="font-size:12px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Price *</label>
                     <input type="number" id="varPrice" class="form-control" step="0.01" placeholder="0.00">
                 </div>
                 <div class="form-group" style="margin:0;">
@@ -408,8 +420,8 @@ function renderPendingVariations() {
                 <div style="font-weight:600;font-size:14px;">${v.name}</div>
                 <div style="font-size:12px;color:var(--admin-text-dim);">SKU: ${v.sku||'—'} &nbsp;|&nbsp; Stock: ${v.stock}</div>
             </div>
-            <div style="font-size:13px;font-weight:700;">€${parseFloat(v.price||0).toFixed(2)}</div>
-            <div style="font-size:13px;color:#F28C00;">${v.sale_price ? '€'+parseFloat(v.sale_price).toFixed(2) : '—'}</div>
+            <div style="font-size:13px;font-weight:700;">${formatCurrency(v.price||0)}</div>
+            <div style="font-size:13px;color:#F28C00;">${v.sale_price ? formatCurrency(v.sale_price) : '—'}</div>
             <div><span class="variation-badge ${v.is_active?'badge-active':'badge-inactive'}">${v.is_active?'Active':'Off'}</span></div>
             <div></div>
             <div class="var-actions">
@@ -585,8 +597,8 @@ function renderVariations(variations) {
                 <div style="font-weight:600;font-size:14px;">${v.name}</div>
                 <div style="font-size:12px;color:var(--admin-text-dim);">SKU: ${v.sku || '—'} &nbsp;|&nbsp; Stock: ${v.stock}</div>
             </div>
-            <div style="font-size:13px;font-weight:700;">€${parseFloat(v.price).toFixed(2)}</div>
-            <div style="font-size:13px;color:#F28C00;">${v.sale_price ? '€'+parseFloat(v.sale_price).toFixed(2) : '—'}</div>
+            <div style="font-size:13px;font-weight:700;">${formatCurrency(v.price)}</div>
+            <div style="font-size:13px;color:#F28C00;">${v.sale_price ? formatCurrency(v.sale_price) : '—'}</div>
             <div><span class="variation-badge ${v.is_active==1?'badge-active':'badge-inactive'}">${v.is_active==1?'Active':'Off'}</span></div>
             <div></div>
             <div class="var-actions">
@@ -758,7 +770,7 @@ loadCategories().then(() => loadProduct());
 
 // ─── Quill rich-text editor (no API key needed) ────────
 if (typeof Quill !== 'undefined') {
-    const quill = new Quill('#description', {
+    const quill = new Quill('#description-editor', {
         theme: 'snow',
         placeholder: 'Write full product description here...',
         modules: {
