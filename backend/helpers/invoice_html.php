@@ -105,7 +105,10 @@ function generateHTMLInvoice($order, $items, $cfg = []) {
             box-shadow:0 4px 32px rgba(0,0,0,.10);
         }
 
-        /* Header */
+        /* Header — kept deliberately short: this block used to eat ~54mm of an
+           A4 page (18% of the sheet) before a single line item was printed.
+           align-items:center matters as much as the padding — with flex-start
+           the shorter title column left ~37px of dead space under itself. */
         .inv-header {
             background: #ffffff !important;
             color:#000 !important;
@@ -185,7 +188,7 @@ function generateHTMLInvoice($order, $items, $cfg = []) {
             font-size:12px; font-weight:600; color:#6b7280;
         }
 
-        /* Print button — screen only */
+        /* Print button */
         .print-btn-bar {
             text-align:center; padding:14px;
             background:#f5f5f5; position:sticky; top:0; z-index:100;
@@ -200,56 +203,22 @@ function generateHTMLInvoice($order, $items, $cfg = []) {
         }
         .print-btn:hover { background:#374151; }
 
-        /* ══ PRINT ══ */
-        @page { size: A4; margin: 8mm 8mm 10mm; }
+        /* ══ PRINT: keep same design as screen ══ */
+        @page { size: A4; margin: 10mm 8mm 12mm; }
         @media print {
             body  { background:#fff; }
-            .page { max-width:100%; box-shadow:none; margin:0; padding:0; }
-
-            /* Completely remove print button bar — belt AND suspenders */
-            .no-print,
-            .print-btn-bar {
-                display:none !important;
-                visibility:hidden !important;
-                height:0 !important;
-                max-height:0 !important;
-                overflow:hidden !important;
-                margin:0 !important;
-                padding:0 !important;
-            }
-
-            /* Header: flush to @page margin, no extra top whitespace */
-            .inv-header {
-                padding:4px 20px 8px;
-            }
-            .inv-header h1 { font-size:20px; }
-            .brand-block .brand-name { font-size:14px; }
-            .brand-block .brand-sub  { font-size:10px; }
-
-            /* Info sections — compact */
-            .inv-section { padding:7px 20px; }
-            .inv-section h3 { margin-bottom:4px; }
-            .inv-section p { font-size:11.5px; line-height:1.45; }
-
-            /* Table — make columns fit, TOTAL never clips */
-            thead th, tbody td { padding:5px 8px; font-size:11px; }
-            thead th:nth-child(1) { width:auto; }
-            thead th:nth-child(2) { width:36px; }
-            thead th:nth-child(3) { width:80px; }
-            thead th:nth-child(4) { width:80px; }
-
-            /* Totals */
-            .totals-wrap { padding:8px 20px; }
-            .totals { width:220px; }
-            .totals-row { font-size:11.5px; padding:3px 0; }
-            .totals-row.grand { font-size:14px; }
-
-            /* Footer */
-            .inv-footer { padding:7px 20px 0; background:#fff; font-size:11px; }
-
-            /* Pagination */
-            thead { display:table-header-group; }
-            tr    { page-break-inside:avoid; }
+            .page { max-width:100%; box-shadow:none; margin:0; }
+            .no-print { display:none !important; }
+            /* @page already supplies the outer whitespace — the block paddings
+               only need to separate sections from each other, not from the
+               paper edge. Horizontal padding stays so the rules/dividers keep
+               breathing room. */
+            .inv-header  { padding:0 32px 10px; }
+            .inv-section { padding:12px 32px; }
+            .totals-wrap { padding:12px 32px; }
+            .inv-footer  { padding:10px 32px 0; background:#fff; }
+            thead        { display:table-header-group; }
+            tr           { page-break-inside:avoid; }
         }
     </style>
 </head>
