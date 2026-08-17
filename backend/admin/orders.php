@@ -136,7 +136,8 @@ async function loadOrders(page = 1) {
             paginationEl.innerHTML = `<div style="display:flex;align-items:center;gap:6px;padding:12px 16px;flex-wrap:wrap;">
                 ${btns}
                 <span style="font-size:12px;color:var(--admin-text-muted);margin-left:8px;">${start}–${end} of ${total} orders</span>
-            </div>`;\n        }
+            </div>`;
+        }
 
         document.getElementById('ordersList').innerHTML = res.data.map(o => `
             <tr onclick="viewOrder(${o.id})" style="cursor:pointer">
