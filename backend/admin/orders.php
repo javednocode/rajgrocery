@@ -101,11 +101,33 @@
 
 <script>
 let currentOrderId = null;
+let currentPage = 1;
 async function loadOrders(page = 1) {
+    currentPage = page;
     const q = document.getElementById('searchInput').value;
     const status = document.getElementById('statusFilter').value;
     try {
-        const res = await api(`/orders?page=${page}&per_page=15&q=${encodeURIComponent(q)}&status=${status}`);
+        const res = await api(`/orders?page=${page}&per_page=50&q=${encodeURIComponent(q)}&status=${status}`);
+
+        // Render pagination
+        const total = res.total || 0;
+        const perPage = 50;
+        const totalPages = Math.ceil(total / perPage);
+        const start = total === 0 ? 0 : ((page - 1) * perPage + 1);
+        const end = Math.min(page * perPage, total);
+        const paginationEl = document.getElementById('pagination');
+        if (totalPages <= 1) {
+            paginationEl.innerHTML = total > 0
+                ? `<div style="padding:10px 16px;font-size:13px;color:var(--admin-text-muted);">Showing all ${total} orders</div>`
+                : '';
+        } else {
+            let btns = '';
+            if (page > 1) btns += `<button class="btn btn-outline btn-sm" onclick="loadOrders(${page-1})">← Prev</button>`;
+            btns += `<span style="font-size:13px;color:var(--admin-text-muted);padding:0 12px;">Page ${page} of ${totalPages} &nbsp;·&nbsp; ${start}–${end} of ${total} orders</span>`;
+            if (page < totalPages) btns += `<button class="btn btn-outline btn-sm" onclick="loadOrders(${page+1})">Next →</button>`;
+            paginationEl.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;">${btns}</div>`;
+        }
+
         document.getElementById('ordersList').innerHTML = res.data.map(o => `
             <tr onclick="viewOrder(${o.id})" style="cursor:pointer">
                 <td><strong>${escapeHtml(o.order_number)}</strong></td>
@@ -152,7 +174,7 @@ async function loadOrders(page = 1) {
                 </td>
             </tr>
         `).join('') || '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--admin-text-muted)">No orders found</td></tr>';
-    } catch(e) {}
+    } catch(e) { console.error('loadOrders error', e); }
 }
 
 async function viewOrder(id) {
