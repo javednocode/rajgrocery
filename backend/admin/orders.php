@@ -109,12 +109,12 @@ async function loadOrders(page = 1) {
     try {
         const res = await api(`/orders?page=${page}&per_page=50&q=${encodeURIComponent(q)}&status=${status}`);
 
-        // Render pagination
-        const total = res.total || 0;
-        const perPage = 50;
-        const totalPages = Math.ceil(total / perPage);
-        const start = total === 0 ? 0 : ((page - 1) * perPage + 1);
-        const end = Math.min(page * perPage, total);
+        // API wraps pagination meta in res.pagination
+        const total      = res.pagination?.total      || 0;
+        const totalPages = res.pagination?.total_pages || 1;
+        const perPage    = 50;
+        const start      = total === 0 ? 0 : ((page - 1) * perPage + 1);
+        const end        = Math.min(page * perPage, total);
         const paginationEl = document.getElementById('pagination');
         if (totalPages <= 1) {
             paginationEl.innerHTML = total > 0
@@ -123,10 +123,20 @@ async function loadOrders(page = 1) {
         } else {
             let btns = '';
             if (page > 1) btns += `<button class="btn btn-outline btn-sm" onclick="loadOrders(${page-1})">← Prev</button>`;
-            btns += `<span style="font-size:13px;color:var(--admin-text-muted);padding:0 12px;">Page ${page} of ${totalPages} &nbsp;·&nbsp; ${start}–${end} of ${total} orders</span>`;
+            // Numbered page buttons (max 7 shown)
+            const delta = 2;
+            for (let p = 1; p <= totalPages; p++) {
+                if (p === 1 || p === totalPages || (p >= page - delta && p <= page + delta)) {
+                    btns += `<button class="btn btn-sm${p === page ? ' btn-primary' : ' btn-outline'}" onclick="loadOrders(${p})" style="min-width:34px;">${p}</button>`;
+                } else if (p === page - delta - 1 || p === page + delta + 1) {
+                    btns += `<span style="padding:0 4px;color:var(--admin-text-muted);">…</span>`;
+                }
+            }
             if (page < totalPages) btns += `<button class="btn btn-outline btn-sm" onclick="loadOrders(${page+1})">Next →</button>`;
-            paginationEl.innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:12px 16px;">${btns}</div>`;
-        }
+            paginationEl.innerHTML = `<div style="display:flex;align-items:center;gap:6px;padding:12px 16px;flex-wrap:wrap;">
+                ${btns}
+                <span style="font-size:12px;color:var(--admin-text-muted);margin-left:8px;">${start}–${end} of ${total} orders</span>
+            </div>`;\n        }
 
         document.getElementById('ordersList').innerHTML = res.data.map(o => `
             <tr onclick="viewOrder(${o.id})" style="cursor:pointer">
