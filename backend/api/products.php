@@ -667,6 +667,44 @@ function updateProduct($db, $id) {
     successResponse(['id'=>$id,'slug'=>$slug], 'Product updated');
 }
 
+/**
+ * PATCH /api/products/:id/stock
+ * Lightweight stock-only update — used by inline stock editor on products list.
+ * Does NOT require all product fields; only reads { stock } from JSON body.
+ */
+function patchProductStock($db, $id) {
+    $data  = getJsonInput();
+    $stock = isset($data['stock']) ? (int)$data['stock'] : -1;
+    if ($stock < 0) errorResponse('stock value is required and must be >= 0', 400);
+
+    $check = $db->prepare("SELECT id, name FROM products WHERE id = :id");
+    $check->execute([':id' => $id]);
+    $product = $check->fetch();
+    if (!$product) errorResponse('Product not found', 404);
+
+    $db->prepare("UPDATE products SET stock = :stock WHERE id = :id")
+       ->execute([':stock' => $stock, ':id' => $id]);
+
+    cacheClearPattern('products_');
+    cacheClearPattern('cat_products_');
+
+    try {
+        require_once __DIR__ . '/../helpers/activity_log.php';
+        ensureActivityLogsTable($db);
+        logActivity($db, 'product_stock_updated', 'products', $id, $product['name'],
+            null, $stock,
+            'Stock updated to ' . $stock . ' for: ' . $product['name']);
+        if ($stock === 0) {
+            logActivity($db, 'product_out_of_stock', 'products', $id, $product['name'],
+                'in_stock', 'out_of_stock',
+                'Product set to out of stock: ' . $product['name']);
+        }
+    } catch (\Throwable $e) {}
+
+    successResponse(['id' => $id, 'stock' => $stock], 'Stock updated');
+}
+
+
 function deleteProduct($db, $id) {
     // Get name before deleting
     $nameRow = $db->prepare("SELECT name FROM products WHERE id = :id");

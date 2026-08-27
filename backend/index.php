@@ -22,7 +22,7 @@ if (!headers_sent()) {
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '*';
     header("Access-Control-Allow-Origin: $origin");
-    header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+    header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
     header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
     header("Access-Control-Max-Age: 86400");
     http_response_code(200);
@@ -66,7 +66,7 @@ if (in_array($origin, ALLOWED_ORIGINS) || getenv('APP_ENV') === 'development') {
 } else {
     header("Access-Control-Allow-Origin: *");
 }
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Max-Age: 86400");
 header("Content-Type: application/json; charset=utf-8");
@@ -195,6 +195,11 @@ if (preg_match('#^/api/products/(\d+)/variations/?$#', $uri, $m)) {
     require_once __DIR__ . '/api/products.php';
     if ($method === 'GET') getVariations(getDB(), $m[1]);
     if ($method === 'POST') { requireAuth(); createVariation(getDB(), $m[1]); }
+    exit;
+}
+if (preg_match('#^/api/products/(\d+)/stock$#', $uri, $m)) {
+    require_once __DIR__ . '/api/products.php';
+    if ($method === 'PATCH' || $method === 'POST') { requireAuth(); patchProductStock(getDB(), $m[1]); }
     exit;
 }
 if (preg_match('#^/api/products/(\d+)$#', $uri, $m)) {

@@ -68,6 +68,26 @@ input[type=checkbox] { width:15px; height:15px; accent-color:#2563EB; cursor:poi
 .btn-modal-confirm:hover { background:#3a2166; }
 .btn-modal-danger { background:#DC2626; }
 .btn-modal-danger:hover { background:#B91C1C; }
+
+/* ── Inline Stock Editor ── */
+.stock-cell { position:relative; display:inline-flex; align-items:center; gap:4px; }
+.stock-badge-btn { cursor:pointer; transition:opacity .15s; }
+.stock-badge-btn:hover { opacity:.75; }
+.stock-edit-wrap { display:none; align-items:center; gap:3px; }
+.stock-edit-wrap.active { display:inline-flex; }
+.stock-input {
+    width:70px; padding:3px 6px;
+    border:1.5px solid var(--admin-primary); border-radius:6px;
+    font-size:12px; font-weight:700; outline:none;
+    background:var(--admin-card); color:var(--admin-text);
+    text-align:center;
+}
+.stock-save-btn, .stock-cancel-btn {
+    border:none; border-radius:5px; padding:3px 6px;
+    font-size:11px; font-weight:700; cursor:pointer; line-height:1;
+}
+.stock-save-btn   { background:#16a34a; color:#fff; }
+.stock-cancel-btn { background:#e5e7eb; color:#374151; }
 </style>
 
 <!-- ── Toolbar ── -->
@@ -260,11 +280,23 @@ async function loadProducts(page = 1) {
                     <td>${p.sale_price
                         ? `<span style="text-decoration:line-through;color:var(--admin-text-muted);font-size:12px">${formatCurrency(p.price)}</span> <strong style="color:var(--admin-success)">${formatCurrency(p.sale_price)}</strong>`
                         : `<strong>${formatCurrency(p.price)}</strong>`}</td>
-                    <td>${p.stock <= 0
-                        ? '<span class="badge badge-danger">Out of stock</span>'
-                        : p.stock <= 5
-                            ? `<span class="badge badge-warning">${p.stock}</span>`
-                            : `<span class="badge badge-success">${p.stock}</span>`}</td>
+                    <td>
+                        <div class="stock-cell" id="stock-cell-${p.id}">
+                            <span class="stock-badge-btn" onclick="startStockEdit(${p.id}, ${p.stock})" title="Click to edit stock">
+                                ${p.stock <= 0
+                                    ? '<span class="badge badge-danger">Out of stock</span>'
+                                    : p.stock <= 5
+                                        ? `<span class="badge badge-warning">${p.stock}</span>`
+                                        : `<span class="badge badge-success">${p.stock}</span>`}
+                            </span>
+                            <div class="stock-edit-wrap" id="stock-edit-${p.id}">
+                                <input class="stock-input" id="stock-inp-${p.id}" type="number" min="0" value="${Math.max(0,p.stock)}"
+                                    onkeydown="if(event.key==='Enter')saveStock(${p.id});if(event.key==='Escape')cancelStockEdit(${p.id})">
+                                <button class="stock-save-btn"   onclick="saveStock(${p.id})">✓</button>
+                                <button class="stock-cancel-btn" onclick="cancelStockEdit(${p.id})">✗</button>
+                            </div>
+                        </div>
+                    </td>
                     <td>${cats}</td>
                     <td>${p.is_active==1
                         ? '<span class="badge badge-success">Active</span>'
@@ -400,6 +432,59 @@ async function executeBulkAction() {
 document.getElementById('bulkModal').addEventListener('click', function(e) {
     if (e.target === this) closeBulkModal();
 });
+
+// ── Inline Stock Editing ──
+function startStockEdit(id, currentStock) {
+    // Hide badge, show input
+    const cell = document.getElementById('stock-cell-' + id);
+    cell.querySelector('.stock-badge-btn').style.display = 'none';
+    const wrap = document.getElementById('stock-edit-' + id);
+    wrap.classList.add('active');
+    const inp = document.getElementById('stock-inp-' + id);
+    inp.value = Math.max(0, currentStock);
+    inp.focus();
+    inp.select();
+}
+
+function cancelStockEdit(id) {
+    const cell = document.getElementById('stock-cell-' + id);
+    cell.querySelector('.stock-badge-btn').style.display = '';
+    document.getElementById('stock-edit-' + id).classList.remove('active');
+}
+
+async function saveStock(id) {
+    const inp = document.getElementById('stock-inp-' + id);
+    const newStock = parseInt(inp.value);
+    if (isNaN(newStock) || newStock < 0) { inp.focus(); return; }
+
+    const saveBtn = inp.parentElement.querySelector('.stock-save-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = '…';
+
+    try {
+        await api('/products/' + id + '/stock', 'PATCH', { stock: newStock });
+
+        // Update badge in-place without a full page reload
+        const cell = document.getElementById('stock-cell-' + id);
+        const badgeWrap = cell.querySelector('.stock-badge-btn');
+        let badgeHtml;
+        if (newStock <= 0) {
+            badgeHtml = '<span class="badge badge-danger">Out of stock</span>';
+        } else if (newStock <= 5) {
+            badgeHtml = `<span class="badge badge-warning">${newStock}</span>`;
+        } else {
+            badgeHtml = `<span class="badge badge-success">${newStock}</span>`;
+        }
+        badgeWrap.innerHTML = badgeHtml;
+        badgeWrap.setAttribute('onclick', `startStockEdit(${id}, ${newStock})`);
+        cancelStockEdit(id);
+        showAlert('Stock updated!');
+    } catch(e) {
+        showAlert('Failed to update stock', 'error');
+        saveBtn.disabled = false;
+        saveBtn.textContent = '✓';
+    }
+}
 
 // ── Init — wait for DOM and verify auth token is available ──
 (async function init() {
